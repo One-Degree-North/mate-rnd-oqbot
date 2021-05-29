@@ -8,7 +8,7 @@ app = QT.QApplication(sys.argv)
 window = QT.QWidget()
 
 window.setWindowTitle('MATE')
-window.setGeometry(0, 0, 800, 40)
+window.setGeometry(0, 0, 1200, 800)
 window.show()
 
 
@@ -77,14 +77,15 @@ PWMBox = QT.QGroupBox("PWM")
 PWMBox.setLayout(PWMlist)
 
 
-
-
 Camera = QTM.QCamera()
 CameraView = QTMW.QCameraViewfinder()
 Camera.setViewfinder(CameraView)
 Camera.setCaptureMode(QTM.QCamera.CaptureViewfinder)
 Camera.start()
 
+
+serial = QT.QPlainTextEdit("text")
+serial.setReadOnly(True)
 
 layout = QT.QGridLayout()
 
@@ -94,6 +95,8 @@ layout.addWidget(CameraView,1,1,4,2)
 layout.addWidget(GeneralBox,1,3,1,1)
 layout.addWidget(IMUBox,2,3,1,1)
 layout.addWidget(PWMBox,3,3,1,1)
+layout.addWidget(serial,1,4,4,1)
+
 
 
 window.setLayout(layout)
