@@ -12,6 +12,16 @@ window.setGeometry(0, 0, 800, 40)
 window.show()
 
 
+Generallist = QT.QFormLayout()
+
+voltageinfo = QT.QLabel()
+voltageinfo.setText("2")
+Generallist.addRow(QT.QLabel("Voltage:"),voltageinfo)
+
+GeneralBox = QT.QGroupBox("General")
+GeneralBox.setLayout(Generallist)
+
+
 IMUlist = QT.QFormLayout()
 
 xgyro = QT.QLabel()
@@ -78,9 +88,13 @@ Camera.start()
 
 layout = QT.QGridLayout()
 
-layout.addWidget(CameraView,1,1,2,2)
-layout.addWidget(IMUBox,1,3,1,1)
-layout.addWidget(PWMBox,2,3,1,1)
+
+
+layout.addWidget(CameraView,1,1,4,2)
+layout.addWidget(GeneralBox,1,3,1,1)
+layout.addWidget(IMUBox,2,3,1,1)
+layout.addWidget(PWMBox,3,3,1,1)
+
 
 window.setLayout(layout)
 
