@@ -27,8 +27,8 @@ The footer byte's value will always be 0x47, or 0b01000111. Similar to the heade
 ### Return Data Transfer (feedback)
 Return data transfer is used by the microcontroller to return success/failure messages when a command is given, or send data when it is requested or when automatic reporting is enabled.
 
-A packet consists of 16 bytes, 0x0 to 0xF.
-| byte | 0 | 1 | 2 | 3 | 4 | 5-E | F | 
+A packet consists of 10 bytes, 0x0 to 0x9.
+| byte | 0 | 1 | 2 | 3 | 4 | 5-8 | 9 | 
 |--|--|--|--|--|--|--|--|
 | value | header | original cmd | original param | command | param | data field | footer |
 
@@ -44,8 +44,8 @@ The command is one byte that refers to how to handle the data provided. Refer to
 #### Param (byte 4)
 This byte is typically 0x00, as most return packets do not need to specify a parameter. However, when it is used, it refers to the hardware component returning this packet. 
 
-#### Data Field (bytes 5,6,7,8,9,A,B,C,D,E)
+#### Data Field (bytes 5,6,7,8)
 This byte contains all the data returned by the packet, up to 10 bytes per packet. Refer to the [command list](command_list.md).
 
-#### Footer (byte F)
+#### Footer (byte 9)
 The footer byte's value will always be 0x74, or 0b01110100. Similar to the header, this is to ensure packet integrity.
