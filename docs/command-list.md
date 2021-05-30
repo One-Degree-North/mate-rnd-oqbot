@@ -63,7 +63,7 @@ All values are in this format:
 - 0x00 - test
 	- param: 0xF0 (system)
 	- data field: first byte returns the version of the code currently running. next 3 bytes contain the word "pog".
-- 0x0F - OK
+- 0x0A - OK
 	- param: 0x00 (fail) or 0xFF (success)
 	- data field: None
 	- returned as a success message when any command with "set" is invoked.
