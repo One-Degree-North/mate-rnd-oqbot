@@ -29,7 +29,7 @@ Return data transfer is used by the microcontroller to return success/failure me
 
 A packet consists of 16 bytes, 0x0 to 0xF.
 | byte | 0 | 1 | 2 | 3 | 4 | 5-E | F | 
-|--|--|--|--|--|--|--|--|--|--|
+|--|--|--|--|--|--|--|--|
 | value | header | original cmd | original param | command | param | data field | footer |
 
 #### Header (byte 0)
