@@ -1,6 +1,7 @@
 import sys
+import threading
 import serial
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
@@ -102,12 +103,15 @@ layout.setColumnMinimumWidth(3,400)
 window.setLayout(layout)
 
 def update_serial():
-    ser_bytes = ser.readline()
-    decoded_bytes = ser_bytes[0:len(ser_bytes)-2].decode("utf-8")
-    sertext.appendPlainText(decoded_bytes)
-    print(decoded_bytes)
+    while True:
+        ser_bytes = ser.readline()
+        decoded_bytes = ser_bytes[0:len(ser_bytes)-2].decode("utf-8")
+        sertext.appendPlainText("eeee")
+        print(decoded_bytes)
 
-#serialthread = threading.Thread(target=update_
+serialthread = QThread()
+serialworker = Worker()
+
 
 sys.exit(app.exec_())
 
