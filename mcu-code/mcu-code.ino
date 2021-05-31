@@ -44,7 +44,9 @@ sensors_event_t icmTemp;
 
 // values for settings
 boolean enableFeedback = true;
-byte enableAutoReport = 0b000000;
+boolean enableAutoReport[] = {false, false, false};
+uint16_t autoReportDelay[] = {100, 100, 100};
+unsigned long autoReportTimers[] = {0, 0, 0};
 
 // --------------- SECTION: INITIALIZATION --------------- //
 
@@ -317,7 +319,7 @@ void setMotorMicroseconds(byte param, byte *data){
   Debug.print("setMotorMicroseconds: set motor ");
   Debug.print(param);
   Debug.print(" to ");
-  uint16_t microseconds = data[0] * 256 + data[1];
+  uint16_t microseconds = data[0] * 0xFF + data[1];
   Debug.println(microseconds);
   setPWM(param, microseconds);
   ok(0x10, param);
@@ -340,7 +342,7 @@ void setMotorCalibration(byte param, byte *data){
   Debug.print("setMotorCalibrated: set motor ");
   Debug.print(param);
   Debug.print(" to ");
-  uint16_t cal = data[0] * 256 + data[1];
+  uint16_t cal = data[0] * 0xFF + data[1];
   Debug.println(cal);
   calibration[param] = cal;
   ok(0x13, param);
@@ -374,6 +376,11 @@ void getIMU(byte param){
       sendPacket(0x30, 0x15, 0x3A, 0x00, x);
       sendPacket(0x30, 0x15, 0x3A, 0x30, y);
       sendPacket(0x30, 0x15, 0x3A, 0x60, z);
+      break;
+    }
+    default:
+    {
+      Debug.println("getIMU: invalid IMU device");
       break;
     }
   }
@@ -421,16 +428,57 @@ void setVoltageCalibration(byte param, byte *data){
   ok(0x43, param);
 }
 
+// setAutoReport command: 0x50
+void setAutoReport(byte param, byte *data){
+  if (param < 0x15 || param > 0x17) { return; }
+  byte device = param - 0x15;
+  enableAutoReport[device] = data[0] > 0;
+  autoReportDelay[device] = data[1] * 0xFF + data[2];
+  Debug.print("setAutoReport: AutoReport for device ");
+  Debug.print(device);
+  Debug.print(" is now ");
+  Debug.println(enableAutoReport[device]);
+}
+
 // setFeedback command: 0x51
 void setFeedback(byte param, byte *data){
+  Debug.print("setFeedback: feedback is now ");
   if (param != 0x01){
     fail(0x51, param);
   }
   enableFeedback = data[0] > 0x0;
+  Debug.println(enableFeedback);
 }
 
 // --------------- SECTION: PROGRAM LOOP --------------- //
 
+void autoReport(){
+  // iterate through devices
+  for (int dev = 0; dev < 3; dev ++){
+    if (enableAutoReport[dev]){
+      if (millis() > autoReportTimers[dev]){
+        autoReportTimers[dev] = millis() + autoReportDelay[dev];
+        switch (dev)
+        {
+          case 0: // accelerometer
+            getIMU(0x15);
+            break;
+          case 1: // gyroscope
+            getIMU(0x16);
+            break;
+          case 2: // volt/temp
+            getVoltageAndTemperature(0x17);
+            break;
+          default:
+            Debug.println("autoReport: What? This shouldn't be possible!");
+            break;
+        }
+      } // end if timer active
+    } // end if enabled
+  } // end for
+}
+
 void loop() {
   readSerial();
+  autoReport();
 }
