@@ -456,6 +456,13 @@ void autoReport(){
   for (int dev = 0; dev < 3; dev ++){
     if (enableAutoReport[dev]){
       if (millis() > autoReportTimers[dev]){
+        if (millis() - autoReportTimers[dev] > 2 * autoReportDelay[dev]){
+          Debug.print("autoReport: OVERLOAD!!! Device ");
+          Debug.print(dev);
+          Debug.print(" is running ");
+          Debug.print(millis() - autoReportTimers[dev]);
+          Debug.println("ms behind.");
+        }
         autoReportTimers[dev] = millis() + autoReportDelay[dev];
         switch (dev)
         {
