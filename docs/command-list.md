@@ -23,7 +23,7 @@ All values are in this format:
 	- sets the motor's exact PWM microseconds using Arduino's `writeMicroseconds` function.
 - 0x12 - setMotorCalibrated
 	- param: hardware motor (0-3, either 0x00-0x03 or '0'-'3')
-	- data field: first two bytes are a `uint16_t`, range 0-100
+	- data field: first byte is a `int8_t`, range -100-100
 	- sets the motor's speed, according to its calibration.`PWM_MIN`, and `PWM_MAX`
 - 0x13 - setMotorCalibration
 	- param: hardware motor (0-3, either 0x00-0x03 or '0'-'3')
