@@ -138,7 +138,7 @@ void setAccelerometerRange(byte mode){
       icm.setAccelRange(ICM20649_ACCEL_RANGE_16_G);
       break;
     case 0x03:
-      icm.setAccelRange(ICM20649_ACCEL_RANGE_32_G);
+      icm.setAccelRange(ICM20649_ACCEL_RANGE_30_G);
       break;
     default:
       Debug.println("setAccelerometerRange: invalid accelerometer range!");
@@ -353,32 +353,36 @@ void getIMU(byte param){
   switch (param)
   {
     case 0x15:
+    {
       // accel
       Debug.println("accelerometer data");
-      byte *x = (byte *) &imuAccel.acceleration.x;
-      byte *y = (byte *) &imuAccel.acceleration.y;
-      byte *z = (byte *) &imuAccel.acceleration.z;
+      byte *x = (byte *) &icmAccel.acceleration.x;
+      byte *y = (byte *) &icmAccel.acceleration.y;
+      byte *z = (byte *) &icmAccel.acceleration.z;
       sendPacket(0x30, 0x15, 0x3A, 0x00, x);
       sendPacket(0x30, 0x15, 0x3A, 0x30, y);
       sendPacket(0x30, 0x15, 0x3A, 0x60, z);
       break;
+    }
     case 0x16:
+    {
       // gyro
       Debug.println("gyroscope data");
-      byte *x = (byte *) &imuGyro.gyro.x;
-      byte *y = (byte *) &imuGyro.gyro.y;
-      byte *z = (byte *) &imuGyro.gyro.z;
+      byte *x = (byte *) &icmGyro.gyro.x;
+      byte *y = (byte *) &icmGyro.gyro.y;
+      byte *z = (byte *) &icmGyro.gyro.z;
       sendPacket(0x30, 0x15, 0x3A, 0x00, x);
       sendPacket(0x30, 0x15, 0x3A, 0x30, y);
       sendPacket(0x30, 0x15, 0x3A, 0x60, z);
       break;
+    }
   }
 }
 
 // setAccelSettings command: 0x33
 void setAccelSettings (byte param, byte *data){
   if (param != 0x15) { return; }
-  Debug.println("setAccelSettings: Accelerometer Settings Modified.")
+  Debug.println("setAccelSettings: Accelerometer Settings Modified.");
   setAccelerometerRange(data[0]);
   setAccelerometerDivisor(data[1]);
   ok(0x33, param);
@@ -387,7 +391,7 @@ void setAccelSettings (byte param, byte *data){
 // setGyroSettings command: 0x34
 void setGyroSettings (byte param, byte *data){
   if (param != 0x16) { return; }
-  Debug.println("setGyroSettings: Gyroscope Settings Modified.")
+  Debug.println("setGyroSettings: Gyroscope Settings Modified.");
   setGyroscopeRange(data[0]);
   setGyroscopeDivisor(data[1]);
   ok(0x34, param);
@@ -399,8 +403,8 @@ void getVoltageAndTemperature(byte param){
   updateSensors();
   Debug.println("getVoltageAndTemperature: getting voltage and temperature data");
   byte toSend[4];
-  uint16_t temp = (uint16_t) (&imuTemp.temperature * 100);
-  uint16_t voltage = (uint16_t) (getVoltage(analogRead(VOLTAGE_PIN)) * 100);
+  uint16_t temp = (uint16_t) (icmTemp.temperature * 100.0);
+  uint16_t voltage = (uint16_t) (getVoltage(analogRead(VOLTAGE_PIN)) * 100.0);
   toSend[0] = temp % 0xFF;
   toSend[1] = temp / 0xFF;
   toSend[2] = voltage % 0xFF;
@@ -412,7 +416,7 @@ void getVoltageAndTemperature(byte param){
 void setVoltageCalibration(byte param, byte *data){
   if (param != 0x17) { return; }
   Debug.print("setVoltageCalibration: new calibration = ");
-  voltage_calibration = (float *) &data;
+  voltage_calibration = *(float *) &data;
   Debug.print(voltage_calibration);
   ok(0x43, param);
 }
