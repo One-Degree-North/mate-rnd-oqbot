@@ -1,8 +1,7 @@
 /* microcontroller-side code for MATE R&D OQBot
 ** refer to docs/packet-structure and docs/command-list for more details
 ** status:
-** implemented: 0x00, 0x0F
-** not implemented: 0x10, 0x12, 0x13, 0x30, 0x33, 0x34, 0x40, 0x43, 0x50, 0x51
+** all commands are implemented but untested.
  */
 
 
