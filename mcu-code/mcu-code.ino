@@ -38,6 +38,9 @@ float voltage_calibration = 7.55;
 
 // create sensor objects
 Adafruit_ICM20649 icm;
+sensors_event_t icmAccel;
+sensors_event_t icmGyro;
+sensors_event_t icmTemp;
 
 // values for settings
 boolean enableFeedback = true;
@@ -119,6 +122,75 @@ void setPercent(byte motor, int8_t percent){
   setPWM(motor, calibrate(motor, percentToMicroseconds(percent)));
 }
 
+void setAccelerometerRange(byte mode){
+  Debug.print("setAccelerometerRange: ");
+  if (mode < 0x00 || mode > 0x03){ return; }
+  Debug.println(mode);
+  switch (mode)
+  {
+    case 0x00:
+      icm.setAccelRange(ICM20649_ACCEL_RANGE_4_G);
+      break;
+    case 0x01:
+      icm.setAccelRange(ICM20649_ACCEL_RANGE_8_G);
+      break;
+    case 0x02:
+      icm.setAccelRange(ICM20649_ACCEL_RANGE_16_G);
+      break;
+    case 0x03:
+      icm.setAccelRange(ICM20649_ACCEL_RANGE_32_G);
+      break;
+    default:
+      Debug.println("setAccelerometerRange: invalid accelerometer range!");
+      break;
+  }
+}
+
+void setGyroscopeRange(byte mode){
+  Debug.print("setGyroscopeRange: ");
+  if (mode < 0x00 || mode > 0x03){ return; }
+  Debug.println(mode);
+  switch (mode)
+  {
+    case 0x00:
+    case '0':
+      icm.setGyroRange(ICM20649_GYRO_RANGE_500_DPS);
+      break;
+    case 0x01:
+    case '1':
+      icm.setGyroRange(ICM20649_GYRO_RANGE_1000_DPS);
+      break;
+    case 0x02:
+    case '2':
+      icm.setGyroRange(ICM20649_GYRO_RANGE_2000_DPS);
+      break;
+    case 0x03:
+    case '3':
+      icm.setGyroRange(ICM20649_GYRO_RANGE_4000_DPS);
+      break;
+    default:
+      Debug.println("setGyroscopeRange: invalid gyroscope range!");
+      break;
+  }
+}
+
+void setAccelerometerDivisor(byte divisor){
+  Debug.print("setAccelerometerDivisor: ");
+  Debug.println(divisor);
+  icm.setAccelRateDivisor(divisor);
+}
+
+void setGyroscopeDivisor(byte divisor){
+  Debug.print("setGyroscopeDivisor: ");
+  Debug.println(divisor);
+  icm.setGyroRateDivisor(divisor);
+}
+
+void updateSensors(){
+  Debug.println("updateSensors: updating sensors");
+  icm.getEvent(&icmAccel, &icmGyro, &icmTemp);
+}
+
 // --------------- SECTION: SERIAL COMMUNICATION --------------- //
 
 void readSerial(){
@@ -172,19 +244,19 @@ void parseSerial(byte cmd, byte param, byte *data){
       setMotorCalibration(param, data);
       break;
     case 0x30:
-      // getIMU(param);
+      getIMU(param);
       break;
     case 0x33:
-      // setAccelSettings(param, data);
+      setAccelSettings(param, data);
       break;
     case 0x34:
-      // setGyroSettings(param, data);
+      setGyroSettings(param, data);
       break;
     case 0x40:
-      // getVoltageAndTemperature(param);
+      getVoltageAndTemperature(param);
       break;
     case 0x43:
-      // setVoltageCalibration(param, data);
+      setVoltageCalibration(param, data);
       break;
     case 0x50:
       // setAutoReport(param, data);
@@ -272,6 +344,77 @@ void setMotorCalibration(byte param, byte *data){
   Debug.println(cal);
   calibration[param] = cal;
   ok(0x13, param);
+}
+
+// getIMU command: 0x30
+void getIMU(byte param){
+  updateSensors();
+  Debug.print("getIMU: getting ");
+  switch (param)
+  {
+    case 0x15:
+      // accel
+      Debug.println("accelerometer data");
+      byte *x = (byte *) &imuAccel.acceleration.x;
+      byte *y = (byte *) &imuAccel.acceleration.y;
+      byte *z = (byte *) &imuAccel.acceleration.z;
+      sendPacket(0x30, 0x15, 0x3A, 0x00, x);
+      sendPacket(0x30, 0x15, 0x3A, 0x30, y);
+      sendPacket(0x30, 0x15, 0x3A, 0x60, z);
+      break;
+    case 0x16:
+      // gyro
+      Debug.println("gyroscope data");
+      byte *x = (byte *) &imuGyro.gyro.x;
+      byte *y = (byte *) &imuGyro.gyro.y;
+      byte *z = (byte *) &imuGyro.gyro.z;
+      sendPacket(0x30, 0x15, 0x3A, 0x00, x);
+      sendPacket(0x30, 0x15, 0x3A, 0x30, y);
+      sendPacket(0x30, 0x15, 0x3A, 0x60, z);
+      break;
+  }
+}
+
+// setAccelSettings command: 0x33
+void setAccelSettings (byte param, byte *data){
+  if (param != 0x15) { return; }
+  Debug.println("setAccelSettings: Accelerometer Settings Modified.")
+  setAccelerometerRange(data[0]);
+  setAccelerometerDivisor(data[1]);
+  ok(0x33, param);
+}
+
+// setGyroSettings command: 0x34
+void setGyroSettings (byte param, byte *data){
+  if (param != 0x16) { return; }
+  Debug.println("setGyroSettings: Gyroscope Settings Modified.")
+  setGyroscopeRange(data[0]);
+  setGyroscopeDivisor(data[1]);
+  ok(0x34, param);
+}
+
+// getVoltageAndTemperature command: 0x40
+void getVoltageAndTemperature(byte param){
+  if (param != 0x17) { return; }
+  updateSensors();
+  Debug.println("getVoltageAndTemperature: getting voltage and temperature data");
+  byte toSend[4];
+  uint16_t temp = (uint16_t) (&imuTemp.temperature * 100);
+  uint16_t voltage = (uint16_t) (getVoltage(analogRead(VOLTAGE_PIN)) * 100);
+  toSend[0] = temp % 0xFF;
+  toSend[1] = temp / 0xFF;
+  toSend[2] = voltage % 0xFF;
+  toSend[3] = voltage / 0xFF;
+  sendPacket(0x40, param, 0x44, 0x17, toSend);
+}
+
+// setVoltageCalibration command: 0x43
+void setVoltageCalibration(byte param, byte *data){
+  if (param != 0x17) { return; }
+  Debug.print("setVoltageCalibration: new calibration = ");
+  voltage_calibration = (float *) &data;
+  Debug.print(voltage_calibration);
+  ok(0x43, param);
 }
 
 // setFeedback command: 0x51
