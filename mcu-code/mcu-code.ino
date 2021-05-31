@@ -40,8 +40,8 @@ float voltage_calibration = 7.55;
 Adafruit_ICM20649 icm;
 
 // values for settings
-byte enableFeedback = 0xFF;
-byte enableAutoReport = 0x00;
+boolean enableFeedback = true;
+byte enableAutoReport = 0b000000;
 
 // --------------- SECTION: INITIALIZATION --------------- //
 
@@ -94,6 +94,31 @@ float getVoltage(int rawInput){
   return (rawInput / 1024.0) * (R1 + R2) / R2 * voltage_calibration;
 }
 
+uint16_t percentToMicroseconds(int8_t percent){
+  if (percent < -100 || percent > 100) { return PWM_MID; }
+  if (percent >= 0){
+    return PWM_MID + (uint16_t) (percent * (PWM_MAX - PWM_MID) / 100.0);
+  } else {
+    return PWM_MID - (uint16_t) (percent * (PWM_MID - PWM_MIN) / 100.0);
+  }
+}
+
+uint16_t calibrate(byte motor, uint16_t microseconds){
+  if (microseconds >= PWM_MID){
+    return PWM_MID + min((microseconds - PWM_MID) * calibration[motor] / 1000, PWM_MAX);
+  } else {
+    return PWM_MID - max((PWM_MID - microseconds) * calibration[motor] / 1000, PWM_MIN);
+  }
+}
+
+void setPWM(byte motor, uint16_t microseconds){
+  motors[motor].writeMicroseconds(microseconds);
+}
+
+void setPercent(byte motor, int8_t percent){
+  setPWM(motor, calibrate(motor, percentToMicroseconds(percent)));
+}
+
 // --------------- SECTION: SERIAL COMMUNICATION --------------- //
 
 void readSerial(){
@@ -138,13 +163,13 @@ void parseSerial(byte cmd, byte param, byte *data){
       halt(param);
       break;
     case 0x10:
-      // setMotorMicroseconds(param, data);
+      setMotorMicroseconds(param, data);
       break;
     case 0x12:
-      // setMotorCalibrated(param, data);
+      setMotorCalibrated(param, data);
       break;
     case 0x13:
-      // setMotorCalibration(param, data);
+      setMotorCalibration(param, data);
       break;
     case 0x30:
       // getIMU(param);
@@ -165,7 +190,7 @@ void parseSerial(byte cmd, byte param, byte *data){
       // setAutoReport(param, data);
       break;
     case 0x51:
-      // setFeedback(param, data);
+      setFeedback(param, data);
       break;
   }
 }
@@ -189,6 +214,13 @@ void ok(byte ogcmd, byte ogparam){
   }
 }
 
+void fail(byte ogcmd, byte ogparam){
+  byte emptyDataField[4];
+  if (enableFeedback){
+    sendPacket(ogcmd, ogparam, 0x0A, 0x00, emptyDataField);
+  }
+}
+
 // test command: 0x00
 void test(byte param){
   Debug.print("test: called with param ");
@@ -206,6 +238,48 @@ void test(byte param){
 void halt(byte param){
   Debug.println("halt: HALTING!!!!!");
   ok(0x0F, param);
+}
+
+// setMotorMicroseconds command: 0x10
+void setMotorMicroseconds(byte param, byte *data){
+  Debug.print("setMotorMicroseconds: set motor ");
+  Debug.print(param);
+  Debug.print(" to ");
+  uint16_t microseconds = data[0] * 256 + data[1];
+  Debug.println(microseconds);
+  setPWM(param, microseconds);
+  ok(0x10, param);
+}
+
+// setMotorCalibrated command: 0x12
+void setMotorCalibrated(byte param, byte *data){
+  Debug.print("setMotorCalibrated: set motor ");
+  Debug.print(param);
+  Debug.print(" to ");
+  // data[0] should be int8_t... right?
+  int8_t percent = data[0];
+  Debug.println(percent);
+  setPercent(param, percent);
+  ok(0x12, param);
+}
+
+// setMotorCalibration command: 0x13
+void setMotorCalibration(byte param, byte *data){
+  Debug.print("setMotorCalibrated: set motor ");
+  Debug.print(param);
+  Debug.print(" to ");
+  uint16_t cal = data[0] * 256 + data[1];
+  Debug.println(cal);
+  calibration[param] = cal;
+  ok(0x13, param);
+}
+
+// setFeedback command: 0x51
+void setFeedback(byte param, byte *data){
+  if (param != 0x01){
+    fail(0x51, param);
+  }
+  enableFeedback = data[0] > 0x0;
 }
 
 // --------------- SECTION: PROGRAM LOOP --------------- //
