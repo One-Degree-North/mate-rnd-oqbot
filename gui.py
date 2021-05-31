@@ -1,4 +1,5 @@
 import sys
+import random
 import threading
 import serial
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
@@ -20,15 +21,20 @@ app = QT.QApplication(sys.argv)
 #        print(self.decoded_bytes)
 
 class mcuthing:
-    voltage = 2
-    gyrox = 99
-    gyroy = 12
-    gyroz = 43
-    accelx = 92
-    accely = 32
-    accelz = 93
-    temperature = 121
-
+    def setvalue(self):
+        self.voltage = random.random()
+        self.gyrox = random.random()
+        self.gyroy = random.random()
+        self.gyroz = random.random()
+        self.accelx = random.random()
+        self.accely = random.random()
+        self.accelz = random.random()
+        self.temperature = random.random()
+        self.thruster1 = random.random()
+        self.thruster2 = random.random()
+        self.thruster3 = random.random()
+        self.thruster4 = random.random()
+        self.servo = random.random()
 
 class MainWindow(QT.QWidget):
     def __init__(self, mcuobject):
@@ -36,11 +42,20 @@ class MainWindow(QT.QWidget):
         self.mcu = mcuobject
     
     def updatetext(self):
+        self.mcu.setvalue()
         self.voltage_info.setText(str(self.mcu.voltage))
         self.x_gyro.setText(str(self.mcu.gyrox))
         self.y_gyro.setText(str(self.mcu.gyroy))
         self.z_gyro.setText(str(self.mcu.gyroz))
-        
+        self.x_accel.setText(str(self.mcu.accelx))
+        self.y_accel.setText(str(self.mcu.accely))
+        self.z_accel.setText(str(self.mcu.accelz))
+        self.temperature.setText(str(self.mcu.temperature))
+        self.thruster1.setText(str(self.mcu.thruster1))
+        self.thruster2.setText(str(self.mcu.thruster2))
+        self.thruster3.setText(str(self.mcu.thruster3))
+        self.thruster4.setText(str(self.mcu.thruster4))
+        self.servo.setText(str(self.mcu.servo))
     def setupui(self):
         self.setWindowTitle('MATE')
         self.setGeometry(0, 0, 1600, 800)
@@ -48,7 +63,6 @@ class MainWindow(QT.QWidget):
         
         self.general_list = QT.QFormLayout()
         self.voltage_info = QT.QLabel()
-        self.voltage_info.setText("2")
         self.general_list.addRow(QT.QLabel("Voltage:"),self.voltage_info)
         self.general_box = QT.QGroupBox("General")
         self.general_box.setLayout(self.general_list)
@@ -61,13 +75,6 @@ class MainWindow(QT.QWidget):
         self.y_accel = QT.QLabel()
         self.z_accel = QT.QLabel()
         self.temperature = QT.QLabel()
-        self.x_gyro.setText(str(99.233))
-        self.y_gyro.setText(str(99.231))
-        self.z_gyro.setText(str(99.283))
-        self.x_accel.setText(str(99.233))
-        self.y_accel.setText(str(99.231))
-        self.z_accel.setText(str(99.283))
-        self.temperature.setText(str(99.283))
         self.imu_list.addRow(QT.QLabel("X Rotation:"),self.x_gyro)
         self.imu_list.addRow(QT.QLabel("Y Rotation:"),self.y_gyro)
         self.imu_list.addRow(QT.QLabel("Z Rotation:"),self.z_gyro)
@@ -84,11 +91,6 @@ class MainWindow(QT.QWidget):
         self.thruster3 = QT.QLabel()
         self.thruster4 = QT.QLabel()
         self.servo = QT.QLabel()
-        self.thruster1.setText(str(99.231))
-        self.thruster2.setText(str(99.283))
-        self.thruster3.setText(str(99.233))
-        self.thruster4.setText(str(99.231))
-        self.servo.setText(str(99.233))
         self.pwm_list.addRow(QT.QLabel("Thruster 1:"),self.thruster1)
         self.pwm_list.addRow(QT.QLabel("Thruster 2:"),self.thruster2)
         self.pwm_list.addRow(QT.QLabel("Thruster 3:"),self.thruster3)
@@ -116,6 +118,7 @@ class MainWindow(QT.QWidget):
         self.layout.addWidget(self.pwmbox,3,4,1,1)
         self.layout.addWidget(self.sertext,1,3,4,1)
         self.layout.setColumnMinimumWidth(3,400)
+        self.layout.setColumnMinimumWidth(4,300)
         self.setLayout(self.layout)
         
         self.timer = QTimer()
@@ -127,6 +130,7 @@ feather = mcuthing()
 Window2 = MainWindow(feather)
 Window2.setupui()
 
+
 # def update_serial():
 #    while True:
 #        ser_bytes = ser.readline()
@@ -135,7 +139,6 @@ Window2.setupui()
 #        print(decoded_bytes)
 
     
-
 
 
 
