@@ -18,15 +18,15 @@
 #define Debug_Serial Serial
 #define DEBUG_BAUDRATE 230400
 
-/*// enable debug
+// enable debug
 #define DEBUG
 #define Debug(a) (Serial.print(a))
 #define Debugln(a) (Serial.println(a))
-*/
+/*
 // disable debug
 #define Debug(a)
 #define Debugln(a)
-
+*/
 // define communications
 #define Comms Serial1
 #define COMMS_BAUDRATE 230400
