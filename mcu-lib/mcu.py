@@ -6,11 +6,13 @@ from queue import Queue
 
 from packets import *
 
+
 NIL_BS = chr(0x00).encode('latin')
 MAX_BS = chr(0xFF).encode('latin')
 DEVICE_ACCEL = 0x15
 DEVICE_GYRO = 0x16
 DEVICE_TEMPVOLT = 0x17
+MAX_QUEUE_SIZE = 512
 
 
 # bs ("byte-string")
@@ -41,11 +43,11 @@ class MCUInterface:
             self.__serial.close()
 
     def __init_queues(self):
-        self.test_queue = Queue(512)
-        self.ok_queue = Queue(512)
-        self.accel_queue = Queue(512)
-        self.gyro_queue = Queue(512)
-        self.volt_temp_queue = Queue(512)
+        self.test_queue = Queue(MAX_QUEUE_SIZE)
+        self.ok_queue = Queue(MAX_QUEUE_SIZE)
+        self.accel_queue = Queue(MAX_QUEUE_SIZE)
+        self.gyro_queue = Queue(MAX_QUEUE_SIZE)
+        self.volt_temp_queue = Queue(MAX_QUEUE_SIZE)
 
     def open_serial(self):
         self.__serial.open()
@@ -186,4 +188,17 @@ class MCUInterface:
         on = 0xFF if enabled else 0x00
         data = bs(on) + NIL_BS * 3
         self.__send_packet(0x51, 0x01, data)
+
+
+if __name__ == "__main__":
+    # runs a simple test to verify that communication is working.
+    mcu = MCUInterface(input("Port? \n"), int(input("Baudrate? \n")))
+    mcu.open_serial()
+    print("Sending cmd_test in 0.5 seconds:")
+    time.sleep(0.5)
+    print("Sent! Waiting 0.5 seconds for response...")
+    time.sleep(0.5)
+    print("If we received a packet, it would be here:")
+    print(mcu.test_queue.get())
+    mcu.close_serial()
 
