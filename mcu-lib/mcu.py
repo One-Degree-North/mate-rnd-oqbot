@@ -126,7 +126,7 @@ class MCUInterface:
 
     def __send_packet(self, cmd, param, data: bytes):
         assert len(data) == 4, "data is not 4 bytes long!"
-        assert len(cmd) == len(param) == 1, "command or parameter is not 1 byte long!"
+        assert type(cmd) == type(param) == int, "command or parameter is not 1 byte long!"
         packet = bs(0xCA) + bs(cmd) + bs(param) + data + bs(0x47)
         self.__serial.write(packet)
 
@@ -187,4 +187,3 @@ class MCUInterface:
         data = bs(on) + NIL_BS * 3
         self.__send_packet(0x51, 0x01, data)
 
-    def print_queues(self):
