@@ -1,7 +1,7 @@
 # mcu_cli.py
 mcu_cli.py is a simple command-line interface for testing mcu.py.
 
-refer to docs/command-list.md for more details.
+refer to [the command list](command-list.md) for more details.
 
 ### Commands
 Forward Commands:
