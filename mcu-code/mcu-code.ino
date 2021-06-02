@@ -226,7 +226,9 @@ void readSerial(){
 
 void parseSerial(byte cmd, byte param, byte *data){
   Debug.print("parseSerial: packet received, cmd: ");
-  Debug.println(cmd);
+  Debug.print(cmd);
+  Debug.print(", param: ");
+  Debug.println(param);
   switch (cmd)
   {
     case 0x00:
@@ -260,7 +262,7 @@ void parseSerial(byte cmd, byte param, byte *data){
       setVoltageCalibration(param, data);
       break;
     case 0x50:
-      // setAutoReport(param, data);
+      setAutoReport(param, data);
       break;
     case 0x51:
       setFeedback(param, data);
@@ -269,6 +271,10 @@ void parseSerial(byte cmd, byte param, byte *data){
 }
 
 void sendPacket(byte ogcmd, byte ogparam, byte cmd, byte param, byte *data){
+  Debug.print("sendPacket: sending packet with cmd ");
+  Debug.print(cmd);
+  Debug.print(" and param ");
+  Debug.println(param);
   Comms.write(0xAC);            // header
   Comms.write(ogcmd);           // original cmd
   Comms.write(ogparam);         // original param
@@ -310,6 +316,11 @@ void test(byte param){
 // halt command: 0x0F
 void halt(byte param){
   Debug.println("halt: HALTING!!!!!");
+  setPWM(0, PWM_MID);
+  setPWM(1, PWM_MID);
+  setPWM(2, PWM_MID);
+  setPWM(3, PWM_MID);
+  setPWM(4, PWM_MID);
   ok(0x0F, param);
 }
 
@@ -372,9 +383,9 @@ void getIMU(byte param){
       byte *x = (byte *) &icmGyro.gyro.x;
       byte *y = (byte *) &icmGyro.gyro.y;
       byte *z = (byte *) &icmGyro.gyro.z;
-      sendPacket(0x30, 0x15, 0x3A, 0x00, x);
-      sendPacket(0x30, 0x15, 0x3A, 0x30, y);
-      sendPacket(0x30, 0x15, 0x3A, 0x60, z);
+      sendPacket(0x30, 0x15, 0x3C, 0x00, x);
+      sendPacket(0x30, 0x15, 0x3C, 0x30, y);
+      sendPacket(0x30, 0x15, 0x3C, 0x60, z);
       break;
     }
     default:

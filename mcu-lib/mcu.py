@@ -99,6 +99,7 @@ class MCUInterface:
         return packet
 
     def __parse_packet(self, packet: ReturnPacket):
+        data_bs = packet.data[0] + packet.data[1] + packet.data[2] + packet.data[3]
         if not packet:
             return
         if packet.cmd == bs(0x00):
@@ -116,18 +117,18 @@ class MCUInterface:
         elif packet.cmd == bs(0x3A):
             # accel
             axis = int(int.from_bytes(packet.param, 'big') / 0x30)
-            value = struct.unpack('f', packet.data)
+            value = struct.unpack('f', data_bs)
             self.accel_queue.put(AccelPacket(axis, value, packet.timestamp))
-            self.latest_accel[axis] = value
+            self.latest_accel[axis] = value[0]
         elif packet.cmd == bs(0x3C):
             # gyro
             axis = int(int.from_bytes(packet.param, 'big') / 0x30)
-            value = struct.unpack('f', packet.data)
+            value = struct.unpack('f', data_bs)
             self.gyro_queue.put(GyroPacket(axis, value, packet.timestamp))
-            self.latest_gyro[axis] = value
+            self.latest_gyro[axis] = value[0]
         elif packet.cmd == bs(0x44):
             # temp/volt
-            temp, volts = struct.unpack('HH', packet.data)
+            temp, volts = struct.unpack('HH', data_bs)
             temp /= 100
             volts /= 100
             self.latest_temp = temp
@@ -140,7 +141,6 @@ class MCUInterface:
         assert len(data) == 4, "data is not 4 bytes long!"
         assert type(cmd) == type(param) == int, "command or parameter is not 1 byte long!"
         packet = bs(0xCA) + bs(cmd) + bs(param) + data + bs(0x47)
-        print(packet)
         self.__serial.write(packet)
 
     def cmd_test(self):
@@ -189,7 +189,7 @@ class MCUInterface:
         self.__send_packet(0x43, 0x17, struct.pack('f', calibration))
 
     def cmd_setAutoReport(self, device, enabled: bool, delay: int):
-        assert device == 0x14 or device == 0x16 or device == 0x17, "invalid device!"
+        assert device == 0x15 or device == 0x16 or device == 0x17, "invalid device!"
         assert 0 <= delay <= 65535, "invalid delay!"
         on = 0xFF if enabled else 0x00
         data = bs(on) + bs(delay // 0xFF) + bs(delay % 0xFF) + NIL_BS
