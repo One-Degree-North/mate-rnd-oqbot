@@ -14,10 +14,21 @@
 
 #define VERSION 0
 
-// define our two Serial connections
-#define Debug Serial
-#define Comms Serial1
+// define debug
+#define Debug_Serial Serial
 #define DEBUG_BAUDRATE 230400
+
+/*// enable debug
+#define DEBUG
+#define Debug(a) (Serial.print(a))
+#define Debugln(a) (Serial.println(a))
+*/
+// disable debug
+#define Debug(a)
+#define Debugln(a)
+
+// define communications
+#define Comms Serial1
 #define COMMS_BAUDRATE 230400
 
 // define motor details
@@ -50,10 +61,12 @@ unsigned long autoReportTimers[] = {0, 0, 0};
 // --------------- SECTION: INITIALIZATION --------------- //
 
 void initSerial() {
-  Debug.begin(DEBUG_BAUDRATE);
+  #ifdef DEBUG
+  Debug_Serial.begin(DEBUG_BAUDRATE);
+  #endif
   Comms.begin(COMMS_BAUDRATE);
   delay(200);
-  Debug.println("initSerial: Serial Init complete");
+  Debugln("initSerial: Serial Init complete");
 }
 
 void setDefaultRanges(){
@@ -61,29 +74,29 @@ void setDefaultRanges(){
   icm.setGyroRange(ICM20649_GYRO_RANGE_500_DPS);
   icm.setAccelRateDivisor(15); 
   icm.setGyroRateDivisor(15);
-  Debug.println("setDefaultRanges: ICM20649 default ranges set.");
+  Debugln("setDefaultRanges: ICM20649 default ranges set.");
 }
 
 void initSensors() {
   if (!icm.begin_I2C()){
-    Debug.println("initSensors: ICM20649 Init over I2C failed.");
+    Debugln("initSensors: ICM20649 Init over I2C failed.");
     while(true){
       delay(10);
     }
   }
-  Debug.println("initSensors: ICM20649 Init complete");
+  Debugln("initSensors: ICM20649 Init complete");
   setDefaultRanges();
 }
 
 void initMotors() {
   for (int i = 0; i < NUM_MOTORS; i++){
     motors[i].attach(pins[i]); 
-    Debug.print("initMotors: motor ");
-    Debug.print(i);
-    Debug.print(" attached to pin ");
-    Debug.println(pins[i]);
+    Debug("initMotors: motor ");
+    Debug(i);
+    Debug(" attached to pin ");
+    Debugln(pins[i]);
   }
-  Debug.println("initMotors: Motor Init complete");
+  Debugln("initMotors: Motor Init complete");
 }
 
 void setup() {
@@ -124,9 +137,9 @@ void setPercent(byte motor, int8_t percent){
 }
 
 void setAccelerometerRange(byte mode){
-  Debug.print("setAccelerometerRange: ");
+  Debug("setAccelerometerRange: ");
   if (mode < 0x00 || mode > 0x03){ return; }
-  Debug.println(mode);
+  Debugln(mode);
   switch (mode)
   {
     case 0x00:
@@ -142,15 +155,15 @@ void setAccelerometerRange(byte mode){
       icm.setAccelRange(ICM20649_ACCEL_RANGE_30_G);
       break;
     default:
-      Debug.println("setAccelerometerRange: invalid accelerometer range!");
+      Debugln("setAccelerometerRange: invalid accelerometer range!");
       break;
   }
 }
 
 void setGyroscopeRange(byte mode){
-  Debug.print("setGyroscopeRange: ");
+  Debug("setGyroscopeRange: ");
   if (mode < 0x00 || mode > 0x03){ return; }
-  Debug.println(mode);
+  Debugln(mode);
   switch (mode)
   {
     case 0x00:
@@ -170,25 +183,25 @@ void setGyroscopeRange(byte mode){
       icm.setGyroRange(ICM20649_GYRO_RANGE_4000_DPS);
       break;
     default:
-      Debug.println("setGyroscopeRange: invalid gyroscope range!");
+      Debugln("setGyroscopeRange: invalid gyroscope range!");
       break;
   }
 }
 
 void setAccelerometerDivisor(byte divisor){
-  Debug.print("setAccelerometerDivisor: ");
-  Debug.println(divisor);
+  Debug("setAccelerometerDivisor: ");
+  Debugln(divisor);
   icm.setAccelRateDivisor(divisor);
 }
 
 void setGyroscopeDivisor(byte divisor){
-  Debug.print("setGyroscopeDivisor: ");
-  Debug.println(divisor);
+  Debug("setGyroscopeDivisor: ");
+  Debugln(divisor);
   icm.setGyroRateDivisor(divisor);
 }
 
 void updateSensors(){
-  Debug.println("updateSensors: updating sensors");
+  Debugln("updateSensors: updating sensors");
   icm.getEvent(&icmAccel, &icmGyro, &icmTemp);
 }
 
@@ -203,7 +216,7 @@ void readSerial(){
     } 
     // verify header
     if (header != 0xCA) {
-      Debug.println("readSerial: packet received, but header did not match.");
+      Debugln("readSerial: packet received, but header did not match.");
       return; 
     }
     // get the contents of the packet
@@ -216,7 +229,7 @@ void readSerial(){
     byte footer = Comms.read();
     // verify footer
     if (footer != 0x47){
-      Debug.println("readSerial: packet received, but footer did not match.");
+      Debugln("readSerial: packet received, but footer did not match.");
       return;
     }
     // call parseSerial
@@ -225,10 +238,10 @@ void readSerial(){
 }
 
 void parseSerial(byte cmd, byte param, byte *data){
-  Debug.print("parseSerial: packet received, cmd: ");
-  Debug.print(cmd);
-  Debug.print(", param: ");
-  Debug.println(param);
+  Debug("parseSerial: packet received, cmd: ");
+  Debug(cmd);
+  Debug(", param: ");
+  Debugln(param);
   switch (cmd)
   {
     case 0x00:
@@ -271,10 +284,10 @@ void parseSerial(byte cmd, byte param, byte *data){
 }
 
 void sendPacket(byte ogcmd, byte ogparam, byte cmd, byte param, byte *data){
-  Debug.print("sendPacket: sending packet with cmd ");
-  Debug.print(cmd);
-  Debug.print(" and param ");
-  Debug.println(param);
+  Debug("sendPacket: sending packet with cmd ");
+  Debug(cmd);
+  Debug(" and param ");
+  Debugln(param);
   Comms.write(0xAC);            // header
   Comms.write(ogcmd);           // original cmd
   Comms.write(ogparam);         // original param
@@ -302,8 +315,8 @@ void fail(byte ogcmd, byte ogparam){
 
 // test command: 0x00
 void test(byte param){
-  Debug.print("test: called with param ");
-  Debug.println(param);
+  Debug("test: called with param ");
+  Debugln(param);
   byte toSend[4];
   toSend[0] = VERSION;
   toSend[1] = 'p';
@@ -315,7 +328,7 @@ void test(byte param){
 
 // halt command: 0x0F
 void halt(byte param){
-  Debug.println("halt: HALTING!!!!!");
+  Debugln("halt: HALTING!!!!!");
   setPWM(0, PWM_MID);
   setPWM(1, PWM_MID);
   setPWM(2, PWM_MID);
@@ -326,34 +339,34 @@ void halt(byte param){
 
 // setMotorMicroseconds command: 0x10
 void setMotorMicroseconds(byte param, byte *data){
-  Debug.print("setMotorMicroseconds: set motor ");
-  Debug.print(param);
-  Debug.print(" to ");
+  Debug("setMotorMicroseconds: set motor ");
+  Debug(param);
+  Debug(" to ");
   uint16_t microseconds = data[0] * 0xFF + data[1];
-  Debug.println(microseconds);
+  Debugln(microseconds);
   setPWM(param, microseconds);
   ok(0x10, param);
 }
 
 // setMotorCalibrated command: 0x12
 void setMotorCalibrated(byte param, byte *data){
-  Debug.print("setMotorCalibrated: set motor ");
-  Debug.print(param);
-  Debug.print(" to ");
+  Debug("setMotorCalibrated: set motor ");
+  Debug(param);
+  Debug(" to ");
   // data[0] should be int8_t... right?
   int8_t percent = data[0];
-  Debug.println(percent);
+  Debugln(percent);
   setPercent(param, percent);
   ok(0x12, param);
 }
 
 // setMotorCalibration command: 0x13
 void setMotorCalibration(byte param, byte *data){
-  Debug.print("setMotorCalibrated: set motor ");
-  Debug.print(param);
-  Debug.print(" to ");
+  Debug("setMotorCalibrated: set motor ");
+  Debug(param);
+  Debug(" to ");
   uint16_t cal = data[0] * 0xFF + data[1];
-  Debug.println(cal);
+  Debugln(cal);
   calibration[param] = cal;
   ok(0x13, param);
 }
@@ -361,13 +374,13 @@ void setMotorCalibration(byte param, byte *data){
 // getIMU command: 0x30
 void getIMU(byte param){
   updateSensors();
-  Debug.print("getIMU: getting ");
+  Debug("getIMU: getting ");
   switch (param)
   {
     case 0x15:
     {
       // accel
-      Debug.println("accelerometer data");
+      Debugln("accelerometer data");
       byte *x = (byte *) &icmAccel.acceleration.x;
       byte *y = (byte *) &icmAccel.acceleration.y;
       byte *z = (byte *) &icmAccel.acceleration.z;
@@ -379,7 +392,7 @@ void getIMU(byte param){
     case 0x16:
     {
       // gyro
-      Debug.println("gyroscope data");
+      Debugln("gyroscope data");
       byte *x = (byte *) &icmGyro.gyro.x;
       byte *y = (byte *) &icmGyro.gyro.y;
       byte *z = (byte *) &icmGyro.gyro.z;
@@ -390,7 +403,7 @@ void getIMU(byte param){
     }
     default:
     {
-      Debug.println("getIMU: invalid IMU device");
+      Debugln("getIMU: invalid IMU device");
       break;
     }
   }
@@ -399,7 +412,7 @@ void getIMU(byte param){
 // setAccelSettings command: 0x33
 void setAccelSettings (byte param, byte *data){
   if (param != 0x15) { return; }
-  Debug.println("setAccelSettings: Accelerometer Settings Modified.");
+  Debugln("setAccelSettings: Accelerometer Settings Modified.");
   setAccelerometerRange(data[0]);
   setAccelerometerDivisor(data[1]);
   ok(0x33, param);
@@ -408,7 +421,7 @@ void setAccelSettings (byte param, byte *data){
 // setGyroSettings command: 0x34
 void setGyroSettings (byte param, byte *data){
   if (param != 0x16) { return; }
-  Debug.println("setGyroSettings: Gyroscope Settings Modified.");
+  Debugln("setGyroSettings: Gyroscope Settings Modified.");
   setGyroscopeRange(data[0]);
   setGyroscopeDivisor(data[1]);
   ok(0x34, param);
@@ -418,7 +431,7 @@ void setGyroSettings (byte param, byte *data){
 void getVoltageAndTemperature(byte param){
   if (param != 0x17) { return; }
   updateSensors();
-  Debug.println("getVoltageAndTemperature: getting voltage and temperature data");
+  Debugln("getVoltageAndTemperature: getting voltage and temperature data");
   byte toSend[4];
   uint16_t temp = (uint16_t) (icmTemp.temperature * 100.0);
   uint16_t voltage = (uint16_t) (getVoltage(analogRead(VOLTAGE_PIN)) * 100.0);
@@ -432,9 +445,9 @@ void getVoltageAndTemperature(byte param){
 // setVoltageCalibration command: 0x43
 void setVoltageCalibration(byte param, byte *data){
   if (param != 0x17) { return; }
-  Debug.print("setVoltageCalibration: new calibration = ");
+  Debug("setVoltageCalibration: new calibration = ");
   voltage_calibration = *(float *) &data;
-  Debug.print(voltage_calibration);
+  Debug(voltage_calibration);
   ok(0x43, param);
 }
 
@@ -444,20 +457,20 @@ void setAutoReport(byte param, byte *data){
   byte device = param - 0x15;
   enableAutoReport[device] = data[0] > 0;
   autoReportDelay[device] = data[1] * 0xFF + data[2];
-  Debug.print("setAutoReport: AutoReport for device ");
-  Debug.print(device);
-  Debug.print(" is now ");
-  Debug.println(enableAutoReport[device]);
+  Debug("setAutoReport: AutoReport for device ");
+  Debug(device);
+  Debug(" is now ");
+  Debugln(enableAutoReport[device]);
 }
 
 // setFeedback command: 0x51
 void setFeedback(byte param, byte *data){
-  Debug.print("setFeedback: feedback is now ");
+  Debug("setFeedback: feedback is now ");
   if (param != 0x01){
     fail(0x51, param);
   }
   enableFeedback = data[0] > 0x0;
-  Debug.println(enableFeedback);
+  Debugln(enableFeedback);
 }
 
 // --------------- SECTION: PROGRAM LOOP --------------- //
@@ -468,11 +481,11 @@ void autoReport(){
     if (enableAutoReport[dev]){
       if (millis() > autoReportTimers[dev]){
         if (millis() - autoReportTimers[dev] > 2 * autoReportDelay[dev]){
-          Debug.print("autoReport: OVERLOAD!!! Device ");
-          Debug.print(dev);
-          Debug.print(" is running ");
-          Debug.print(millis() - autoReportTimers[dev]);
-          Debug.println("ms behind.");
+          Debug("autoReport: OVERLOAD!!! Device ");
+          Debug(dev);
+          Debug(" is running ");
+          Debug(millis() - autoReportTimers[dev]);
+          Debugln("ms behind.");
         }
         autoReportTimers[dev] = millis() + autoReportDelay[dev];
         switch (dev)
@@ -487,7 +500,7 @@ void autoReport(){
             getVoltageAndTemperature(0x17);
             break;
           default:
-            Debug.println("autoReport: What? This shouldn't be possible!");
+            Debugln("autoReport: What? This shouldn't be possible!");
             break;
         }
       } // end if timer active
