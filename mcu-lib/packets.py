@@ -1,6 +1,9 @@
 import time
 
 
+axes = ("X", "Y", "Z")
+
+
 class ReturnPacket:
     def __init__(self, packet_data):
         self.timestamp = time.time()
@@ -9,8 +12,10 @@ class ReturnPacket:
         self.cmd = packet_data[2]
         self.param = packet_data[3]
         self.data = packet_data[4:8]
+
     def __str__(self):
-        return f""
+        return f"[{self.timestamp}] og_cmd={self.og_cmd}, og_param={self.og_param}, cmd=" \
+               f"{self.cmd}, param={self.param}, data: [{self.data}]"
 
 
 class TestPacket:
@@ -20,6 +25,10 @@ class TestPacket:
         self.version = version
         self.contents = contents
 
+    def __str__(self):
+        is_valid = "Valid" if self.valid else "Invalid"
+        return f"[{self.timestamp}] {is_valid} TestPacket: version={self.version}, contents={self.contents}"
+
 
 class OKPacket:
     def __init__(self, og_cmd, og_param, success, timestamp):
@@ -28,6 +37,10 @@ class OKPacket:
         self.original_param = og_param
         self.success = success
 
+    def __str__(self):
+        is_success = "OK" if self.success else "Fail"
+        return f"[{self.timestamp}] {is_success} from {self.original_command} with {self.original_param}"
+
 
 class AccelPacket:
     def __init__(self, axis, value, timestamp):
@@ -35,11 +48,8 @@ class AccelPacket:
         self.axis = axis
         self.value = value
 
-
-class AccelThreeAxisPacket:
-    def __init__(self, values, timestamp):
-        self.timestamp = timestamp
-        self.values = values
+    def __str__(self):
+        return f"[{self.timestamp}] Accelerometer {axes[self.axis]}: {self.value}"
 
 
 class GyroPacket:
@@ -48,11 +58,8 @@ class GyroPacket:
         self.axis = axis
         self.value = value
 
-
-class GyroThreeAxisPacket:
-    def __init__(self, values, timestamp):
-        self.timestamp = timestamp
-        self.values = values
+    def __str__(self):
+        return f"[{self.timestamp}] Gyroscope {axes[self.axis]}: {self.value}"
 
 
 class VoltageTemperaturePacket:
@@ -60,3 +67,6 @@ class VoltageTemperaturePacket:
         self.timestamp = timestamp
         self.voltage = voltage
         self.temperature = temperature
+
+    def __str__(self):
+        return f"[{self.timestamp}] Voltage: {self.voltage}, Temperature: {self.temperature}"
