@@ -11,7 +11,7 @@ NIL_BS = chr(0x00).encode('latin')
 MAX_BS = chr(0xFF).encode('latin')
 DEVICE_ACCEL = 0x15
 DEVICE_GYRO = 0x16
-DEVICE_TEMPVOLT = 0x17
+DEVICE_VOLT_TEMP = 0x17
 MAX_QUEUE_SIZE = 512
 
 
@@ -37,8 +37,10 @@ class MCUInterface:
         self.__refresh_time = 1 / refresh_rate
         self.__thread_enable = False
         self.__init_queues()
-        self.latest_acceleration = [0, 0, 0]
-        self.latest_rotation = [0, 0, 0]
+        self.latest_accel = [0, 0, 0]
+        self.latest_gyro = [0, 0, 0]
+        self.latest_voltage = 0
+        self.latest_temp = 0
         if close_on_startup:
             self.__serial.close()
 
@@ -116,18 +118,20 @@ class MCUInterface:
             axis = int(int.from_bytes(packet.param, 'big') / 0x30)
             value = struct.unpack('f', packet.data)
             self.accel_queue.put(AccelPacket(axis, value, packet.timestamp))
-            self.latest_acceleration[axis] = value
+            self.latest_accel[axis] = value
         elif packet.cmd == bs(0x3C):
             # gyro
             axis = int(int.from_bytes(packet.param, 'big') / 0x30)
             value = struct.unpack('f', packet.data)
             self.gyro_queue.put(GyroPacket(axis, value, packet.timestamp))
-            self.latest_rotation[axis] = value
+            self.latest_gyro[axis] = value
         elif packet.cmd == bs(0x44):
             # temp/volt
             temp, volts = struct.unpack('HH', packet.data)
             temp /= 100
             volts /= 100
+            self.latest_temp = temp
+            self.latest_voltage = volts
             self.volt_temp_queue.put(VoltageTemperaturePacket(volts, temp, packet.timestamp))
         else:
             print("invalid packet")
@@ -195,6 +199,12 @@ class MCUInterface:
         on = 0xFF if enabled else 0x00
         data = bs(on) + NIL_BS * 3
         self.__send_packet(0x51, 0x01, data)
+
+    def get_port(self):
+        return self.__serial.port
+
+    def get_baud(self):
+        return self.__serial.baudrate
 
 
 if __name__ == "__main__":
