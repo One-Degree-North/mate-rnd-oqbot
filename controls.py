@@ -22,8 +22,6 @@ class Controls:
     def run(self):
         while self.running:
             for event in pygame.event.get():
-                send_packet = ""
-                
                 if event.type == pygame.QUIT:
                     self.running = False
                 
