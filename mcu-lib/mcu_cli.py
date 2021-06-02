@@ -1,3 +1,8 @@
+# mcu_cli.py
+# a simple low-effort command-line interface for mcu.py.
+# refer to docs/mcu_cli.md for usage details.
+
+
 from mcu import *
 
 
