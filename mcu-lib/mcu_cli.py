@@ -1,6 +1,8 @@
 from mcu import *
 
-mcu = MCUInterface(input("Port?\n"), int(input("Baudrate?\n")))
+
+print("mcu_cli.py | simple mcu.py interface\nrefer to docs/mcu_cli.md for usage details.")
+mcu = MCUInterface(input("enter port: "), int(input("enter baudrate: ")))
 mcu.open_serial()
 
 while True:

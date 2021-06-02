@@ -39,7 +39,7 @@ class OKPacket:
 
     def __str__(self):
         is_success = "OK" if self.success else "Fail"
-        return f"[{self.timestamp}] {is_success} from {self.original_command} with {self.original_param}"
+        return f"[{self.timestamp}] {is_success} from cmd {self.original_command} with param {self.original_param}"
 
 
 class AccelPacket:

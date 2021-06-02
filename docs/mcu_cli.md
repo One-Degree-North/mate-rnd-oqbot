@@ -23,4 +23,4 @@ Getter Commands:
 - `voltage`
 - `temp`
 - `rpkt {queue}`
-    - 0=test, 1=ok, 2=accel, 3=gyro, 4=vt
+    - queues: test, ok, accel, gyro, vt
