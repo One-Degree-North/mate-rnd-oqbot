@@ -74,17 +74,21 @@ while True:
         elif cmd == "rpkt":
             queue = user_input[1]
             if queue == "test":
-                print(mcu.test_queue.get())
+                print(mcu.test_queue.get(timeout=1))
             elif queue == "ok":
-                print(mcu.ok_queue.get())
+                print(mcu.ok_queue.get(timeout=1))
             elif queue == "accel":
-                print(mcu.accel_queue.get())
+                print(mcu.accel_queue.get(timeout=1))
             elif queue == "gyro":
-                print(mcu.gyro_queue.get())
+                print(mcu.gyro_queue.get(timeout=1))
             elif queue == "vt":
-                print(mcu.volt_temp_queue.get())
+                print(mcu.volt_temp_queue.get(timeout=1))
             else:
                 print("invalid queue")
+        elif cmd == "echo":
+            print(" ".join(user_input[1:]))
+        elif cmd == "exit":
+            exit()
         else:
             print("invalid command")
 

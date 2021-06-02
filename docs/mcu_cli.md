@@ -26,3 +26,7 @@ Getter Commands:
 - `temp` - returns the latest temperature.
 - `rpkt {queue}` - retrieves one packet from a queue.
     - queues: test, ok, accel, gyro, vt
+
+Other Commands:
+- `echo {msg}`
+- `exit`
