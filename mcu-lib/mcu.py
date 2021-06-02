@@ -29,7 +29,7 @@ def to_unsigned_int8(signed_int8):
 
 
 class MCUInterface:
-    def __init__(self, port, baud=230400, close_on_startup=True, refresh_rate=1000):
+    def __init__(self, port, baud=230400, close_on_startup=True, refresh_rate=1440):
         self.__serial = serial.Serial(port, baud, timeout=0, write_timeout=None)
         self.__queue = Queue()
         self.__fetch_thread = threading.Thread(target=self.__read_serial)
@@ -62,25 +62,31 @@ class MCUInterface:
             try:
                 byte_string = self.__serial.read(size=16)
                 for byte in byte_string:
-                    self.__queue.put(byte)
+                    self.__queue.put(bs(byte))
             except serial.SerialException:
                 pass
             time.sleep(self.__refresh_time)
 
     def __parse_serial(self):
         while self.__thread_enable:
-            self.__parse_packet(self.__read_packet())
+            if self.__queue.qsize() >= 10:
+                packet = self.__read_packet()
+                if packet:
+                    self.__parse_packet(packet)
             time.sleep(self.__refresh_time)
 
     def close_serial(self):
         self.__thread_enable = False
         self.__fetch_thread.join()
+        self.__parse_thread.join()
         self.__serial.close()
 
     def __read_packet(self):  # returns a generic ReturnPacket
         next_byte = self.__queue.get()
-        while next_byte != bs(0xAC):
+        while next_byte != bs(0xAC) and self.__queue.qsize() >= 10:
             next_byte = self.__queue.get()
+        if self.__queue.qsize() < 9:
+            return
         packet_data = []
         for i in range(9):  # 0x1 to 0x9
             packet_data.append(self.__queue.get())
@@ -96,7 +102,7 @@ class MCUInterface:
         if packet.cmd == bs(0x00):
             # test
             version = int.from_bytes(packet.data[0], 'big')
-            contents = packet.data[1:].decode('latin')
+            contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
             valid = contents == "pog"
             self.test_queue.put(TestPacket(valid, version, contents, packet.timestamp))
         elif packet.cmd == bs(0x0A):
@@ -130,6 +136,7 @@ class MCUInterface:
         assert len(data) == 4, "data is not 4 bytes long!"
         assert type(cmd) == type(param) == int, "command or parameter is not 1 byte long!"
         packet = bs(0xCA) + bs(cmd) + bs(param) + data + bs(0x47)
+        print(packet)
         self.__serial.write(packet)
 
     def cmd_test(self):
@@ -196,6 +203,7 @@ if __name__ == "__main__":
     mcu.open_serial()
     print("Sending cmd_test in 0.5 seconds:")
     time.sleep(0.5)
+    mcu.cmd_test()
     print("Sent! Waiting 0.5 seconds for response...")
     time.sleep(0.5)
     print("If we received a packet, it would be here:")

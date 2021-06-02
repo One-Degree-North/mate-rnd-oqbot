@@ -15,7 +15,7 @@ class ReturnPacket:
 
     def __str__(self):
         return f"[{self.timestamp}] og_cmd={self.og_cmd}, og_param={self.og_param}, cmd=" \
-               f"{self.cmd}, param={self.param}, data: [{self.data}]"
+               f"{self.cmd}, param={self.param}, data: {self.data}"
 
 
 class TestPacket:
@@ -27,7 +27,7 @@ class TestPacket:
 
     def __str__(self):
         is_valid = "Valid" if self.valid else "Invalid"
-        return f"[{self.timestamp}] {is_valid} TestPacket: version={self.version}, contents={self.contents}"
+        return f"[{self.timestamp}] {is_valid} TestPacket: version={self.version}, contents='{self.contents}'"
 
 
 class OKPacket:
