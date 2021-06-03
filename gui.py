@@ -4,10 +4,11 @@ from mcu import MCUInterface
 import random
 # import threading
 # import serial
-from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer, QEvent
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
+from PyQt5.QtGui import QKeyEvent
 
 
 # ser = serial.Serial('/dev/ttyACM0')
@@ -112,9 +113,18 @@ class MainWindow(QT.QWidget):
         self.layout.setColumnMinimumWidth(4,300)
         self.setLayout(self.layout)
         
+        self.keyPressEvent
+        
         self.timer = QTimer()
         self.timer.timeout.connect(self.updatetext)
         self.timer.start(100)
+    
+    def keyPressEvent(self, keyevent):
+        if keyevent.key() == Qt.Key_A:
+            print("Action A")
+    def keyReleaseEvent(self, keyevent):
+        if keyevent.key() == Qt.Key_A:
+            print("Action A Done")
     
         
 feather = MCUInterface("/dev/ttyACM0")        
