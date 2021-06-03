@@ -1,15 +1,17 @@
 import sys
+sys.path.insert(0, './mcu-lib')
+from mcu import MCUInterface
 import random
-import threading
-import serial
+# import threading
+# import serial
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
 
 
-ser = serial.Serial('/dev/ttyACM0')
-ser.flushInput()
+# ser = serial.Serial('/dev/ttyACM0')
+# ser.flushInput()
 
 app = QT.QApplication(sys.argv)
 
@@ -20,42 +22,31 @@ app = QT.QApplication(sys.argv)
 #        MainWindow.sertext.appendPlainText(decoded_bytes)
 #        print(self.decoded_bytes)
 
-class mcuthing:
-    def setvalue(self):
-        self.voltage = random.random()
-        self.gyrox = random.random()
-        self.gyroy = random.random()
-        self.gyroz = random.random()
-        self.accelx = random.random()
-        self.accely = random.random()
-        self.accelz = random.random()
-        self.temperature = random.random()
-        self.thruster1 = random.random()
-        self.thruster2 = random.random()
-        self.thruster3 = random.random()
-        self.thruster4 = random.random()
-        self.servo = random.random()
 
 class MainWindow(QT.QWidget):
     def __init__(self, mcuobject):
         super().__init__()
         self.mcu = mcuobject
+        self.thruster1speed = 0
+        self.thruster2speed = 0
+        self.thruster3speed = 0
+        self.thruster4speed = 0
+        self.servospeed = 0
     
     def updatetext(self):
-        self.mcu.setvalue()
-        self.voltage_info.setText(str(self.mcu.voltage))
-        self.x_gyro.setText(str(self.mcu.gyrox))
-        self.y_gyro.setText(str(self.mcu.gyroy))
-        self.z_gyro.setText(str(self.mcu.gyroz))
-        self.x_accel.setText(str(self.mcu.accelx))
-        self.y_accel.setText(str(self.mcu.accely))
-        self.z_accel.setText(str(self.mcu.accelz))
-        self.temperature.setText(str(self.mcu.temperature))
-        self.thruster1.setText(str(self.mcu.thruster1))
-        self.thruster2.setText(str(self.mcu.thruster2))
-        self.thruster3.setText(str(self.mcu.thruster3))
-        self.thruster4.setText(str(self.mcu.thruster4))
-        self.servo.setText(str(self.mcu.servo))
+        self.voltage_info.setText(str(self.mcu.latest_voltage))
+        self.x_gyro.setText(str(self.mcu.latest_gyro[0]))
+        self.y_gyro.setText(str(self.mcu.latest_gyro[1]))
+        self.z_gyro.setText(str(self.mcu.latest_gyro[2]))
+        self.x_accel.setText(str(self.mcu.latest_accel[0]))
+        self.y_accel.setText(str(self.mcu.latest_accel[1]))
+        self.z_accel.setText(str(self.mcu.latest_accel[2]))
+        self.temperature.setText(str(self.mcu.latest_temp))
+        self.thruster1.setText(str(self.thruster1speed))
+        self.thruster2.setText(str(self.thruster2speed))
+        self.thruster3.setText(str(self.thruster3speed))
+        self.thruster4.setText(str(self.thruster4speed))
+        self.servo.setText(str(self.servospeed))
     def setupui(self):
         self.setWindowTitle('MATE')
         self.setGeometry(0, 0, 1600, 800)
@@ -126,7 +117,7 @@ class MainWindow(QT.QWidget):
         self.timer.start(100)
     
         
-feather = mcuthing()        
+feather = MCUInterface("/dev/ttyACM0")        
 Window2 = MainWindow(feather)
 Window2.setupui()
 
