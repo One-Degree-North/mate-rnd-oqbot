@@ -13,6 +13,11 @@ class Controls:
                             Sends a packet immediately to terminate all microcontroller operations
                         read_send : void
                             Reads key string inputted and converts the string into a packet, then sends the packet to the MCU through mcu.py
+                            
+                exit_program : Exit_Program - Object responsible for closing all operations safely in an emergency
+                    Methods:
+                        exit : void
+                            Closes both software and mcu operations immediately
         """
         self.comms = comms
         self.exit_program = exit_program
@@ -87,4 +92,4 @@ class Controls:
                 if event.type == pygame.KEYUP:
                     self.key_up(event)
 
-        exit_program.Exit()
+        exit_program.exit()
