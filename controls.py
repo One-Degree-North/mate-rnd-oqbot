@@ -4,6 +4,16 @@ import sys
 
 class Controls:
     def __init__(self, comms, exit_program):
+        """ Initializes the Controls class to be used by the Main class
+        
+            Parameters:
+                comms : Communications - Object responsible for converting and sending the packets to the microcontroller subsystem
+                    Methods:
+                        kill_elec_ops : void
+                            Sends a packet immediately to terminate all microcontroller operations
+                        read_send : void
+                            Reads key string inputted and converts the string into a packet, then sends the packet to the MCU through mcu.py
+        """
         self.comms = comms
         self.exit_program = exit_program
         
