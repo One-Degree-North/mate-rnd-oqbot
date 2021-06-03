@@ -1,7 +1,9 @@
 # controls.py
 # Takes keyboard input and sends info to Communications
-import pygame
 import sys
+import time
+
+import pygame
 
 
 class Controls:
@@ -84,18 +86,21 @@ class Controls:
     
     def run(self):
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                
-                if not (pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]):
-                    if event.type == pygame.KEYDOWN:
-                        self.key_down(event)
-                else:
-                    if event.type == pygame.KEYDOWN:
-                        self.sensitive_key_down(event)
+            if pygame.event.peek():
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
 
-                if event.type == pygame.KEYUP:
-                    self.key_up(event)
+                    if not (pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]):
+                        if event.type == pygame.KEYDOWN:
+                            self.key_down(event)
+                    else:
+                        if event.type == pygame.KEYDOWN:
+                            self.sensitive_key_down(event)
+
+                    if event.type == pygame.KEYUP:
+                        self.key_up(event)
+                        
+            time.sleep(0.004)
 
         exit_program.exit()
