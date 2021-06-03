@@ -1,3 +1,5 @@
+# controls.py
+# Takes keyboard input and sends info to Communications
 import pygame
 import sys
 
