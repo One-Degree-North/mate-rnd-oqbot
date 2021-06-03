@@ -10,12 +10,11 @@ import threading
 from queue import Queue
 
 from packets import *
+from command_constants import *
 
-NIL_BS = chr(0x00).encode('latin')
-MAX_BS = chr(0xFF).encode('latin')
-DEVICE_ACCEL = 0x15
-DEVICE_GYRO = 0x16
-DEVICE_VOLT_TEMP = 0x17
+BYTESTRING_ZERO = chr(0x00).encode('latin')
+FORWARD_PACKET_SIZE = 8
+RETURN_PACKET_SIZE = 10
 MAX_QUEUE_SIZE = 512
 
 
@@ -61,7 +60,8 @@ class MCUInterface:
         cmd_{PACKET_COMMAND}()
             refer to docs/command_list.md. most should be self-explanatory.
     """
-    def __init__(self, port: str, baud: int=230400, close_on_startup: bool=True, refresh_rate: int=1440):
+    def __init__(self, port: str, baud: int = 230400, close_on_startup: bool = True,
+                 refresh_rate: int = 1440, max_read: int = 16):
         """
         Default and only constructor for the MCUInterface class.
 
@@ -69,6 +69,8 @@ class MCUInterface:
         :param baud: Baudrate to connect at.
         :param close_on_startup: Whether to close the serial object at startup, so it can be opened later.
         :param refresh_rate: Number of times per seconds to refresh the serial cache for packets.
+        :param max_read: Maximum number of bytes for the serial object to read at once.
+                         Used to mitigate strange pySerial behavior.
         """
         self.__serial = serial.Serial(port, baud, timeout=0, write_timeout=None)
         self.__queue = Queue()
@@ -81,6 +83,7 @@ class MCUInterface:
         self.latest_gyro = [0, 0, 0]
         self.latest_voltage = 0
         self.latest_temp = 0
+        self.read_size = max_read
         if close_on_startup:
             self.__serial.close()
 
@@ -121,7 +124,7 @@ class MCUInterface:
     def __read_serial(self):
         while self.__thread_enable:
             try:
-                byte_string = self.__serial.read(size=16)
+                byte_string = self.__serial.read(size=self.read_size)
                 for byte in byte_string:
                     self.__queue.put(bs(byte))
             except serial.SerialException:
@@ -130,7 +133,7 @@ class MCUInterface:
 
     def __parse_serial(self):
         while self.__thread_enable:
-            if self.__queue.qsize() >= 10:
+            if self.__queue.qsize() >= RETURN_PACKET_SIZE:
                 packet = self.__read_packet()
                 if packet:
                     self.__parse_packet(packet)
@@ -147,14 +150,14 @@ class MCUInterface:
 
     def __read_packet(self) -> ReturnPacket:  # returns a generic ReturnPacket
         next_byte = self.__queue.get()
-        while next_byte != bs(0xAC) and self.__queue.qsize() >= 10:
+        while next_byte != bs(RETURN_HEADER) and self.__queue.qsize() >= RETURN_PACKET_SIZE:
             next_byte = self.__queue.get()
-        if self.__queue.qsize() < 9:
+        if self.__queue.qsize() < RETURN_PACKET_SIZE - 1:
             return
         packet_data = []
-        for i in range(9):  # 0x1 to 0x9
+        for i in range(RETURN_PACKET_SIZE - 1):  # 0x1 to 0x9
             packet_data.append(self.__queue.get())
-        if packet_data[8] != bs(0x74):
+        if packet_data[-1] != bs(RETURN_FOOTER):
             # invalid packet
             return
         packet = ReturnPacket(packet_data)
@@ -165,31 +168,31 @@ class MCUInterface:
         if not packet:
             return
         # let's all pretend this was a Python 3.10+ match/case statement
-        if packet.cmd == bs(0x00):
+        if packet.cmd == bs(RETURN_TEST):
             # test
             version = int.from_bytes(packet.data[0], 'big')
             contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
             valid = contents == "pog"
             self.test_queue.put(TestPacket(valid, version, contents, packet.timestamp))
-        elif packet.cmd == bs(0x0A):
+        elif packet.cmd == bs(RETURN_OK):
             # OK
             og_cmd = int.from_bytes(packet.og_cmd, 'big')
             og_param = int.from_bytes(packet.og_param, 'big')
             success = int.from_bytes(packet.param, 'big') > 0
             self.ok_queue.put(OKPacket(og_cmd, og_param, success, packet.timestamp))
-        elif packet.cmd == bs(0x3A):
+        elif packet.cmd == bs(RETURN_ACCELEROMETER):
             # accel
-            axis = int(int.from_bytes(packet.param, 'big') / 0x30)
-            value = struct.unpack('f', data_bs)
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
             self.accel_queue.put(AccelPacket(axis, value, packet.timestamp))
             self.latest_accel[axis] = value[0]
-        elif packet.cmd == bs(0x3C):
+        elif packet.cmd == bs(RETURN_GYROSCOPE):
             # gyro
-            axis = int(int.from_bytes(packet.param, 'big') / 0x30)
-            value = struct.unpack('f', data_bs)
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
             self.gyro_queue.put(GyroPacket(axis, value, packet.timestamp))
             self.latest_gyro[axis] = value[0]
-        elif packet.cmd == bs(0x44):
+        elif packet.cmd == bs(RETURN_VOLT_TEMP):
             # temp/volt
             temp, volts = struct.unpack('HH', data_bs)
             temp /= 100
@@ -198,69 +201,69 @@ class MCUInterface:
             self.latest_voltage = volts
             self.volt_temp_queue.put(VoltageTemperaturePacket(volts, temp, packet.timestamp))
         else:
-            print("invalid packet")
+            print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
 
     def __send_packet(self, cmd: int, param: int, data: bytes):
         assert len(data) == 4, "data is not 4 bytes long!"
-        packet = bs(0xCA) + bs(cmd) + bs(param) + data + bs(0x47)
+        packet = bs(FORWARD_HEADER) + bs(cmd) + bs(param) + data + bs(FORWARD_FOOTER)
         self.__serial.write(packet)
 
     def cmd_test(self):
-        self.__send_packet(0x00, 0xF0, NIL_BS * 4)
+        self.__send_packet(COMMAND_TEST, PARAM_TEST_SYSTEM, BYTESTRING_ZERO * 4)
 
     def cmd_halt(self):
-        self.__send_packet(0x0F, 0x00, NIL_BS * 4)
+        self.__send_packet(COMMAND_HALT, PARAM_ZERO, BYTESTRING_ZERO * 4)
 
     def cmd_setMotorMicroseconds(self, motor: int, microseconds: int):
-        assert 0 <= motor <= 4, "There are only 5 motors (0-4)"
-        data = bs(microseconds // 0xFF) + bs(microseconds % 0xFF) + NIL_BS * 2
-        self.__send_packet(0x10, motor, data)
+        assert 0 <= motor <= NUM_MOTORS - 1, f"There are only {NUM_MOTORS} motors"
+        data = bs(microseconds // 0xFF) + bs(microseconds % 0xFF) + BYTESTRING_ZERO * 2
+        self.__send_packet(COMMAND_SET_MOTOR_MICROSECONDS, motor, data)
 
     def cmd_setMotorCalibrated(self, motor: int, percent: int):
-        assert 0 <= motor <= 4, "There are only 5 motors (0-4)"
+        assert 0 <= motor <= NUM_MOTORS - 1, f"There are only {NUM_MOTORS} motors"
         assert -100 <= percent <= 100, "Calibrated % Range is [-100, 100]"
-        data = bs(to_unsigned_int8(percent)) + NIL_BS * 3
-        self.__send_packet(0x12, motor, data)
+        data = bs(to_unsigned_int8(percent)) + BYTESTRING_ZERO * 3
+        self.__send_packet(COMMAND_SET_MOTOR_CALIBRATED, motor, data)
 
     def cmd_setMotorCalibration(self, motor: int, value: int):
-        assert 0 <= motor <= 4, "There are only 5 motors (0-4)"
+        assert 0 <= motor <= NUM_MOTORS - 1, f"There are only {NUM_MOTORS} motors"
         assert 0 <= value <= 4000, "Calibration range is [0, 4000] where 1000 is normal"
-        data = bs(value // 0xFF) + bs(value % 0xFF) + NIL_BS * 2
-        self.__send_packet(0x13, motor, data)
+        data = bs(value // 0xFF) + bs(value % 0xFF) + BYTESTRING_ZERO * 2
+        self.__send_packet(COMMAND_SET_MOTOR_CALIBRATION, motor, data)
 
     def cmd_getIMU(self, device: int):
-        assert device == DEVICE_ACCEL or device == DEVICE_GYRO, "invalid device!"
-        self.__send_packet(0x30, device, NIL_BS * 4)
+        assert device == PARAM_ACCEL or device == PARAM_GYRO, "invalid device!"
+        self.__send_packet(COMMAND_GET_IMU, device, BYTESTRING_ZERO * 4)
 
     def cmd_setAccelSettings(self, range: int, divisor: int):
         assert 0 <= range <= 3, "invalid range!"
         assert 1 <= divisor <= 0xFF, "invalid divisor!"
-        data = bs(range) + bs(divisor) + NIL_BS * 2
-        self.__send_packet(0x33, 0x15, data)
+        data = bs(range) + bs(divisor) + BYTESTRING_ZERO * 2
+        self.__send_packet(COMMAND_SET_ACCEL_SETTINGS, PARAM_ACCEL, data)
 
     def cmd_setGyroSettings(self, range: int, divisor: int):
         assert 0 <= range <= 3, "invalid range!"
         assert 1 <= divisor <= 0xFF, "invalid divisor!"
-        data = bs(range) + bs(divisor) + NIL_BS * 2
-        self.__send_packet(0x34, 0x16, data)
+        data = bs(range) + bs(divisor) + BYTESTRING_ZERO * 2
+        self.__send_packet(COMMAND_SET_GYRO_SETTINGS, PARAM_GYRO, data)
 
     def cmd_getVoltageAndTemperature(self):
-        self.__send_packet(0x40, 0x17, NIL_BS * 4)
+        self.__send_packet(COMMAND_GET_VOLT_TEMP, PARAM_VOLT_TEMP, BYTESTRING_ZERO * 4)
 
     def cmd_setVoltageCalibration(self, calibration: float):
-        self.__send_packet(0x43, 0x17, struct.pack('f', calibration))
+        self.__send_packet(COMMAND_SET_VOLTAGE_CALIBRATION, PARAM_VOLT_TEMP, struct.pack('f', calibration))
 
     def cmd_setAutoReport(self, device, enabled: bool, delay: int):
-        assert device == 0x15 or device == 0x16 or device == 0x17, "invalid device!"
-        assert 0 <= delay <= 65535, "invalid delay!"
+        assert device == PARAM_ACCEL or device == PARAM_GYRO or device == PARAM_VOLT_TEMP, "invalid device!"
+        assert 0 <= delay <= 0xFFFF, "invalid delay!"
         on = 0xFF if enabled else 0x00
-        data = bs(on) + bs(delay // 0xFF) + bs(delay % 0xFF) + NIL_BS
-        self.__send_packet(0x50, device, data)
+        data = bs(on) + bs(delay // 0xFF) + bs(delay % 0xFF) + BYTESTRING_ZERO
+        self.__send_packet(COMMAND_SET_AUTOREPORT, device, data)
 
     def cmd_setFeedback(self, enabled: bool):
         on = 0xFF if enabled else 0x00
-        data = bs(on) + NIL_BS * 3
-        self.__send_packet(0x51, 0x01, data)
+        data = bs(on) + BYTESTRING_ZERO * 3
+        self.__send_packet(COMMAND_SET_FEEDBACK, PARAM_SYSTEM, data)
 
 
 if __name__ == "__main__":
