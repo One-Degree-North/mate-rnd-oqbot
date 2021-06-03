@@ -41,7 +41,7 @@ class Controls:
     def on_trigger(self, key: str):
         self.comms.read_send(key)
 
-    def check_keys(self, event, keys):
+    def _check_keys(self, event, keys):
         for (key, trigger: str) in keys:
             if event.key == key:
                 self.on_trigger(trigger)
@@ -83,13 +83,13 @@ class Controls:
 
                     if not (pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]):
                         if event.type == pygame.KEYDOWN:
-                            self.check_keys(event, keys_down)
+                            self._check_keys(event, keys_down)
                     else:
                         if event.type == pygame.KEYDOWN:
-                            self.check_keys(event, keys_sensitive)
+                            self._check_keys(event, keys_sensitive)
 
                     if event.type == pygame.KEYUP:
-                        self.check_keys(event, keys_up)
+                        self._check_keys(event, keys_up)
                         
             time.sleep(0.004)
 
