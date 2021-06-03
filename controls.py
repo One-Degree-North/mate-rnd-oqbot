@@ -41,51 +41,41 @@ class Controls:
     def on_trigger(self, key: str):
         self.comms.read_send(key)
 
-    def key_down(self, event):
-        keys = [
-            (pygame.K_w, "w"),
-            (pygame.K_a, "a"),
-            (pygame.K_s, "s"),
-            (pygame.K_d, "d"),
-            (pygame.K_e, "e"),
-            (pygame.K_q, "q"),
-            (pygame.K_SPACE, "spacebar")
-        ]
-        
-        for (key, trigger: str) in keys:
-            if event.key == key:
-                self.on_trigger(trigger)
-            
-    def key_up(self, event):
-        keys = [
-            (pygame.K_w, "sw"),
-            (pygame.K_a, "sa"),
-            (pygame.K_s, "ss"),
-            (pygame.K_d, "sd"),
-            (pygame.K_e, "se"),
-            (pygame.K_q, "sq")
-        ]
-        
-        for (key, trigger: str) in keys:
-            if event.key == key:
-                self.on_trigger(trigger)
-            
-    def sensitive_key_down(self, event):
-        keys = [
-            (pygame.K_w, "lw"),
-            (pygame.K_a, "la"),
-            (pygame.K_s, "ls"),
-            (pygame.K_d, "ld"),
-            (pygame.K_e, "le"),
-            (pygame.K_q, "lq")
-        ]
-        
+    def check_keys(self, event, keys):
         for (key, trigger: str) in keys:
             if event.key == key:
                 self.on_trigger(trigger)
     
     def run(self):
         while self.running:
+            keys_down = [
+                (pygame.K_w, "w"),
+                (pygame.K_a, "a"),
+                (pygame.K_s, "s"),
+                (pygame.K_d, "d"),
+                (pygame.K_e, "e"),
+                (pygame.K_q, "q"),
+                (pygame.K_SPACE, "spacebar")
+            ]
+            
+            keys_up = [
+                (pygame.K_w, "sw"),
+                (pygame.K_a, "sa"),
+                (pygame.K_s, "ss"),
+                (pygame.K_d, "sd"),
+                (pygame.K_e, "se"),
+                (pygame.K_q, "sq")
+            ]
+            
+            keys_sensitive = [
+                (pygame.K_w, "lw"),
+                (pygame.K_a, "la"),
+                (pygame.K_s, "ls"),
+                (pygame.K_d, "ld"),
+                (pygame.K_e, "le"),
+                (pygame.K_q, "lq")
+            ]
+            
             if pygame.event.peek():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -93,13 +83,13 @@ class Controls:
 
                     if not (pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]):
                         if event.type == pygame.KEYDOWN:
-                            self.key_down(event)
+                            self.check_keys(event, keys_down)
                     else:
                         if event.type == pygame.KEYDOWN:
-                            self.sensitive_key_down(event)
+                            self.check_keys(event, keys_sensitive)
 
                     if event.type == pygame.KEYUP:
-                        self.key_up(event)
+                        self.check_keys(event, keys_up)
                         
             time.sleep(0.004)
 
