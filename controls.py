@@ -3,34 +3,38 @@ import sys
 
 
 class Controls:
-    def __init__(self, comms, exit_program):
+    def __init__(self,
+                 comms: Communications,
+                 exit_program: ExitProgram,
+                 screen_color: (int, int, int) = (0, 0, 0),
+                 screen_dimensions: (int, int) = (100, 100)):
         """ Initializes the Controls class to be used by the Main class
         
             Parameters:
-                comms : Communications - Object responsible for converting and sending the packets to the microcontroller subsystem
+                comms - Object responsible for converting and sending the packets to the microcontroller subsystem
                     Methods:
                         kill_elec_ops : void
                             Sends a packet immediately to terminate all microcontroller operations
                         read_send : void
                             Reads key string inputted and converts the string into a packet, then sends the packet to the MCU through mcu.py
                             
-                exit_program : Exit_Program - Object responsible for closing all operations safely in an emergency
+                exit_program - Object responsible for closing all operations safely in an emergency
                     Methods:
                         exit : void
                             Closes both software and mcu operations immediately
         """
-        self.comms = comms
-        self.exit_program = exit_program
+        self.comms: Communications = comms
+        self.exit_program: ExitProgram = exit_program
         
-        self.running = True
-        self.SCREEN_COLOR = (0, 0, 0)
-        self.SCREEN_SIZE = (100, 100)
+        self.running: bool = True
+        self.SCREEN_COLOR: (int, int, int) = screen_color
+        self.SCREEN_SIZE: (int, int) = screen_dimensions
         
         pygame.init()
         self.screen = pygame.display.set_mode(self.SCREEN_SIZE)
         self.screen.fill(self.SCREEN_COLOR)
     
-    def on_trigger(self, key):
+    def on_trigger(self, key: str):
         self.comms.read_send(key)
 
     def key_down(self, event):
@@ -44,7 +48,7 @@ class Controls:
             (pygame.K_SPACE, "spacebar")
         ]
         
-        for (key, trigger) in keys:
+        for (key, trigger: str) in keys:
             if event.key == key:
                 self.on_trigger(trigger)
             
@@ -58,7 +62,7 @@ class Controls:
             (pygame.K_q, "sq")
         ]
         
-        for (key, trigger) in keys:
+        for (key, trigger: str) in keys:
             if event.key == key:
                 self.on_trigger(trigger)
             
@@ -72,7 +76,7 @@ class Controls:
             (pygame.K_q, "lq")
         ]
         
-        for (key, trigger) in keys:
+        for (key, trigger: str) in keys:
             if event.key == key:
                 self.on_trigger(trigger)
     
