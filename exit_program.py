@@ -1,6 +1,6 @@
 import sys
 
-class Exit_Program:
+class ExitProgram:
     def __init__(self, comm):
         self.comms = comm
         
