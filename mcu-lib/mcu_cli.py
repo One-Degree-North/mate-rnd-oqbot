@@ -33,9 +33,9 @@ while True:
         elif cmd == "getimu":
             device = user_input[1]
             if device == "accel":
-                mcu.cmd_getIMU(DEVICE_ACCEL)
+                mcu.cmd_getIMU(PARAM_ACCEL)
             elif device == "gyro":
-                mcu.cmd_getIMU(DEVICE_GYRO)
+                mcu.cmd_getIMU(PARAM_GYRO)
             else:
                 print("invalid device")
         elif cmd == "sas":
@@ -53,11 +53,11 @@ while True:
             device = user_input[1]
             delay = int(user_input[3])
             if device == "accel":
-                mcu.cmd_setAutoReport(DEVICE_ACCEL, enabled, delay)
+                mcu.cmd_setAutoReport(PARAM_ACCEL, enabled, delay)
             elif device == "gyro":
-                mcu.cmd_setAutoReport(DEVICE_GYRO, enabled, delay)
+                mcu.cmd_setAutoReport(PARAM_GYRO, enabled, delay)
             elif device == "vt":
-                mcu.cmd_setAutoReport(DEVICE_VOLT_TEMP, enabled, delay)
+                mcu.cmd_setAutoReport(PARAM_VOLT_TEMP, enabled, delay)
             else:
                 print("invalid device")
         elif cmd == "sfb":
