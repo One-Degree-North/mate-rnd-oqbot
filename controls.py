@@ -80,12 +80,13 @@ class Controls:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.running = False
-
-                    if not (pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]):
-                        if event.type == pygame.KEYDOWN:
+                        
+                    if event.type == pygame.KEYDOWN:
+                        # Check if either left or right shift keys are pressed
+                        # Shift key is used to adjust sensitivity and send keys accordingly
+                        if not (pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]):
                             self._check_keys(event, keys_down)
-                    else:
-                        if event.type == pygame.KEYDOWN:
+                        else:
                             self._check_keys(event, keys_sensitive)
 
                     if event.type == pygame.KEYUP:
