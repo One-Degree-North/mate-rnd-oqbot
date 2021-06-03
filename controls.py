@@ -19,49 +19,48 @@ class Controls:
         self.comms.read_send(key)
 
     def key_down(self, event):
-        if event.key == pygame.K_w:
-            self.on_trigger("w")
-        if event.key == pygame.K_a:
-            self.on_trigger("a")
-        if event.key == pygame.K_s:
-            self.on_trigger("s")
-        if event.key == pygame.K_d:
-            self.on_trigger("d")
-        if event.key == pygame.K_e:
-            self.on_trigger("e")
-        if event.key == pygame.K_q:
-            self.on_trigger("q")
+        keys = [
+            (pygame.K_w, "w"),
+            (pygame.K_a, "a"),
+            (pygame.K_s, "s"),
+            (pygame.K_d, "d"),
+            (pygame.K_e, "e"),
+            (pygame.K_q, "q"),
+            (pygame.K_SPACE, "spacebar")
+        ]
+        
+        for (key, trigger) in keys:
+            if event.key == key:
+                self.on_trigger(trigger)
             
     def key_up(self, event):
-        if event.key == pygame.K_w:
-            self.on_trigger("sw")
-        if event.key == pygame.K_a:
-            self.on_trigger("sa")
-        if event.key == pygame.K_s:
-            self.on_trigger("ss")
-        if event.key == pygame.K_d:
-            self.on_trigger("sd")
-        if event.key == pygame.K_e:
-            self.on_trigger("se")
-        if event.key == pygame.K_q:
-            self.on_trigger("sq")
-        if event.key == pygame.K_SPACE:
-            self.on_trigger("spacebar")
+        keys = [
+            (pygame.K_w, "sw"),
+            (pygame.K_a, "sa"),
+            (pygame.K_s, "ss"),
+            (pygame.K_d, "sd"),
+            (pygame.K_e, "se"),
+            (pygame.K_q, "sq")
+        ]
+        
+        for (key, trigger) in keys:
+            if event.key == key:
+                self.on_trigger(trigger)
             
     def sensitive_key_down(self, event):
-        if event.key == pygame.K_w:
-            self.on_trigger("lw")
-        if event.key == pygame.K_a:
-            self.on_trigger("la")
-        if event.key == pygame.K_s:
-            self.on_trigger("ls")
-        if event.key == pygame.K_d:
-            self.on_trigger("ld")
-        if event.key == pygame.K_e:
-            self.on_trigger("le")
-        if event.key == pygame.K_q:
-            self.on_trigger("lq")
+        keys = [
+            (pygame.K_w, "lw"),
+            (pygame.K_a, "la"),
+            (pygame.K_s, "ls"),
+            (pygame.K_d, "ld"),
+            (pygame.K_e, "le"),
+            (pygame.K_q, "lq")
+        ]
         
+        for (key, trigger) in keys:
+            if event.key == key:
+                self.on_trigger(trigger)
+    
     def run(self):
         while self.running:
             for event in pygame.event.get():
