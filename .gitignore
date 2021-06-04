@@ -1,6 +1,5 @@
-*.kdev4
 # ignore IDE cache
+*.kdev4
 *.xml
 *.iml
 *.pycache
-
