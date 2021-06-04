@@ -12,13 +12,14 @@ class Communications:
     MOTOR_LEFT = 3 
     MOTOR_BACK = 4
     
+    INITIAL_PERCENT = 100
+    MULTIPLIER_PERCENT = 2
+    
     def __init__(self, mcuVAR: MCUInterface, controller: controls):
         self.mcuVAR = mcuVAR
         self.controller = controls
 
     def read_send(key_pressed):
-        INITIAL_PERCENT = 100
-        MULTIPLIER_PERCENT = 2
         
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_CLAW,1000)
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_FRONT, 1000)
