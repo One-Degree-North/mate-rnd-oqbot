@@ -56,7 +56,7 @@ class MainWindow(QT.QWidget):
             ("q", "sq")
         ]
     
-    def updatetext(self):
+    def __update_text(self):
         self.voltage_info.setText(str(self.mcu.latest_voltage))
         self.x_gyro.setText(str(self.mcu.latest_gyro[0]))
         self.y_gyro.setText(str(self.mcu.latest_gyro[1]))
