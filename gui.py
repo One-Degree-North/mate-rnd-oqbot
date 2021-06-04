@@ -156,9 +156,10 @@ class MainWindow(QT.QWidget):
         if keyevent.key() == Qt.Key_Escape:
             self.exit_program.Exit()
         
-        for (key, trigger: str) in self.keys_pressed:
-            if keyevent.text() == key:
-                self.on_trigger(trigger)
+        if not keyevent.isAutoRepeat():
+            for (key, trigger: str) in self.keys_pressed:
+                if keyevent.text() == key:
+                    self.on_trigger(trigger)
                 
     def keyReleaseEvent(self, keyevent):
         for (key, trigger: str) in self.keys_released:
