@@ -31,7 +31,7 @@ class MainWindow(QT.QWidget):
         self.exit_program: ExitProgram = exit_program
         
         # (key, message sent to comms)
-        self.keys_pressed = [
+        self.KEYS_PRESSED = [
             ("W", "lw"),
             ("w", "w"),
             ("A", "la"),
@@ -47,7 +47,7 @@ class MainWindow(QT.QWidget):
             (" ", "spacebar")
         ]
         
-        self.keys_released = [
+        self.KEYS_RELEASED = [
             ("w", "sw"),
             ("a", "sa"),
             ("s", "ss"),
@@ -71,7 +71,7 @@ class MainWindow(QT.QWidget):
         self.thruster4.setText(str(self.thruster4speed))
         self.servo.setText(str(self.servospeed))
     
-    def setupui(self):
+    def setup_ui(self):
         TITLE: str = 'MATE'
         X_POSITION: int = 0
         Y_POSITION: int = 0
@@ -154,13 +154,13 @@ class MainWindow(QT.QWidget):
             self.exit_program.Exit()
         
         if not keyevent.isAutoRepeat():
-            for (key, trigger: str) in self.keys_pressed:
+            for (key, trigger: str) in self.KEYS_PRESSED:
                 if keyevent.text() == key:
                     self.on_trigger(trigger)
                 
     def keyReleaseEvent(self, keyevent):
         if not keyevent.isAutoRepeat():
-            for (key, trigger: str) in self.keys_released:
+            for (key, trigger: str) in self.KEYS_RELEASAED:
                 if keyevent.text() == key:
                     self.on_trigger(trigger)
                     
