@@ -143,8 +143,6 @@ class MainWindow(QT.QWidget):
         self.layout.setColumnMinimumWidth(4,300)
         self.setLayout(self.layout)
         
-        self.keyPressEvent
-        
         self.timer = QTimer()
         self.timer.timeout.connect(self.updatetext)
         self.timer.start(100)
