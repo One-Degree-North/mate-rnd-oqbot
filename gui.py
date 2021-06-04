@@ -6,26 +6,12 @@ import sys
 sys.path.insert(0, './mcu-lib')
 from mcu import MCUInterface
 import random
-# import threading
-# import serial
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer, QEvent
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
 from PyQt5.QtGui import QKeyEvent
-
-
-# ser = serial.Serial('/dev/ttyACM0')
-# ser.flushInput()
-
 app = QT.QApplication(sys.argv)
-
-
-#    def run(self):
-#        self.ser_bytes = ser.readline()
-#        self.decoded_bytes = ser_bytes[0:len(ser_bytes)-2].decode("utf-8")
-#        MainWindow.sertext.appendPlainText(decoded_bytes)
-#        print(self.decoded_bytes)
 
 
 class MainWindow(QT.QWidget):
@@ -170,23 +156,11 @@ class MainWindow(QT.QWidget):
                     self.on_trigger(trigger)
     
    
-#feather = MCUInterface("/dev/ttyACM0", )        
-#Window2 = MainWindow(feather)
-#Window2.setupui()
+feather = MCUInterface("/dev/ttyACM0", )        
+Window2 = MainWindow(feather)
+Window2.setupui()
 
-
-# def update_serial():
-#    while True:
-#        ser_bytes = ser.readline()
-#        decoded_bytes = ser_bytes[0:len(ser_bytes)-2].decode("utf-8")
-#        sertext.appendPlainText("eeee")
-#        print(decoded_bytes)
-
-    
-
-
-
-#sys.exit(app.exec_())
+sys.exit(app.exec_())
 
 
 
