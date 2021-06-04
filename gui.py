@@ -25,7 +25,7 @@ app = QT.QApplication(sys.argv)
 
 
 class MainWindow(QT.QWidget):
-    def __init__(self, mcuobject):
+    def __init__(self, mcuobject, comms: Communications, exit_program: ExitProgram):
         super().__init__()
         self.mcu = mcuobject
         self.thruster1speed = 0
@@ -33,6 +33,35 @@ class MainWindow(QT.QWidget):
         self.thruster3speed = 0
         self.thruster4speed = 0
         self.servospeed = 0
+        
+        self.comms = comms
+        self.exit_program = exit_program
+        
+        # (key, message sent to comms)
+        self.keys_pressed = [
+            ("W", "lw"),
+            ("w", "w"),
+            ("A", "la"),
+            ("a", "a"),
+            ("S", "ls"),
+            ("s", "s"),
+            ("D", "ld"),
+            ("d", "d"),
+            ("E", "le"),
+            ("e", "e"),
+            ("Q", "lq"),
+            ("q", "q"),
+            (" ", "spacebar")
+        ]
+        
+        self.keys_released = [
+            ("w", "sw"),
+            ("a", "sa"),
+            ("s", "ss"),
+            ("d", "sd"),
+            ("e", "se"),
+            ("q", "sq")
+        ]
     
     def updatetext(self):
         self.voltage_info.setText(str(self.mcu.latest_voltage))
@@ -48,6 +77,7 @@ class MainWindow(QT.QWidget):
         self.thruster3.setText(str(self.thruster3speed))
         self.thruster4.setText(str(self.thruster4speed))
         self.servo.setText(str(self.servospeed))
+    
     def setupui(self):
         self.setWindowTitle('MATE')
         self.setGeometry(0, 0, 1600, 800)
@@ -119,17 +149,26 @@ class MainWindow(QT.QWidget):
         self.timer.timeout.connect(self.updatetext)
         self.timer.start(100)
     
-    def keyPressEvent(self, keyevent):
-        if keyevent.key() == Qt.Key_A:
-            print("Action A")
-    def keyReleaseEvent(self, keyevent):
-        if keyevent.key() == Qt.Key_A:
-            print("Action A Done")
+    def on_trigger(self, trigger):
+        self.comms.read_send(trigger)
     
+    def keyPressEvent(self, keyevent):
+        if keyevent.key() == Qt.Key_Escape:
+            self.exit_program.Exit()
         
-feather = MCUInterface("/dev/ttyACM0")        
-Window2 = MainWindow(feather)
-Window2.setupui()
+        for (key, trigger: str) in self.keys_pressed:
+            if keyevent.text() == key:
+                self.on_trigger(trigger)
+                
+    def keyReleaseEvent(self, keyevent):
+        for (key, trigger: str) in self.keys_released:
+            if keyevent.text() == key:
+                self.on_trigger(trigger)
+    
+   
+#feather = MCUInterface("/dev/ttyACM0", )        
+#Window2 = MainWindow(feather)
+#Window2.setupui()
 
 
 # def update_serial():
@@ -143,7 +182,7 @@ Window2.setupui()
 
 
 
-sys.exit(app.exec_())
+#sys.exit(app.exec_())
 
 
 
