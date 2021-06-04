@@ -179,8 +179,3 @@ class MainWindow(QT.QWidget):
                     
     def closeEvent(self, QCloseEvent):
         self.exit_program.Exit()
-
-   
-#feather = MCUInterface("/dev/ttyACM0")        
-#Window2 = MainWindow(feather)
-#Window2.setupui()
