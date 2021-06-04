@@ -160,9 +160,10 @@ class MainWindow(QT.QWidget):
                     self.on_trigger(trigger)
                 
     def keyReleaseEvent(self, keyevent):
-        for (key, trigger: str) in self.keys_released:
-            if keyevent.text() == key:
-                self.on_trigger(trigger)
+        if not keyevent.isAutoRepeat():
+            for (key, trigger: str) in self.keys_released:
+                if keyevent.text() == key:
+                    self.on_trigger(trigger)
     
    
 #feather = MCUInterface("/dev/ttyACM0", )        
