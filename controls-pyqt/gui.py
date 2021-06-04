@@ -24,14 +24,12 @@ class MainWindow(QT.QWidget):
     def __init__(self, mcuobject: MCUInterface, comms: Communications, exit_program: ExitProgram):
         super().__init__()
         self.mcu: MCUInterface = mcuobject
-        self.thruster1speed: int = 0
-        self.thruster2speed: int = 0
-        self.thruster3speed: int = 0
-        self.thruster4speed: int = 0
-        self.servospeed: int = 0
-        
         self.comms: Communications = comms
         self.exit_program: ExitProgram = exit_program
+            
+        self.NUM_THRUSTERS = 4
+        self.thruster_speed: int[] = [0] * self.NUM_THRUSTERS
+        self.servospeed: int = 0
         
         # (key, message sent to comms)
         self.KEYS_PRESSED = [
@@ -65,6 +63,7 @@ class MainWindow(QT.QWidget):
         self.temp = self.latest_temp
         self.voltage = self.mcu.latest_voltage
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
+        self.thruster1speed, self.thruster2speed, self.thruster3speed, self.thruster4speed = self.thruster_speed
         
         self.voltage_info.setText(str(self.voltage))
         
