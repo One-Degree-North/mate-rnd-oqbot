@@ -1,3 +1,7 @@
+# gui.py
+# Uses PyQt to collect camera footage and display information from Microcontroller
+# Uses PyQt to collect keyboard input too
+
 import sys
 sys.path.insert(0, './mcu-lib')
 from mcu import MCUInterface
