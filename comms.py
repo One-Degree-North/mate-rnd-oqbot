@@ -1,8 +1,5 @@
 from mcu import *
 from controls import *
-from command_constants import *
-import pygame 
-import thread from Thread
 
 class Communications:
     def __init__(self, mcuVAR: MCUInterface, controller: controls):
