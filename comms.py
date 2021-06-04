@@ -41,7 +41,7 @@ class Communications:
         }
        
        for command in dict_motors.keys():
-            if key_pressed[:-1] == command:
+            if key_pressed[-1] == command:
                 if len(key_pressed) == 1:
                     self.mcuVAR.cmd_setMotorCalibrated(dict_motors.get(command), INITIAL_PERCENT)
                 elif key_pressed[0] == "s":
