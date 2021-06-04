@@ -1,6 +1,3 @@
-from mcu import *
-from controls import *
-
 class Communications:
     PWM_MIN = 1000
     PWM_MID = 1500
@@ -14,10 +11,6 @@ class Communications:
     
     INITIAL_PERCENT = 100
     MULTIPLIER_PERCENT = 2
-    
-    def __init__(self, mcuVAR: MCUInterface, controller: controls):
-        self.mcuVAR = mcuVAR
-        self.controller = controls
 
     def read_send(key_pressed):
         
