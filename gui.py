@@ -72,8 +72,14 @@ class MainWindow(QT.QWidget):
         self.servo.setText(str(self.servospeed))
     
     def setupui(self):
-        self.setWindowTitle('MATE')
-        self.setGeometry(0, 0, 1600, 800)
+        TITLE: str = 'MATE'
+        X_POSITION: int = 0
+        Y_POSITION: int = 0
+        LENGTH: int = 1600
+        WIDTH: int = 800
+        
+        self.setWindowTitle(TITLE)
+        self.setGeometry(X_POSITION, Y_POSITION, LENGTH, WIDTH)
         self.show()
         
         self.general_list = QT.QFormLayout()
@@ -134,9 +140,11 @@ class MainWindow(QT.QWidget):
         self.layout.setColumnMinimumWidth(4,300)
         self.setLayout(self.layout)
         
+        TIMEOUT_INTERVAL = 100
+        
         self.timer = QTimer()
         self.timer.timeout.connect(self.updatetext)
-        self.timer.start(100)
+        self.timer.start(TIMEOUT_INTERVAL)
     
     def on_trigger(self, trigger: str):
         self.comms.read_send(trigger)
