@@ -1,4 +1,8 @@
 class Communications:
+    
+    def __init__(self):
+        pass
+    
     PWM_MIN = 1000
     PWM_MID = 1500
     PWM_MAX = 2000
