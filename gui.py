@@ -154,7 +154,10 @@ class MainWindow(QT.QWidget):
             for (key, trigger: str) in self.keys_released:
                 if keyevent.text() == key:
                     self.on_trigger(trigger)
-    
+                    
+    def closeEvent(self, QCloseEvent):
+        self.exit_program.Exit()
+
    
 feather = MCUInterface("/dev/ttyACM0", )        
 Window2 = MainWindow(feather)
