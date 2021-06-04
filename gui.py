@@ -18,9 +18,9 @@ app = QT.QApplication(sys.argv)
 
 
 class MainWindow(QT.QWidget):
-    def __init__(self, mcuobject, comms: Communications, exit_program: ExitProgram):
+    def __init__(self, mcuobject: MCUInterface, comms: Communications, exit_program: ExitProgram):
         super().__init__()
-        self.mcu = mcuobject
+        self.mcu: MCUInterface = mcuobject
         self.thruster1speed: int = 0
         self.thruster2speed: int = 0
         self.thruster3speed: int = 0
