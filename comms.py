@@ -1,8 +1,5 @@
 class Communications:
     
-    def __init__(self):
-        pass
-    
     PWM_MIN = 1000
     PWM_MID = 1500
     PWM_MAX = 2000
@@ -15,6 +12,9 @@ class Communications:
     
     INITIAL_PERCENT = 100
     MULTIPLIER_PERCENT = 2
+    
+    def __init__(self):
+        pass
 
     def read_send(key_pressed):
         
