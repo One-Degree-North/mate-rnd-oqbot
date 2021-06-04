@@ -60,14 +60,24 @@ class MainWindow(QT.QWidget):
         ]
     
     def __update_text(self):
-        self.voltage_info.setText(str(self.mcu.latest_voltage))
-        self.x_gyro.setText(str(self.mcu.latest_gyro[0]))
-        self.y_gyro.setText(str(self.mcu.latest_gyro[1]))
-        self.z_gyro.setText(str(self.mcu.latest_gyro[2]))
-        self.x_accel.setText(str(self.mcu.latest_accel[0]))
-        self.y_accel.setText(str(self.mcu.latest_accel[1]))
-        self.z_accel.setText(str(self.mcu.latest_accel[2]))
-        self.temperature.setText(str(self.mcu.latest_temp))
+        self.gyro = self.mcu.latest_gyro
+        self.accel = self.mcu.latest_accel
+        self.temp = self.latest_temp
+        self.voltage = self.mcu.latest_voltage
+        (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
+        
+        self.voltage_info.setText(str(self.voltage))
+        
+        self.x_gyro.setText(str(self.mcu.gyro[self.X_INDEX]))
+        self.y_gyro.setText(str(self.mcu.gyro[self.Y_INDEX]))
+        self.z_gyro.setText(str(self.mcu.gyro[self.Z_INDEX]))
+        
+        self.x_accel.setText(str(self.mcu.latest_accel[self.X_INDEX]))
+        self.y_accel.setText(str(self.mcu.latest_accel[self.Y_INDEX]))
+        self.z_accel.setText(str(self.mcu.latest_accel[self.Z_INDEX]))
+        
+        self.temperature.setText(str(self.temp))
+        
         self.thruster1.setText(str(self.thruster1speed))
         self.thruster2.setText(str(self.thruster2speed))
         self.thruster3.setText(str(self.thruster3speed))
@@ -146,7 +156,7 @@ class MainWindow(QT.QWidget):
         TIMEOUT_INTERVAL = 100
         
         self.timer = QTimer()
-        self.timer.timeout.connect(self.updatetext)
+        self.timer.timeout.connect(self.__update_text)
         self.timer.start(TIMEOUT_INTERVAL)
     
     def on_trigger(self, trigger: str):
