@@ -75,14 +75,14 @@ class MainWindow(QT.QWidget):
         self.servo.setText(str(self.servospeed))
     
     def setup_ui(self):
-        TITLE: str = 'MATE'
-        X_POSITION: int = 0
-        Y_POSITION: int = 0
-        LENGTH: int = 1600
-        WIDTH: int = 800
+        self.TITLE: str = 'MATE'
+        self.X_POSITION: int = 0
+        self.Y_POSITION: int = 0
+        self.LENGTH: int = 1600
+        self.WIDTH: int = 800
         
-        self.setWindowTitle(TITLE)
-        self.setGeometry(X_POSITION, Y_POSITION, LENGTH, WIDTH)
+        self.setWindowTitle(self.TITLE)
+        self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
         self.show()
         
         self.general_list = QT.QFormLayout()
