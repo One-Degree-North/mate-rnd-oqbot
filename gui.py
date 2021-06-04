@@ -2,15 +2,18 @@
 # Uses PyQt to collect camera footage and display information from Microcontroller
 # Uses PyQt to collect keyboard input too
 
-import sys
-sys.path.insert(0, './mcu-lib')
-from mcu import MCUInterface
 import random
+import sys
+
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer, QEvent
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
 from PyQt5.QtGui import QKeyEvent
+
+from mcu import MCUInterface
+
+sys.path.insert(0, './mcu-lib')
 app = QT.QApplication(sys.argv)
 
 
@@ -18,14 +21,14 @@ class MainWindow(QT.QWidget):
     def __init__(self, mcuobject, comms: Communications, exit_program: ExitProgram):
         super().__init__()
         self.mcu = mcuobject
-        self.thruster1speed = 0
-        self.thruster2speed = 0
-        self.thruster3speed = 0
-        self.thruster4speed = 0
-        self.servospeed = 0
+        self.thruster1speed: int = 0
+        self.thruster2speed: int = 0
+        self.thruster3speed: int = 0
+        self.thruster4speed: int = 0
+        self.servospeed: int = 0
         
-        self.comms = comms
-        self.exit_program = exit_program
+        self.comms: Communications = comms
+        self.exit_program: ExitProgram = exit_program
         
         # (key, message sent to comms)
         self.keys_pressed = [
@@ -112,13 +115,11 @@ class MainWindow(QT.QWidget):
         self.pwmbox = QT.QGroupBox("PWM")
         self.pwmbox.setLayout(self.pwm_list)
 
-
         self.camera = QTM.QCamera()
         self.camera_view = QTMW.QCameraViewfinder()
         self.camera.setViewfinder(self.camera_view)
         self.camera.setCaptureMode(QTM.QCamera.CaptureViewfinder)
         self.camera.start()
-
 
         self.sertext = QT.QPlainTextEdit("text")
         self.sertext.setReadOnly(True)
@@ -137,7 +138,7 @@ class MainWindow(QT.QWidget):
         self.timer.timeout.connect(self.updatetext)
         self.timer.start(100)
     
-    def on_trigger(self, trigger):
+    def on_trigger(self, trigger: str):
         self.comms.read_send(trigger)
     
     def keyPressEvent(self, keyevent):
@@ -159,13 +160,6 @@ class MainWindow(QT.QWidget):
         self.exit_program.Exit()
 
    
-feather = MCUInterface("/dev/ttyACM0", )        
-Window2 = MainWindow(feather)
-Window2.setupui()
-
-sys.exit(app.exec_())
-
-
-
-    
-
+#feather = MCUInterface("/dev/ttyACM0")        
+#Window2 = MainWindow(feather)
+#Window2.setupui()
