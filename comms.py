@@ -1,3 +1,5 @@
+from mcu import *
+
 class Communications:
     
     PWM_MIN = 1000
@@ -13,9 +15,9 @@ class Communications:
     INITIAL_PERCENT = 100
     MULTIPLIER_PERCENT = 2
     
-    def __init__(self):
+    def __init__(self, mcuVAR: MCUInterface):
+        self.mcuVAR = mcuVAR
         pass
-
     def read_send(key_pressed):
         
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_CLAW,1000)
