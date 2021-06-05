@@ -49,7 +49,7 @@ class Communications:
                 elif key_pressed[0] == "s":
                     self.mcuVAR.cmd_setMotorCalibrated(dict_motors.get(command), MULTIPLIER_PERCENT)
                 elif key_pressed[0] == "l":
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors.get(command), MULTIPLIER_PERCENT)
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors.get(command), -1*MULTIPLIER_PERCENT)
                         
     def kill_elec_ops():
         
@@ -57,5 +57,6 @@ class Communications:
         self.mcuVAR.setAutoReport(PARAM_ACCEL, false, 0)
         self.mcuVAR.setAutoReport(PARAM_GYRO, false, 0)
         self.mcuVAR.setAutoReport(PARAM_VOLT_TEMP, false, 0)
+        self.mcuVAR.close_serial()
 
 
