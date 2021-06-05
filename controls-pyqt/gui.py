@@ -83,31 +83,45 @@ class MainWindow(QT.QWidget):
         self.thruster4.setText(str(self.thruster4speed))
         self.servo.setText(str(self.servospeed))
     
-    def setup_ui(self):
+    def __create_window(self):
         self.TITLE: str = 'MATE'
         self.X_POSITION: int = 0
         self.Y_POSITION: int = 0
         self.LENGTH: int = 1600
         self.WIDTH: int = 800
-        
+
         self.setWindowTitle(self.TITLE)
         self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
         self.show()
         
-        self.general_list = QT.QFormLayout()
+    def __initialize_as_label(self):
         self.voltage_info = QT.QLabel()
-        self.general_list.addRow(QT.QLabel("Voltage:"),self.voltage_info)
-        self.general_box = QT.QGroupBox("General")
-        self.general_box.setLayout(self.general_list)
-
-        self.imu_list = QT.QFormLayout()
+        
         self.x_gyro = QT.QLabel()
         self.y_gyro = QT.QLabel()
         self.z_gyro = QT.QLabel()
+        
         self.x_accel = QT.QLabel()
         self.y_accel = QT.QLabel()
         self.z_accel = QT.QLabel()
+        
         self.temperature = QT.QLabel()
+        
+        self.thruster1 = QT.QLabel()
+        self.thruster2 = QT.QLabel()
+        self.thruster3 = QT.QLabel()
+        self.thruster4 = QT.QLabel()
+        self.servo = QT.QLabel()
+        
+    def __initialize_general_info(self):
+        self.general_list = QT.QFormLayout()
+        self.general_list.addRow(QT.QLabel("Voltage:"),self.voltage_info)
+        self.general_box = QT.QGroupBox("General")
+        self.general_box.setLayout(self.general_list)
+        
+    def __initialize_imu_list(self):
+        self.imu_list = QT.QFormLayout()
+        
         self.imu_list.addRow(QT.QLabel("X Rotation:"),self.x_gyro)
         self.imu_list.addRow(QT.QLabel("Y Rotation:"),self.y_gyro)
         self.imu_list.addRow(QT.QLabel("Z Rotation:"),self.z_gyro)
@@ -115,15 +129,13 @@ class MainWindow(QT.QWidget):
         self.imu_list.addRow(QT.QLabel("Y Accerleration:"),self.y_accel)
         self.imu_list.addRow(QT.QLabel("Z Accerleration:"),self.z_accel)
         self.imu_list.addRow(QT.QLabel("Temperature:"),self.temperature)
+        
         self.imu_box = QT.QGroupBox("IMU")
         self.imu_box.setLayout(self.imu_list)
-
+        
+    def __initialize_pwn_list(self):
         self.pwm_list = QT.QFormLayout()
-        self.thruster1 = QT.QLabel()
-        self.thruster2 = QT.QLabel()
-        self.thruster3 = QT.QLabel()
-        self.thruster4 = QT.QLabel()
-        self.servo = QT.QLabel()
+        
         self.pwm_list.addRow(QT.QLabel("Thruster 1:"),self.thruster1)
         self.pwm_list.addRow(QT.QLabel("Thruster 2:"),self.thruster2)
         self.pwm_list.addRow(QT.QLabel("Thruster 3:"),self.thruster3)
@@ -132,16 +144,15 @@ class MainWindow(QT.QWidget):
 
         self.pwmbox = QT.QGroupBox("PWM")
         self.pwmbox.setLayout(self.pwm_list)
-
+        
+    def __setup_camera(self):
         self.camera = QTM.QCamera()
         self.camera_view = QTMW.QCameraViewfinder()
         self.camera.setViewfinder(self.camera_view)
         self.camera.setCaptureMode(QTM.QCamera.CaptureViewfinder)
         self.camera.start()
-
-        self.sertext = QT.QPlainTextEdit("text")
-        self.sertext.setReadOnly(True)
         
+    def __initialize_layout(self):
         self.layout = QT.QGridLayout()
         self.layout.addWidget(self.camera_view,1,1,4,2)
         self.layout.addWidget(self.general_box,1,4,1,1)
@@ -152,11 +163,25 @@ class MainWindow(QT.QWidget):
         self.layout.setColumnMinimumWidth(4,300)
         self.setLayout(self.layout)
         
-        TIMEOUT_INTERVAL = 100
+    def setup_ui(self):
+        self.__create_window()
+        self.__initialize_labels()
         
+        self.__initialize_general_info()
+        self.__initialize_imu_list()
+        self.__initialize_pwm_list()
+
+        self.__setup_camera()
+
+        self.sertext = QT.QPlainTextEdit("text")
+        self.sertext.setReadOnly(True)
+        
+        self.__initialize_layout()
+        
+        self.TIMEOUT_INTERVAL = 100
         self.timer = QTimer()
         self.timer.timeout.connect(self.__update_text)
-        self.timer.start(TIMEOUT_INTERVAL)
+        self.timer.start(self.TIMEOUT_INTERVAL)
     
     def on_trigger(self, trigger: str):
         self.comms.read_send(trigger)
