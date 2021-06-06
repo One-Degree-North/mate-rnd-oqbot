@@ -73,36 +73,3 @@ class Communications:
 
         
         
-'''
-        if key_pressed == "e":
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT,-1*INITIAL_PERCENT)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK,INITIAL_PERCENT)
-        elif key_pressed == "q":
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT,INITIAL_PERCENT)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK,-1*INITIAL_PERCENT)
-        elif key_pressed == "w":
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,-1*INITIAL_PERCENT)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,INITIAL_PERCENT)
-        elif key_pressed == "s":
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,INITIAL_PERCENT)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,-1*INITIAL_PERCENT)
-
-                if key_pressed == "e":
-        elif key_pressed == "q":
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT,INITIAL_PERCENT)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK,-1*INITIAL_PERCENT)
-        elif key_pressed == "w":
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,-1*INITIAL_PERCENT)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,INITIAL_PERCENT)
-        elif key_pressed == "s":
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,INITIAL_PERCENT)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,-1*INITIAL_PERCENT)
-        elif key_pressed =="spacebar" and spacebar_count%3 == 1:
-            spacebar_count+=1
-            if spacebar_count%3 == 0:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,INITIAL_PERCENT)
-            elif spacebar_count%3 == 1:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,0)
-            elif spacebar_count%3 == 2:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*INITIAL_PERCENT)
-'''
