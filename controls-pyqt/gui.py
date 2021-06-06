@@ -13,10 +13,10 @@ import PyQt5.QtWidgets as QT
 from PyQt5.QtGui import QKeyEvent
 
 
+sys.path.insert(0, '../mcu-lib')
 from mcu import MCUInterface
 
 
-sys.path.insert(0, './mcu-lib')
 app = QT.QApplication(sys.argv)
 
 
@@ -28,7 +28,7 @@ class MainWindow(QT.QWidget):
         self.exit_program: ExitProgram = exit_program
             
         self.NUM_THRUSTERS = 4
-        self.thruster_speed: int[] = [0] * self.NUM_THRUSTERS
+        self.thruster_speed: int = [0] * self.NUM_THRUSTERS
         self.servospeed: int = 0
         
         # (key, message sent to comms)
@@ -58,24 +58,20 @@ class MainWindow(QT.QWidget):
         ]
     
     def __update_text(self):
-        self.gyro = self.mcu.latest_gyro
-        self.accel = self.mcu.latest_accel
-        self.temp = self.latest_temp
-        self.voltage = self.mcu.latest_voltage
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
         self.thruster1speed, self.thruster2speed, self.thruster3speed, self.thruster4speed = self.thruster_speed
         
-        self.voltage_info.setText(str(self.voltage))
+        self.voltage_info.setText(str(self.mcu.latest_voltage))
         
-        self.x_gyro.setText(str(self.mcu.gyro[self.X_INDEX]))
-        self.y_gyro.setText(str(self.mcu.gyro[self.Y_INDEX]))
-        self.z_gyro.setText(str(self.mcu.gyro[self.Z_INDEX]))
+        self.x_gyro.setText(str(self.mcu.latest_gyro[self.X_INDEX]))
+        self.y_gyro.setText(str(self.mcu.latest_gyro[self.Y_INDEX]))
+        self.z_gyro.setText(str(self.mcu.latest_gyro[self.Z_INDEX]))
         
         self.x_accel.setText(str(self.mcu.latest_accel[self.X_INDEX]))
         self.y_accel.setText(str(self.mcu.latest_accel[self.Y_INDEX]))
         self.z_accel.setText(str(self.mcu.latest_accel[self.Z_INDEX]))
         
-        self.temperature.setText(str(self.temp))
+        self.temperature.setText(str(self.mcu.latest_temp))
         
         self.thruster1.setText(str(self.thruster1speed))
         self.thruster2.setText(str(self.thruster2speed))
@@ -133,7 +129,7 @@ class MainWindow(QT.QWidget):
         self.imu_box = QT.QGroupBox("IMU")
         self.imu_box.setLayout(self.imu_list)
         
-    def __initialize_pwn_list(self):
+    def __initialize_pwm_list(self):
         self.pwm_list = QT.QFormLayout()
         
         self.pwm_list.addRow(QT.QLabel("Thruster 1:"),self.thruster1)
@@ -165,7 +161,7 @@ class MainWindow(QT.QWidget):
         
     def setup_ui(self):
         self.__create_window()
-        self.__initialize_labels()
+        self.__initialize_as_labels()
         
         self.__initialize_general_info()
         self.__initialize_imu_list()
