@@ -18,6 +18,7 @@ class Communications:
     def __init__(self, mcuVAR: MCUInterface):
         self.mcuVAR = mcuVAR
         pass
+    
     def read_send(key_pressed):
         
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_CLAW,1000)
