@@ -129,7 +129,7 @@ class MainWindow(QT.QWidget):
         self.imu_box = QT.QGroupBox("IMU")
         self.imu_box.setLayout(self.imu_list)
         
-    def __initialize_pwn_list(self):
+    def __initialize_pwm_list(self):
         self.pwm_list = QT.QFormLayout()
         
         self.pwm_list.addRow(QT.QLabel("Thruster 1:"),self.thruster1)
@@ -165,7 +165,7 @@ class MainWindow(QT.QWidget):
         
         self.__initialize_general_info()
         self.__initialize_imu_list()
-        self.__initialize_pwn_list()
+        self.__initialize_pwm_list()
 
         self.__setup_camera()
 
