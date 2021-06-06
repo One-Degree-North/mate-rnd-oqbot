@@ -13,10 +13,10 @@ class Communications:
     MOTOR_BACK = 4
     
     INITIAL_PERCENT = 100
-    MULTIPLIER_PERCENT = 2
     
-    def __init__(self, mcuVAR: MCUInterface):
+    def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int):
         self.mcuVAR = mcuVAR
+        self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
     
     def read_send(key_pressed):
         
@@ -31,25 +31,36 @@ class Communications:
         self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_LEFT, PWM_MID)
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_RIGHT, PWM_MID)
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_BACK, PWM_MID)
+
         
         dict_motors = {
-            
-            "e": MOTOR_CLAW,
-            "d": MOTOR_RIGHT,
-            "w": MOTOR_FRONT,
-            "a": MOTOR_LEFT,
-            "s": MOTOR_BACKWARD
-            
+            "e": [MOTOR_FRONT, MOTOR_BACK],
+            "q": [MOTOR_BACK, MOTOR_FRONT],
+            "d": right, #Which motors move for this?
+            "a": left,  #Which motors move for this?
+            "w": [MOTOR_LEFT, MOTOR_RIGHT],
+            "s": [MOTOR_RIGHT, MOTOR_LEFT] 
         }
-       
-       for command in dict_motors.keys():
-            if key_pressed[-1] == command:
-                if len(key_pressed) == 1:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[command], INITIAL_PERCENT)
-                elif key_pressed[0] == "s":
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[command], MULTIPLIER_PERCENT)
-                elif key_pressed[0] == "l":
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[command], -1*MULTIPLIER_PERCENT)
+        
+        spacebar_count = 0
+
+        if key_pressed[0] == "s" and len(key_pressed)==2:
+            for motor in range(0, len(dict_motors[key_pressed[1]])):
+                self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][motor],0)
+        elif key_pressed[0] == "l":
+            for motor in range(0, len(dict_motors[key_pressed[1]])):
+                self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][motor],(2*i-1)*MULTIPLIER_PERCENT)
+        elif len(key_pressed) == 1:
+            for i in range(0, len(dict_motors[key_pressed[1]])):
+                self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],(2*i-1)*INITIAL_PERCENT)
+        elif key_pressed =="spacebar":
+            spacebar_count+=1
+            if spacebar_count%3 == 1:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,INITIAL_PERCENT)
+            elif spacebar_count%3 == 2:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,0)
+            elif spacebar_count%3 == 0:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*INITIAL_PERCENT)
                         
     def kill_elec_ops():
         
@@ -60,3 +71,38 @@ class Communications:
         self.mcuVAR.close_serial()
 
 
+        
+        
+'''
+        if key_pressed == "e":
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT,-1*INITIAL_PERCENT)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK,INITIAL_PERCENT)
+        elif key_pressed == "q":
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT,INITIAL_PERCENT)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK,-1*INITIAL_PERCENT)
+        elif key_pressed == "w":
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,-1*INITIAL_PERCENT)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,INITIAL_PERCENT)
+        elif key_pressed == "s":
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,INITIAL_PERCENT)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,-1*INITIAL_PERCENT)
+
+                if key_pressed == "e":
+        elif key_pressed == "q":
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT,INITIAL_PERCENT)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK,-1*INITIAL_PERCENT)
+        elif key_pressed == "w":
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,-1*INITIAL_PERCENT)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,INITIAL_PERCENT)
+        elif key_pressed == "s":
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT,INITIAL_PERCENT)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT,-1*INITIAL_PERCENT)
+        elif key_pressed =="spacebar" and spacebar_count%3 == 1:
+            spacebar_count+=1
+            if spacebar_count%3 == 0:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,INITIAL_PERCENT)
+            elif spacebar_count%3 == 1:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,0)
+            elif spacebar_count%3 == 2:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*INITIAL_PERCENT)
+'''
