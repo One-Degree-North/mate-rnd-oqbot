@@ -46,11 +46,11 @@ class Communications:
        for command in dict_motors.keys():
             if key_pressed[-1] == command:
                 if len(key_pressed) == 1:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors.get(command), INITIAL_PERCENT)
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[command], INITIAL_PERCENT)
                 elif key_pressed[0] == "s":
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors.get(command), MULTIPLIER_PERCENT)
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[command], MULTIPLIER_PERCENT)
                 elif key_pressed[0] == "l":
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors.get(command), -1*MULTIPLIER_PERCENT)
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[command], -1*MULTIPLIER_PERCENT)
                         
     def kill_elec_ops():
         
