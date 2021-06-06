@@ -17,7 +17,6 @@ class Communications:
     
     def __init__(self, mcuVAR: MCUInterface):
         self.mcuVAR = mcuVAR
-        pass
     
     def read_send(key_pressed):
         
