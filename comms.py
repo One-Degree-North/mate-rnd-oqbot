@@ -35,11 +35,11 @@ class Communications:
         
         dict_motors = {
             
-            "e" = MOTOR_CLAW,
-            "d" = MOTOR_RIGHT,
-            "w" = MOTOR_FRONT,
-            "a" = MOTOR_LEFT,
-            "s" = MOTOR_BACKWARD
+            "e": MOTOR_CLAW,
+            "d": MOTOR_RIGHT,
+            "w": MOTOR_FRONT,
+            "a": MOTOR_LEFT,
+            "s": MOTOR_BACKWARD
             
         }
        
