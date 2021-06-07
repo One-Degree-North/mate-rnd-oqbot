@@ -55,12 +55,14 @@ class Communications:
                 self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],(2*i-1)*INITIAL_PERCENT)
         elif key_pressed =="spacebar":
             spacebar_count+=1
-            if spacebar_count%3 == 1:
+            if spacebar_count%4 == 1:
                 self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,INITIAL_PERCENT)
             elif spacebar_count%3 == 2:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,0)
-            elif spacebar_count%3 == 0:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW, 0)
+            elif spacebar_count%3 == 3:
                 self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*INITIAL_PERCENT)
+            elif spacebar_count%3 == 0:
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW, 0)
                 
                         
     def kill_elec_ops():
@@ -70,21 +72,5 @@ class Communications:
         self.mcuVAR.setAutoReport(PARAM_GYRO, false, 0)
         self.mcuVAR.setAutoReport(PARAM_VOLT_TEMP, false, 0)
         self.mcuVAR.close_serial()
-
-
- '''
-         
-         If it only starts to close after pressing the third time?
-         
-         elif key_pressed =="spacebar":
-            spacebar_count+=1
-            if spacebar_count%4 == 1:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,INITIAL_PERCENT)
-            elif spacebar_count%3 == 2:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,0)
-            elif spacebar_count%3 == 3:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*INITIAL_PERCENT)
-            elif spacebar_count%3 == 0:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*INITIAL_PERCENT)
- '''    
+  
         
