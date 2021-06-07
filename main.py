@@ -19,7 +19,7 @@ def start():
                                close_on_startup: bool = CLOSE_ON_STARTUP,
                                refresh_rate: int = REFRESH_RATE,
                                max_read: int = MAX_READ)
-	communications = comms.Communications(feather, SENSITIVE_PERCENTAGE, initial_percentage: int = INITIAL_PERCENTAGE)
+	communications = comms.Communications(feather, SENSITIVE_PERCENTAGE, INITIAL_PERCENTAGE)
 	exit = exit_program.ExitProgram(communications)
 	window2 = gui.MainWindow(feather, communications, exit)
 	window2.setup_ui()
