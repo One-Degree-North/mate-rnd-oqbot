@@ -12,11 +12,10 @@ class Communications:
     MOTOR_LEFT = 3 
     MOTOR_BACK = 4
     
-    INITIAL_PERCENT = 100
-    
-    def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int):
+    def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int, INITIAL_PERCENT = 100):
         self.mcuVAR = mcuVAR
         self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
+        
 
     def read_send(key_pressed):
         
@@ -37,7 +36,7 @@ class Communications:
             "e": [MOTOR_FRONT, MOTOR_BACK, SAME],
             "q": [MOTOR_BACK, MOTOR_FRONT, NEG_SAME],
             "d": [MOTOR_RIGHT, MOTOR_LEFT, OPPOSITE],
-            "a": [MOTOR_RIGHT, MOTOR_LEFT, OPPOSITE]
+            "a": [MOTOR_LEFT, MOTOR_RIGHT, OPPOSITE]
             "w": [MOTOR_LEFT, MOTOR_RIGHT, SAME],
             "s": [MOTOR_RIGHT, MOTOR_LEFT, NEG_SAME] 
         }
