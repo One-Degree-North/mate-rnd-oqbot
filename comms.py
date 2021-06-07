@@ -45,11 +45,11 @@ class Communications:
         spacebar_count = 0
 
         if key_pressed[0] == "s" and len(key_pressed) == 2:
-            for motor in range(0, len(dict_motors[key_pressed[1]])-1):
-                self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][motor],0)
+            for i in range(0, len(dict_motors[key_pressed[1]])-1):
+                self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],0)
         elif key_pressed[0] == "l":
-            for motor in range(0, len(dict_motors[key_pressed[1]])-1):
-                self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][motor],(2*i-1)*MULTIPLIER_PERCENT)
+            for i in range(0, len(dict_motors[key_pressed[1]])-1):
+                self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],(2*i-1)*MULTIPLIER_PERCENT)
         elif len(key_pressed) == 1:
             for i in range(0, len(dict_motors[key_pressed[1]])-1):
                 if dict_motors[key_pressed[1]][2] == OPPOSITE:
