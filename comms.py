@@ -14,7 +14,7 @@ class Communications:
     CALIBRATION_VALUE = 1000
     spacebar_count = 0
     
-    def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int, INITIAL_PERCENT = 100):
+    def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int, initial_percent = 100):
         self.mcuVAR = mcuVAR
         self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
         
@@ -52,19 +52,19 @@ class Communications:
         elif len(key_pressed) == 1:
             for i in range(0, len(dict_motors[key_pressed[1]])-1):
                 if dict_motors[key_pressed[1]][2] == OPPOSITE:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],(2*i-1)*INITIAL_PERCENT)
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],(2*i-1)*initial_percent)
                 elif dict_motors[key_pressed[1]][2] == SAME:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],INITIAL_PERCENT)
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],initial_percent)
                 elif dict_motors[key_pressed[1]][2] == NEG_SAME:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],-1*INITIAL_PERCENT)
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],-1*initial_percent)
         elif key_pressed =="spacebar":
             spacebar_count+=1
             if spacebar_count%4 == 1:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,INITIAL_PERCENT)
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,initial_percent)
             elif spacebar_count%4 == 2:
                 self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW, 0)
             elif spacebar_count%4 == 3:
-                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*INITIAL_PERCENT)
+                self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW,-1*initial_percent)
             elif spacebar_count%4 == 0:
                 self.mcuVAR.cmd_setMotorCalibrated(MOTOR_CLAW, 0)
                 
