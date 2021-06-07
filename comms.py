@@ -17,10 +17,7 @@ class Communications:
     def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int):
         self.mcuVAR = mcuVAR
         self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
-        
-    def move_motors(direction):
-        
-    
+
     def read_send(key_pressed):
         
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_CLAW,1000)
