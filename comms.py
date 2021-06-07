@@ -34,12 +34,12 @@ class Communications:
 
         
         dict_motors = {
-            "e": [MOTOR_FRONT, MOTOR_BACK, OPPOSITE],
-            "q": [MOTOR_BACK, MOTOR_FRONT, OPPOSITE],
-            "d": [MOTOR_RIGHT, MOTOR_LEFT, SAME],
-            "a": [MOTOR_RIGHT, MOTOR_LEFT, NEG_SAME]
-            "w": [MOTOR_LEFT, MOTOR_RIGHT, OPPOSITE],
-            "s": [MOTOR_RIGHT, MOTOR_LEFT, OPPOSITE] 
+            "e": [MOTOR_FRONT, MOTOR_BACK, SAME],
+            "q": [MOTOR_BACK, MOTOR_FRONT, NEG_SAME],
+            "d": [MOTOR_RIGHT, MOTOR_LEFT, OPPOSITE],
+            "a": [MOTOR_RIGHT, MOTOR_LEFT, OPPOSITE]
+            "w": [MOTOR_LEFT, MOTOR_RIGHT, SAME],
+            "s": [MOTOR_RIGHT, MOTOR_LEFT, NEG_SAME] 
         }
         
         spacebar_count = 0
