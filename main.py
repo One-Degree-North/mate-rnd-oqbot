@@ -15,10 +15,10 @@ SENSITIVE_PERCENTAGE: int = 50
 
 def start():
 	feather = mcu.MCUInterface(PORT,
-                               baud: int = BAUD_RATE,
-                               close_on_startup: bool = CLOSE_ON_STARTUP,
-                               refresh_rate: int = REFRESH_RATE,
-                               max_read: int = MAX_READ)
+                               baud = BAUD_RATE,
+                               close_on_startup = CLOSE_ON_STARTUP,
+                               refresh_rate = REFRESH_RATE,
+                               max_read = MAX_READ)
 	communications = comms.Communications(feather, SENSITIVE_PERCENTAGE, INITIAL_PERCENTAGE)
 	exit = exit_program.ExitProgram(communications)
 	window2 = gui.MainWindow(feather, communications, exit)
