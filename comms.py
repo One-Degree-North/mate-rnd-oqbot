@@ -11,19 +11,21 @@ class Communications:
     MOTOR_RIGHT = 2
     MOTOR_LEFT = 3 
     MOTOR_BACK = 4
+    CALIBRATION_VALUE = 1000
+    spacebar_count = 0
     
     def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int, INITIAL_PERCENT = 100):
         self.mcuVAR = mcuVAR
         self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
         
-
+    
     def read_send(key_pressed):
         
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_CLAW,1000)
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_FRONT, 1000)
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_LEFT, 1000)
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_RIGHT, 1000)
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_BACK, 1000)
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_CLAW, CALIBRATION_VALUE)
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_FRONT, CALIBRATION_VALUE)
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_LEFT, CALIBRATION_VALUE)
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_RIGHT, CALIBRATION_VALUE)
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_BACK, CALIBRATION_VALUE)
 
         self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, PWM_MID)
         self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_FRONT, PWM_MID)
@@ -40,8 +42,6 @@ class Communications:
             "w": [MOTOR_LEFT, MOTOR_RIGHT, SAME],
             "s": [MOTOR_RIGHT, MOTOR_LEFT, NEG_SAME] 
         }
-        
-        spacebar_count = 0
 
         if key_pressed[0] == "s" and len(key_pressed) == 2:
             for i in range(0, len(dict_motors[key_pressed[1]])-1):
