@@ -59,7 +59,7 @@ class Communications:
                     self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],(2*i-1)*INITIAL_PERCENT)
                 elif dict_motors[key_pressed[1]][2] == SAME:
                     self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],INITIAL_PERCENT)
-                elif dict_motors[key_pressed[1]][2] == SAME:
+                elif dict_motors[key_pressed[1]][2] == NEG_SAME:
                     self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i],-1*INITIAL_PERCENT)
         elif key_pressed =="spacebar":
             spacebar_count+=1
