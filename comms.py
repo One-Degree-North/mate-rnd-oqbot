@@ -51,20 +51,20 @@ class Communications:
             "s": [MOTOR_RIGHT, MOTOR_LEFT, NEG_SAME]
         }
 
-        if key_pressed[0] == "s" and len(key_pressed) == 2:
+        if len(key_pressed) == 2 and key_pressed[0] == "s":
             for i in range(0, len(dict_motors[key_pressed[1]])-1):
                 self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i], 0)
-        elif key_pressed[0] == "l":
+        elif len(key_pressed) == 2 and key_pressed[0] == "l":
             for i in range(0, len(dict_motors[key_pressed[1]])-1):
                 self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i], (2*i-1)*self.MULTIPLIER_PERCENT)
         elif len(key_pressed) == 1:
-            for i in range(0, len(dict_motors[key_pressed[1]])-1):
-                if dict_motors[key_pressed[1]][2] == OPPOSITE:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i], (2*i-1)*self.initial_percent)
-                elif dict_motors[key_pressed[1]][2] == SAME:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i], self.initial_percent)
-                elif dict_motors[key_pressed[1]][2] == NEG_SAME:
-                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[1]][i], -1*self.initial_percent)
+            for i in range(0, len(dict_motors[key_pressed[0]])-1):
+                if dict_motors[key_pressed[0]][2] == OPPOSITE:
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[0]][i], (2*i-1)*self.initial_percent)
+                elif dict_motors[key_pressed[0]][2] == SAME:
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[0]][i], self.initial_percent)
+                elif dict_motors[key_pressed[0]][2] == NEG_SAME:
+                    self.mcuVAR.cmd_setMotorCalibrated(dict_motors[key_pressed[0]][i], -1*self.initial_percent)
         elif key_pressed =="spacebar":
             self.spacebar_count += 1
             if self.spacebar_count % 4 == 1:
