@@ -31,6 +31,7 @@ class MainWindow(QT.QWidget):
         self.NUM_THRUSTERS = 4
         self.thruster_speed: int = [0] * self.NUM_THRUSTERS
         self.servospeed: int = 0
+        self.update_ms = 40  # 25 packets per second
         
         # (key, message sent to comms)
         self.KEYS_PRESSED = [
@@ -87,10 +88,15 @@ class MainWindow(QT.QWidget):
         self.LENGTH: int = 1600
         self.WIDTH: int = 800
 
-        self.mcu.open_serial()
         self.setWindowTitle(self.TITLE)
         self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
         self.show()
+        
+    def __initialize_mcu(self):
+        self.mcu.open_serial()
+        self.mcu.cmd_setAutoReport(PARAM_ACCEL, True, self.update_ms)
+        self.mcu.cmd_setAutoReport(PARAM_GYRO, True, self.update_ms)
+        self.mcu.cmd_setAutoReport(PARAM_VOLT_TEMP, True, self.update_ms)
         
     def __initialize_as_label(self):
         self.voltage_info = QT.QLabel()
@@ -168,6 +174,7 @@ class MainWindow(QT.QWidget):
         self.__initialize_general_info()
         self.__initialize_imu_list()
         self.__initialize_pwm_list()
+        self.__initialize_mcu()
 
         self.__setup_camera()
 
