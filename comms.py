@@ -78,9 +78,9 @@ class Communications:
 
     def kill_elec_ops(self):
         self.mcuVAR.cmd_halt()
-        self.mcuVAR.setAutoReport(PARAM_ACCEL, False, 0)
-        self.mcuVAR.setAutoReport(PARAM_GYRO, False, 0)
-        self.mcuVAR.setAutoReport(PARAM_VOLT_TEMP, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_GYRO, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_VOLT_TEMP, False, 0)
         self.mcuVAR.close_serial()
 
 
