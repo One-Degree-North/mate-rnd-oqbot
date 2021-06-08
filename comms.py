@@ -1,3 +1,6 @@
+import sys
+
+sys.path.insert(0, './mcu-lib')
 from mcu import *
 
 PWM_MIN = 1000

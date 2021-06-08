@@ -15,7 +15,8 @@ from PyQt5.QtGui import QKeyEvent
 
 sys.path.insert(0, '../mcu-lib')
 from mcu import MCUInterface
-
+from comms import Communications
+from exit_program import Exit_Program as ExitProgram
 
 app = QT.QApplication(sys.argv)
 
@@ -161,7 +162,7 @@ class MainWindow(QT.QWidget):
         
     def setup_ui(self):
         self.__create_window()
-        self.__initialize_as_labels()
+        self.__initialize_as_label()
         
         self.__initialize_general_info()
         self.__initialize_imu_list()
@@ -187,13 +188,13 @@ class MainWindow(QT.QWidget):
             self.exit_program.Exit()
         
         if not keyevent.isAutoRepeat():
-            for (key, trigger: str) in self.KEYS_PRESSED:
+            for (key, trigger) in self.KEYS_PRESSED:
                 if keyevent.text() == key:
                     self.on_trigger(trigger)
                 
     def keyReleaseEvent(self, keyevent):
         if not keyevent.isAutoRepeat():
-            for (key, trigger: str) in self.KEYS_RELEASAED:
+            for (key, trigger) in self.KEYS_RELEASAED:
                 if keyevent.text() == key:
                     self.on_trigger(trigger)
                     

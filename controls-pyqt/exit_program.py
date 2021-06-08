@@ -1,5 +1,5 @@
 import sys
-
+from comms import Communications
 
 class Exit_Program:
     def __init__(self, comm: Communications):
