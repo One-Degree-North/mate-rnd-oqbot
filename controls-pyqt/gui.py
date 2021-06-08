@@ -195,7 +195,7 @@ class MainWindow(QT.QWidget):
                 
     def keyReleaseEvent(self, keyevent):
         if not keyevent.isAutoRepeat():
-            for (key, trigger) in self.KEYS_RELEASAED:
+            for (key, trigger) in self.KEYS_RELEASED:
                 if keyevent.text() == key:
                     self.on_trigger(trigger)
                     
