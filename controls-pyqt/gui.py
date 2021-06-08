@@ -87,6 +87,7 @@ class MainWindow(QT.QWidget):
         self.LENGTH: int = 1600
         self.WIDTH: int = 800
 
+        self.mcu.open_serial()
         self.setWindowTitle(self.TITLE)
         self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
         self.show()
