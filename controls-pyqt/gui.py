@@ -15,6 +15,7 @@ from PyQt5.QtGui import QKeyEvent
 
 sys.path.insert(0, '../mcu-lib')
 from mcu import MCUInterface
+from command_constants import *
 from comms import Communications
 from exit_program import Exit_Program as ExitProgram
 
