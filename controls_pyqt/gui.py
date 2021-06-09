@@ -33,25 +33,25 @@ class MainWindow(QT.QWidget):
 
         # (key, message sent to comms)
         self.KEYS_PRESSED = [
-            ("W", "lw"),
+            ("W", "lw"),  # forward
             ("w", "w"),
-            ("A", "la"),
+            ("A", "la"),  # turn_left
             ("a", "a"),
-            ("S", "ls"),
+            ("S", "ls"),  # backwards
             ("s", "s"),
-            ("D", "ld"),
+            ("D", "ld"),  # turn_right
             ("d", "d"),
-            ("E", "le"),
+            ("E", "le"),  # down
             ("e", "e"),
-            ("Q", "lq"),
+            ("Q", "lq"),  # up
             ("q", "q"),
-            ("I", "li"),
+            ("I", "li"),  # tilt_up
             ("i", "i"),
-            ("K", "lk"),
+            ("K", "lk"),  # tilt_down
             ("k", "k"),
-            ("f", "f"),
+            ("f", "f"),   # servo stop
             ("F", "f"),
-            (" ", "spacebar")
+            (" ", "spacebar")  # servo toggle
         ]
 
         self.KEYS_RELEASED = [
