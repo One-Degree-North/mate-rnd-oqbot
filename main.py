@@ -19,14 +19,19 @@ SENSITIVE_PERCENTAGE: int = 50
 def start():
 	app = QApplication(sys.argv)
 	feather = mcu.MCUInterface(PORT,
-                               baud = BAUD_RATE,
-                               close_on_startup = CLOSE_ON_STARTUP,
-                               refresh_rate = REFRESH_RATE,
-                               max_read = MAX_READ)
-	communications = comms.Communications(feather, SENSITIVE_PERCENTAGE, INITIAL_PERCENTAGE)
-	exit = exit_program.Exit_Program(communications)
-	window2 = gui.MainWindow(feather, communications, exit)
+                                baud = BAUD_RATE,
+                                close_on_startup = CLOSE_ON_STARTUP,
+                                refresh_rate = REFRESH_RATE,
+                                max_read = MAX_READ)
+	communications = comms.Communications(feather,
+					      SENSITIVE_PERCENTAGE, 
+					      INITIAL_PERCENTAGE)
+	exit = exit_program.Exit_Program(communications, app)
+	window2 = gui.MainWindow(feather, 
+				 app,
+				 communications, 
+				 exit)
 	window2.setup_ui()
-	sys.exit(app.exec_())
+	#sys.exit(app.exec_())
 
 start()
