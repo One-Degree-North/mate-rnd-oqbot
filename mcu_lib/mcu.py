@@ -9,8 +9,8 @@ import time
 import threading
 from queue import Queue
 
-from packets import *
-from command_constants import *
+from mcu_lib.packets import *
+from mcu_lib.command_constants import *
 
 BYTESTRING_ZERO = chr(0x00).encode('latin')
 FORWARD_PACKET_SIZE = 8

@@ -1,4 +1,5 @@
-from mcu import *
+from mcu_lib.command_constants import *
+from mcu_lib.mcu import *
 
 PWM_MIN = 1000
 PWM_MID = 1500
@@ -75,9 +76,9 @@ class Communications:
 
     def kill_elec_ops(self):
         self.mcuVAR.cmd_halt()
-        self.mcuVAR.setAutoReport(PARAM_ACCEL, False, 0)
-        self.mcuVAR.setAutoReport(PARAM_GYRO, False, 0)
-        self.mcuVAR.setAutoReport(PARAM_VOLT_TEMP, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_GYRO, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_VOLT_TEMP, False, 0)
         self.mcuVAR.close_serial()
 
 
