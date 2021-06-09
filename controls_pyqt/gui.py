@@ -178,7 +178,7 @@ class MainWindow(QT.QWidget):
         self.camera.setCaptureMode(QTM.QCamera.CaptureViewfinder)
         self.camera.start()
         
-        self.camera2 = QTM.QCamera(str.encode("/dev/video2"))
+        self.camera2 = QTM.QCamera(str.encode("/dev/video1"))
         self.camera2_view = QTMW.QCameraViewfinder()
         self.camera2.setViewfinder(self.camera2_view)
         self.camera2.setCaptureMode(QTM.QCamera.CaptureViewfinder)
