@@ -5,16 +5,13 @@
 import random
 import sys
 
-
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer, QEvent
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
 from PyQt5.QtGui import QKeyEvent
 
-
-sys.path.insert(0, '../mcu-lib')
-from mcu import MCUInterface
+from mcu_lib.mcu import MCUInterface
 
 
 app = QT.QApplication(sys.argv)
