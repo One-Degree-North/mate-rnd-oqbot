@@ -56,20 +56,20 @@ class Communications:
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, percent)
 
     def up(self, percent: int):
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, -percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, -percent)
 
     def down(self, percent: int):
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, -percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, -percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, percent)
 
     def tilt_up(self, percent: int):
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, -percent)
-
-    def tilt_down(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, -percent)
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, percent)
+
+    def tilt_down(self, percent: int):
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, -percent)
 
     def add_to_queue(self, data):
         self.queue.put(data)
