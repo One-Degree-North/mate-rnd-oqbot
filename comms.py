@@ -1,3 +1,6 @@
+from threading import Thread
+from queue import Queue, Empty, Full
+
 from mcu_lib.command_constants import *
 from mcu_lib.mcu import *
 
@@ -31,6 +34,10 @@ class Communications:
         self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
         self.initial_percent = initial_percent
         self.spacebar_count = 0
+        self.mcu_thread: Thread = Thread(target=self.read_send())
+        self.queue = Queue()
+        self.thread_running = True
+        self.mcu_thread.start()
 
     def forward(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, percent)
@@ -64,38 +71,49 @@ class Communications:
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, -percent)
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, percent)
 
-    def read_send(self, key_pressed):
-        # get multiplier
-        multiplier_percent = self.initial_percent if len(key_pressed) == 1 else \
-                                          (0 if key_pressed[0] == "s" else self.MULTIPLIER_PERCENT)
-        # debug
-        print("sending", key_pressed, "with percent", multiplier_percent)
-        # parse last letter of key_pressed by command, sending in multiplier
-        if key_pressed[-1] == "w":
-            self.forward(multiplier_percent)
-        elif key_pressed[-1] == "s":
-            self.backwards(multiplier_percent)
-        elif key_pressed[-1] == "a":
-            self.turn_left(multiplier_percent)
-        elif key_pressed[-1] == "d":
-            self.turn_right(multiplier_percent)
-        elif key_pressed[-1] == "e":
-            self.up(multiplier_percent)
-        elif key_pressed[-1] == "q":
-            self.down(multiplier_percent)
-        elif key_pressed[-1] == "i":
-            self.tilt_up(multiplier_percent)
-        elif key_pressed[-1] == "k":
-            self.tilt_down(multiplier_percent)
-        elif key_pressed[-1] == "f":
-            self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MID)
-        elif key_pressed == "spacebar":
-            self.spacebar_count += 1
-            self.spacebar_count %= 2
-            if self.spacebar_count == 0:
-                self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MAX)
-            elif self.spacebar_count == 1:
-                self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MIN)
+    def add_to_queue(self, data):
+        self.queue.put(data)
+
+    def read_send(self):
+        while self.thread_running:
+            try:
+                key_pressed = self.queue.get()
+            except Empty:
+                time.sleep(0.04)
+                continue
+
+            # get multiplier
+            multiplier_percent = self.initial_percent if len(key_pressed) == 1 else \
+                                              (0 if key_pressed[0] == "s" else self.MULTIPLIER_PERCENT)
+            # debug
+            print("sending", key_pressed, "with percent", multiplier_percent)
+            # parse last letter of key_pressed by command, sending in multiplier
+            if key_pressed[-1] == "w":
+                self.forward(multiplier_percent)
+            elif key_pressed[-1] == "s":
+                self.backwards(multiplier_percent)
+            elif key_pressed[-1] == "a":
+                self.turn_left(multiplier_percent)
+            elif key_pressed[-1] == "d":
+                self.turn_right(multiplier_percent)
+            elif key_pressed[-1] == "e":
+                self.up(multiplier_percent)
+            elif key_pressed[-1] == "q":
+                self.down(multiplier_percent)
+            elif key_pressed[-1] == "i":
+                self.tilt_up(multiplier_percent)
+            elif key_pressed[-1] == "k":
+                self.tilt_down(multiplier_percent)
+            elif key_pressed[-1] == "f":
+                self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MID)
+            elif key_pressed == "spacebar":
+                self.spacebar_count += 1
+                self.spacebar_count %= 2
+                if self.spacebar_count == 0:
+                    self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MAX)
+                elif self.spacebar_count == 1:
+                    self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MIN)
+            time.sleep(0.004)
 
     def start_elec_ops(self):
         self.mcuVAR.open_serial()
@@ -119,6 +137,9 @@ class Communications:
         self.mcuVAR.cmd_setAutoReport(PARAM_VOLT_TEMP, True, UPDATE_MS)
 
     def kill_elec_ops(self):
+        self.thread_running = False
+        self.mcu_thread.join()
+
         self.mcuVAR.cmd_halt()
         self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, False, 0)
         self.mcuVAR.cmd_setAutoReport(PARAM_GYRO, False, 0)

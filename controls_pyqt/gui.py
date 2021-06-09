@@ -192,7 +192,7 @@ class MainWindow(QT.QWidget):
         sys.exit(self.app.exec_())
 
     def on_trigger(self, trigger: str):
-        self.comms.read_send(trigger)
+        self.comms.add_to_queue(trigger)
 
     def keyPressEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Escape:

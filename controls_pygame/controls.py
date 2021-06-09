@@ -39,7 +39,7 @@ class Controls:
         self.screen.fill(self.SCREEN_COLOR)
     
     def on_trigger(self, key: str):
-        self.comms.read_send(key)
+        self.comms.add_to_queue(key)
 
     def __check_keys(self, event, keys):
         for (key, trigger: str) in keys:
