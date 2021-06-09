@@ -84,6 +84,8 @@ while True:
                 print(mcu.gyro_queue.get(timeout=1))
             elif queue == "vt":
                 print(mcu.volt_temp_queue.get(timeout=1))
+            elif queue == "motor":
+                print(mcu.motor_queue.get(timeout=1))
             else:
                 print("invalid queue")
         elif cmd == "echo":

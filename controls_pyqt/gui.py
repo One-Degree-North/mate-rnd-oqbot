@@ -12,6 +12,7 @@ import PyQt5.QtWidgets as QT
 from PyQt5.QtGui import QKeyEvent
 
 from mcu_lib.mcu import MCUInterface
+from mcu_lib.command_constants import *
 from comms import Communications
 from controls_pyqt.exit_program import ExitProgram
 
@@ -29,6 +30,7 @@ class MainWindow(QT.QWidget):
         self.NUM_THRUSTERS = 4
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
         self.servo_speed: int = 0
+        (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
 
         # (key, message sent to comms)
         self.KEYS_PRESSED = [
@@ -44,13 +46,16 @@ class MainWindow(QT.QWidget):
             ("e", "e"),
             ("Q", "lq"),  # up
             ("q", "q"),
-            ("I", "li"),  # tilt_up
-            ("i", "i"),
-            ("K", "lk"),  # tilt_down
-            ("k", "k"),
-            ("f", "f"),   # servo stop
+            ("Z", "lz"),  # tilt_up
+            ("z", "z"),
+            ("X", "lx"),  # tilt_down
+            ("x", "x"),
+            ("f", "f"),   # servo min
             ("F", "f"),
-            (" ", "spacebar")  # servo toggle
+            ("g", "g"),   # servo mid
+            ("G", "g"),
+            ("h", "h"),   # servo max
+            ("H", "h")
         ]
 
         self.KEYS_RELEASED = [
@@ -60,8 +65,8 @@ class MainWindow(QT.QWidget):
             ("d", "sd"),
             ("e", "se"),
             ("q", "sq"),
-            ("i", "si"),
-            ("k", "sk")
+            ("z", "sz"),
+            ("x", "sx")
         ]
         
         self.fourk_stylesheet = """
@@ -88,9 +93,6 @@ class MainWindow(QT.QWidget):
         return self.app
 
     def __update_text(self):
-        (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
-        self.thruster1speed, self.thruster2speed, self.thruster3speed, self.thruster4speed = self.thruster_speed
-
         self.voltage_info.setText(str(self.mcu.latest_voltage))
 
         self.x_gyro.setText(str(self.mcu.latest_gyro[self.X_INDEX]))
@@ -103,11 +105,13 @@ class MainWindow(QT.QWidget):
 
         self.temperature.setText(str(self.mcu.latest_temp))
 
-        self.thruster1.setText(str(self.thruster_speed[0]))
-        self.thruster2.setText(str(self.thruster_speed[1]))
-        self.thruster3.setText(str(self.thruster_speed[2]))
-        self.thruster4.setText(str(self.thruster_speed[3]))
-        self.servo.setText(str(self.servo_speed))
+        self.thruster1.setText(str(self.mcu.latest_motor_status.motors[MOTOR_LEFT]))
+        self.thruster2.setText(str(self.mcu.latest_motor_status.motors[MOTOR_RIGHT]))
+        self.thruster3.setText(str(self.mcu.latest_motor_status.motors[MOTOR_FRONT]))
+        self.thruster4.setText(str(self.mcu.latest_motor_status.motors[MOTOR_BACK]))
+        self.servo.setText(str(self.mcu.latest_motor_status.servo))
+
+        # self.update()
 
     def __create_window(self):
         self.TITLE: str = 'MATE'
@@ -162,11 +166,11 @@ class MainWindow(QT.QWidget):
     def __initialize_pwm_list(self):
         self.pwm_list = QT.QFormLayout()
 
-        self.pwm_list.addRow(QT.QLabel("Thruster 1:"), self.thruster1)
-        self.pwm_list.addRow(QT.QLabel("Thruster 2:"), self.thruster2)
-        self.pwm_list.addRow(QT.QLabel("Thruster 3:"), self.thruster3)
-        self.pwm_list.addRow(QT.QLabel("Thruster 4:"), self.thruster4)
-        self.pwm_list.addRow(QT.QLabel("Servo:"), self.servo)
+        self.pwm_list.addRow(QT.QLabel("Left Thruster:"), self.thruster1)
+        self.pwm_list.addRow(QT.QLabel("Right Thruster:"), self.thruster2)
+        self.pwm_list.addRow(QT.QLabel("Front Thruster:"), self.thruster3)
+        self.pwm_list.addRow(QT.QLabel("Back Thruster:"), self.thruster4)
+        self.pwm_list.addRow(QT.QLabel("Claw:"), self.servo)
 
         self.pwmbox = QT.QGroupBox("PWM")
         self.pwmbox.setLayout(self.pwm_list)
@@ -198,6 +202,7 @@ class MainWindow(QT.QWidget):
         self.__initialize_pwm_list()
 
         self.comms.start_elec_ops()
+        self.comms.start_thread()
 
         self.__setup_camera()
 
@@ -213,7 +218,7 @@ class MainWindow(QT.QWidget):
         sys.exit(self.app.exec_())
 
     def on_trigger(self, trigger: str):
-        self.comms.add_to_queue(trigger)
+        self.comms.read_send(trigger)
 
     def keyPressEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Escape:

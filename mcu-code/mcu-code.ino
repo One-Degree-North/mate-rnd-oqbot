@@ -36,6 +36,8 @@
 #define PWM_MIN 1000
 #define PWM_MID 1500
 #define PWM_MAX 2000
+#define CLAW_MIN 1010
+#define CLAW_MAX 1660
 #define NUM_MOTORS 5
 byte pins[] = {A4, A5, 9, 10, 11};
 uint16_t calibration[] = {1000, 1000, 1000, 1000, 1000};
@@ -58,6 +60,10 @@ boolean enableFeedback = true;
 boolean enableAutoReport[] = {false, false, false};
 uint16_t autoReportDelay[] = {100, 100, 100};
 unsigned long autoReportTimers[] = {0, 0, 0};
+
+// values for status
+int8_t motorPercents[] = {0, 0, 0, 0, 0};
+uint16_t motorMicros[] = {PWM_MID, PWM_MID, PWM_MID, PWM_MID, PWM_MID};
 
 // --------------- SECTION: INITIALIZATION --------------- //
 
@@ -134,10 +140,12 @@ void setPWM(byte motor, uint16_t microseconds){
   Debug("setPWM: specified motor now at ");
   Debug(microseconds);
   motors[motor].writeMicroseconds(microseconds);
+  motorMicros[motor] = microseconds;
 }
 
 void setPercent(byte motor, int8_t percent){
   setPWM(motor, calibrate(motor, percentToMicroseconds(percent)));
+  motorPercents[motor] = percent;
 }
 
 void setAccelerometerRange(byte mode){
@@ -207,6 +215,10 @@ void setGyroscopeDivisor(byte divisor){
 void updateSensors(){
   Debugln("updateSensors: updating sensors");
   icm.getEvent(&icmAccel, &icmGyro, &icmTemp);
+}
+
+int8_t mapServo(){
+  return (int8_t) map((long) motorMicros, CLAW_MIN, CLAW_MAX, -127, 128); 
 }
 
 // --------------- SECTION: SERIAL COMMUNICATION --------------- //
@@ -342,6 +354,16 @@ void fail(byte ogcmd, byte ogparam){
   }
 }
 
+// motor_status return: 0x1C
+void sendMotorStatus(byte param){
+  byte toSend[4];
+  toSend[0] = motorPercents[0];
+  toSend[1] = motorPercents[1];
+  toSend[2] = motorPercents[2];
+  toSend[3] = motorPercents[3];
+  sendPacket(0x10, param, 0x1C, (uint8_t) mapServo(), toSend);
+}
+
 // test command: 0x00
 void test(byte param){
   Debug("test: called with param ");
@@ -387,6 +409,7 @@ void setMotorCalibrated(byte param, byte *data){
   Debugln(percent);
   setPercent(param, percent);
   ok(0x12, param);
+  sendMotorStatus(param);
 }
 
 // setMotorCalibration command: 0x13
