@@ -83,30 +83,32 @@ class Communications:
                 continue
 
             # get multiplier
-            multiplier_percent = self.initial_percent if len(key_pressed) == 1 else \
-                                              (0 if key_pressed[0] == "s" else self.MULTIPLIER_PERCENT)
+            key_is_released = not key_pressed.pressed
+            multiplier_percent = self.initial_percent if(key_pressed.pressed and not shift) else \
+                                              (0 if key_is_released else self.MULTIPLIER_PERCENT)
             # debug
             print("sending", key_pressed, "with percent", multiplier_percent)
             # parse last letter of key_pressed by command, sending in multiplier
-            if key_pressed[-1] == "w":
+            key = key_pressed.key
+            if key == "w":
                 self.forward(multiplier_percent)
-            elif key_pressed[-1] == "s":
+            elif key == "s":
                 self.backwards(multiplier_percent)
-            elif key_pressed[-1] == "a":
+            elif key == "a":
                 self.turn_left(multiplier_percent)
-            elif key_pressed[-1] == "d":
+            elif key == "d":
                 self.turn_right(multiplier_percent)
-            elif key_pressed[-1] == "e":
+            elif key == "e":
                 self.up(multiplier_percent)
-            elif key_pressed[-1] == "q":
+            elif key == "q":
                 self.down(multiplier_percent)
-            elif key_pressed[-1] == "i":
+            elif key == "i":
                 self.tilt_up(multiplier_percent)
-            elif key_pressed[-1] == "k":
+            elif key == "k":
                 self.tilt_down(multiplier_percent)
-            elif key_pressed[-1] == "f":
+            elif key == "f":
                 self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MID)
-            elif key_pressed == "spacebar":
+            elif key == " ":
                 self.spacebar_count += 1
                 self.spacebar_count %= 2
                 if self.spacebar_count == 0:
