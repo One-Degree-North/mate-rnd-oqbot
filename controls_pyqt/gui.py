@@ -100,7 +100,7 @@ class MainWindow(QT.QWidget):
         self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
         self.show()
 
-    def __initialize_as_label(self):
+    def __initialize_as_labels(self):
         self.voltage_info = QT.QLabel()
 
         self.x_gyro = QT.QLabel()
