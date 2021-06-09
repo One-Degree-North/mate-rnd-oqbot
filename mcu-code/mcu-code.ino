@@ -15,20 +15,18 @@
 #define VERSION 0
 
 // define debug
-#define Debug_Serial Serial
-#define DEBUG_BAUDRATE 230400
+// #define Debug_Serial Serial
+// #define DEBUG_BAUDRATE 230400
 
 // enable debug
-#define DEBUG
-#define Debug(a) (Serial.print(a))
-#define Debugln(a) (Serial.println(a))
-#define VERBOSE
+// #define DEBUG
+// #define Debug(a) (Serial.print(a))
+// #define Debugln(a) (Serial.println(a))
+// #define VERBOSE
 
-/*
 // disable debug
 #define Debug(a)
 #define Debugln(a)
-*/
 
 // define communications
 #define Comms Serial1
@@ -103,6 +101,7 @@ void initMotors() {
 }
 
 void setup() {
+  digitalWrite(8, HIGH);
   initSerial();
   initSensors();
   initMotors();
@@ -214,17 +213,20 @@ void readSerial(){
   if (Comms.available() >= 8){
     // read Comms until header is received or not enough bytes
     byte header = 0x00;
-    while (Comms.available() >= 7 && header != 0xCA){
+    while (Comms.available() > 7 && header != 0xCA){
       header = Comms.read();
     } 
     // verify header
     if (header != 0xCA) {
+      digitalWrite(8, LOW);
       Debugln("readSerial: packet received, but header did not match.");
       #ifdef VERBOSE
       Debug("header: ");
       Debugln(header);
       #endif
       return; 
+    } else {
+      digitalWrite(8, HIGH);
     }
     // get the contents of the packet
     byte cmd = Comms.read(); // 0x1
@@ -252,8 +254,6 @@ void readSerial(){
       Debug(data[2]);
       Debug(" ");
       Debug(data[3]);
-      Debug(" ");
-      Debug(data[4]);
       Debug(" ");
       Debugln(footer);
       #endif
