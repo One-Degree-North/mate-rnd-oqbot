@@ -25,7 +25,7 @@ class MainWindow(QT.QWidget):
         self.mcu: MCUInterface = mcu_object
         self.comms: Communications = comms
         self.app = QT.QApplication(sys.argv)
-        self.exit_program: ExitProgram = ExitProgram(self.comms, self.app)
+        self.exit_program: ExitProgram = ExitProgram(self.comms)
 
         self.NUM_THRUSTERS = 4
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
@@ -197,7 +197,7 @@ class MainWindow(QT.QWidget):
 
     def keyPressEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Escape:
-            self.exit_program.Exit()
+            self.exit_program.exit()
 
         if not key_event.isAutoRepeat():
             for (key, trigger) in self.KEYS_PRESSED:
@@ -212,4 +212,4 @@ class MainWindow(QT.QWidget):
                     self.on_trigger(trigger)
 
     def closeEvent(self, QCloseEvent):
-        self.exit_program.Exit()
+        self.exit_program.exit()
