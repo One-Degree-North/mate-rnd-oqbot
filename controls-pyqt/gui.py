@@ -19,7 +19,6 @@ from command_constants import *
 from comms import Communications
 from exit_program import Exit_Program as ExitProgram
 
-app = QT.QApplication(sys.argv)
 
 
 class MainWindow(QT.QWidget):

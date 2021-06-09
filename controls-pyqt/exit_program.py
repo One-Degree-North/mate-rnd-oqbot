@@ -1,4 +1,3 @@
-import sys
 from comms import Communications
 
 class Exit_Program:
@@ -7,4 +6,3 @@ class Exit_Program:
         
     def Exit(self):
         self.comms.kill_elec_ops()
-        sys.exit()
