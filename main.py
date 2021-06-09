@@ -1,4 +1,3 @@
-import sys
 import comms
 sys.path.insert(0, './controls-pyqt')
 import exit_program
@@ -32,6 +31,5 @@ def start():
 				 communications, 
 				 exit)
 	window2.setup_ui()
-	#sys.exit(app.exec_())
 
 start()
