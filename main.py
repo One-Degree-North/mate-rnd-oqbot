@@ -12,6 +12,7 @@ port_list = list_ports.comports()
 if not port_list:
     print("No available tty/COM ports. Halting!")
     exit()
+port_list = [x.device for x in port_list]
 print(f"List of available tty/COM ports: {port_list}")
 PORT: str = input("Port to use: ")
 
