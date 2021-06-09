@@ -34,7 +34,7 @@ class Communications:
         self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
         self.initial_percent = initial_percent
         self.spacebar_count = 0
-        self.mcu_thread: Thread = Thread(target=self.read_send())
+        self.mcu_thread: Thread = Thread(target=self.read_send)
         self.queue = Queue()
         self.thread_running = True
         self.mcu_thread.start()
