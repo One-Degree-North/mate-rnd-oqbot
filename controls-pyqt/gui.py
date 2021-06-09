@@ -19,15 +19,14 @@ from command_constants import *
 from comms import Communications
 from exit_program import Exit_Program as ExitProgram
 
-app = QT.QApplication(sys.argv)
-
 
 class MainWindow(QT.QWidget):
-    def __init__(self, mcuobject: MCUInterface, comms: Communications, exit_program: ExitProgram):
+    def __init__(self, mcuobject: MCUInterface, app, comms: Communications, exit_program: ExitProgram):
         super().__init__()
         self.mcu: MCUInterface = mcuobject
         self.comms: Communications = comms
         self.exit_program: ExitProgram = exit_program
+        self.app = app
             
         self.NUM_THRUSTERS = 4
         self.thruster_speed: int = [0] * self.NUM_THRUSTERS
