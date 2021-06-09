@@ -189,6 +189,9 @@ class MainWindow(QT.QWidget):
         self.timer.timeout.connect(self.__update_text)
         self.timer.start(self.TIMEOUT_INTERVAL)
 
+    def start_ui(self):
+        sys.exit(self.app.exec_())
+
     def on_trigger(self, trigger: str):
         self.comms.read_send(trigger)
 

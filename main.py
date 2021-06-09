@@ -30,7 +30,7 @@ def start():
     communications = comms.Communications(feather, SENSITIVE_PERCENTAGE, INITIAL_PERCENTAGE)
     window2 = gui.MainWindow(feather, communications)
     window2.setup_ui()
-
+    window2.start_ui()
 
 if __name__ == "__main__":
     start()

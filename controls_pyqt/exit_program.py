@@ -9,4 +9,3 @@ class ExitProgram:
 
     def Exit(self):
         self.comms.kill_elec_ops()
-        sys.exit(self.app.exec_())
