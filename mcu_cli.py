@@ -3,7 +3,8 @@
 # refer to docs/mcu_cli.md for usage details.
 
 
-from mcu import *
+from mcu_lib.mcu import *
+from mcu_lib.command_constants import *
 
 
 print("mcu_cli.py | simple mcu.py interface\nrefer to docs/mcu_cli.md for usage details.")
