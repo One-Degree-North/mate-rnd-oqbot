@@ -5,5 +5,5 @@ class ExitProgram:
         self.comms = comm
         
     def exit(self):
-        self.comms.kill_op()
+        self.comms.kill_elec_ops()
         sys.exit()
