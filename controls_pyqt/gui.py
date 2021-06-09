@@ -30,7 +30,7 @@ class MainWindow(QT.QWidget):
 
         self.NUM_THRUSTERS = 4
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
-        self.servospeed: int = 0
+        self.servo_speed: int = 0
 
         # (key, message sent to comms)
         self.KEYS_PRESSED = [
@@ -46,6 +46,12 @@ class MainWindow(QT.QWidget):
             ("e", "e"),
             ("Q", "lq"),
             ("q", "q"),
+            ("I", "li"),
+            ("i", "i"),
+            ("K", "lk"),
+            ("k", "k"),
+            ("f", "f"),
+            ("F", "f"),
             (" ", "spacebar")
         ]
 
@@ -55,7 +61,9 @@ class MainWindow(QT.QWidget):
             ("s", "ss"),
             ("d", "sd"),
             ("e", "se"),
-            ("q", "sq")
+            ("q", "sq"),
+            ("i", "si"),
+            ("k", "sk")
         ]
 
     def __update_text(self):
@@ -74,11 +82,11 @@ class MainWindow(QT.QWidget):
 
         self.temperature.setText(str(self.mcu.latest_temp))
 
-        self.thruster1.setText(str(self.thruster1speed))
-        self.thruster2.setText(str(self.thruster2speed))
-        self.thruster3.setText(str(self.thruster3speed))
-        self.thruster4.setText(str(self.thruster4speed))
-        self.servo.setText(str(self.servospeed))
+        self.thruster1.setText(str(self.thruster_speed[0]))
+        self.thruster2.setText(str(self.thruster_speed[1]))
+        self.thruster3.setText(str(self.thruster_speed[2]))
+        self.thruster4.setText(str(self.thruster_speed[3]))
+        self.servo.setText(str(self.servo_speed))
 
     def __create_window(self):
         self.TITLE: str = 'MATE'
@@ -168,6 +176,8 @@ class MainWindow(QT.QWidget):
         self.__initialize_imu_list()
         self.__initialize_pwm_list()
 
+        self.comms.start_elec_ops()
+
         self.__setup_camera()
 
         self.ser_text.setReadOnly(True)
@@ -192,8 +202,8 @@ class MainWindow(QT.QWidget):
 
     def keyReleaseEvent(self, keyevent):
         if not keyevent.isAutoRepeat():
-            for (key, trigger) in self.KEYS_RELEASAED:
-                if keyevent.text() == key:
+            for (key, trigger) in self.KEYS_RELEASED:
+                if keyevent.text().lower() == key:
                     self.on_trigger(trigger)
 
     def closeEvent(self, QCloseEvent):
