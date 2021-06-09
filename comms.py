@@ -36,6 +36,9 @@ class Communications:
         self.spacebar_count = 0
         self.mcu_thread: Thread = Thread(target=self.update_state)
         self.state: MotorState = MotorState()
+        self.thread_running = False
+
+    def start_thread(self):
         self.thread_running = True
         self.mcu_thread.start()
 

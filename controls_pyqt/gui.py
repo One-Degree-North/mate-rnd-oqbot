@@ -202,6 +202,7 @@ class MainWindow(QT.QWidget):
         self.__initialize_pwm_list()
 
         self.comms.start_elec_ops()
+        self.comms.start_thread()
 
         self.__setup_camera()
 
