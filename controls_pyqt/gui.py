@@ -17,14 +17,14 @@ from controls_pyqt.exit_program import ExitProgram
 
 
 class MainWindow(QT.QWidget):
-    def __init__(self, mcu_object: MCUInterface, comms: Communications):
+    def __init__(self, mcu_object: MCUInterface, comms: Communications, app: QT.QApplication):
         super().__init__()
         self.timer = QTimer()
         self.TIMEOUT_INTERVAL = 100
         self.ser_text = QT.QPlainTextEdit("text")
         self.mcu: MCUInterface = mcu_object
         self.comms: Communications = comms
-        self.app = QT.QApplication(sys.argv)
+        self.app = app
         self.exit_program: ExitProgram = ExitProgram(self.comms)
         self.NUM_THRUSTERS = 4
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS

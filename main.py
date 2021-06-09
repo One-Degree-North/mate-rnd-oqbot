@@ -1,7 +1,10 @@
+import sys
+
 import comms
 from controls_pyqt import gui, exit_program
 from mcu_lib import mcu
 from serial.tools import list_ports
+from PyQt5.QtWidgets import QApplication
 
 
 BAUD_RATE: int = 230400
@@ -29,9 +32,10 @@ def start():
                                refresh_rate=REFRESH_RATE,
                                max_read=MAX_READ)
     communications = comms.Communications(feather, SENSITIVE_PERCENTAGE, INITIAL_PERCENTAGE)
-    window2 = gui.MainWindow(feather, communications)
+    window2 = gui.MainWindow(feather, communications, QApplication(sys.argv))
     window2.setup_ui()
     window2.start_ui()
+
 
 if __name__ == "__main__":
     start()
