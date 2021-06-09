@@ -83,6 +83,7 @@ class MCUInterface:
         self.latest_gyro = [0, 0, 0]
         self.latest_voltage = 0
         self.latest_temp = 0
+        self.latest_motor_status: MotorStatusPacket = MotorStatusPacket((0, 0, 0, 0), 0, 0)
         self.read_size = max_read
         if close_on_startup:
             self.__serial.close()
@@ -93,6 +94,7 @@ class MCUInterface:
         self.accel_queue = Queue(MAX_QUEUE_SIZE)
         self.gyro_queue = Queue(MAX_QUEUE_SIZE)
         self.volt_temp_queue = Queue(MAX_QUEUE_SIZE)
+        self.motor_queue = Queue(MAX_QUEUE_SIZE)
 
     def get_port(self) -> str:
         """
@@ -200,6 +202,13 @@ class MCUInterface:
             self.latest_temp = temp
             self.latest_voltage = volts
             self.volt_temp_queue.put(VoltageTemperaturePacket(volts, temp, packet.timestamp))
+        elif packet.cmd == bs(RETURN_MOTOR):
+            # motor status
+            servo = struct.unpack('b', packet.param)[0]
+            motors = struct.unpack('cccc', data_bs)
+            packet = MotorStatusPacket(motors, servo, packet.timestamp)
+            self.motor_queue.put(packet)
+            self.latest_motor_status = packet
         else:
             print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
 

@@ -67,6 +67,9 @@ All values are in this format:
 	- param: 0x00 (fail) or 0xFF (success)
 	- data field: None
 	- returned as a success message when any command with "set" is invoked.
+- 0x1C - motor_status
+    - param: `uint8_t` representing  the range of motor 4's motion (1010-1660)
+    - data field: four `int8_t`s representing the most recently set % of each motor
 - 0x3A - accelerometer
 	- param: 0x00 (X), 0x30 (Y), 0x60 (Z)
 	- data field: four bytes are a single-precision `float`, representing the current value of that axis of the accelerometer.

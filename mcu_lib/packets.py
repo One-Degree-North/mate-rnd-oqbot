@@ -3,6 +3,7 @@
 
 
 import time
+from typing import Tuple
 
 
 AXES = ("X", "Y", "Z")
@@ -119,3 +120,21 @@ class VoltageTemperaturePacket:
 
     def __str__(self):
         return f"[{self.timestamp}] Voltage: {self.voltage}, Temperature: {self.temperature}"
+
+
+class MotorStatusPacket:
+    """
+        GyroPacket - Class for representing returned packets with cmd 0x1C.
+
+        Attributes:
+            timestamp: float - unix time representation of when the packet was received.
+            motors: Tuple[int, int, int, int] - current motor positions in microseconds.
+            servo: int - current servo value, between -127 and 127.
+        """
+    def __init__(self, motors: Tuple[int, int, int, int], servo: int, timestamp: float):
+        self.timestamp = timestamp
+        self.motors = motors
+        self.servo = servo
+
+    def __str__(self):
+        return f"[{self.timestamp}] Motor Status: {self.motors}, Servo Value: {self.servo}"
