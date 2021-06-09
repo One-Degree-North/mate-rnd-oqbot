@@ -113,24 +113,26 @@ float getVoltage(int rawInput){
   return (rawInput / 1024.0) * (R1 + R2) / R2 * voltage_calibration;
 }
 
-uint16_t percentToMicroseconds(int8_t percent){
+int16_t percentToMicroseconds(int8_t percent){
   if (percent < -100 || percent > 100) { return PWM_MID; }
   if (percent >= 0){
-    return PWM_MID + (uint16_t) (percent * (PWM_MAX - PWM_MID) / 100.0);
+    return (int16_t) PWM_MID + (int16_t) (percent * (PWM_MAX - PWM_MID) / 100);
   } else {
-    return PWM_MID - (uint16_t) (percent * (PWM_MID - PWM_MIN) / 100.0);
+    return (int16_t) PWM_MID + (int16_t) (percent * (PWM_MID - PWM_MIN) / 100);
   }
 }
 
 uint16_t calibrate(byte motor, uint16_t microseconds){
   if (microseconds >= PWM_MID){
-    return PWM_MID + min((microseconds - PWM_MID) * calibration[motor] / 1000, PWM_MAX);
+    return PWM_MID + min((microseconds - PWM_MID) * calibration[motor] / 1000, PWM_MAX - PWM_MID);
   } else {
-    return PWM_MID - max((PWM_MID - microseconds) * calibration[motor] / 1000, PWM_MIN);
+    return PWM_MID - min((PWM_MID - microseconds) * calibration[motor] / 1000, PWM_MID - PWM_MIN);
   }
 }
 
 void setPWM(byte motor, uint16_t microseconds){
+  Debug("setPWM: specified motor now at ");
+  Debug(microseconds);
   motors[motor].writeMicroseconds(microseconds);
 }
 
@@ -381,7 +383,7 @@ void setMotorCalibrated(byte param, byte *data){
   Debug(param);
   Debug(" to ");
   // data[0] should be int8_t... right?
-  int8_t percent = data[0];
+  int8_t percent = (int8_t) data[0];
   Debugln(percent);
   setPercent(param, percent);
   ok(0x12, param);
