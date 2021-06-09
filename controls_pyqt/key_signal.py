@@ -5,7 +5,7 @@ class KeySignal:
 		self.key: str = key
 		self.pressed: bool = pressed
 		
-		if self.key ^ 32 > self.key or self.key ^ 32 == 0: # self.key^32 == 0 is checking whether it is a space
+		if self.key ^ 32 > self.key or self.key ^ 32 == 0: # self.key ^ 32 == 0 checks whether it is a space or not
 			self.shift = False
-		elif self.key ^ 32 < self.key:
+		else:
 			self.shift = True
