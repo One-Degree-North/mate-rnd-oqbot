@@ -3,9 +3,10 @@ from comms import Communications
 
 
 class ExitProgram:
-    def __init__(self, comm: Communications):
-        self.comms = comm
-        
+    def __init__(self, comm: Communications, app):
+        self.comms: Communications = comm
+        self.app = app
+
     def Exit(self):
         self.comms.kill_elec_ops()
-        sys.exit()
+        sys.exit(self.app.exec_())

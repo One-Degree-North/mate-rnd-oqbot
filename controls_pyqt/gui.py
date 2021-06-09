@@ -15,18 +15,17 @@ from mcu_lib.mcu import MCUInterface
 from comms import Communications
 from controls_pyqt.exit_program import ExitProgram
 
-app = QT.QApplication(sys.argv)
-
 
 class MainWindow(QT.QWidget):
-    def __init__(self, mcu_object: MCUInterface, comms: Communications, exit_program: ExitProgram):
+    def __init__(self, mcu_object: MCUInterface, comms: Communications):
         super().__init__()
         self.timer = QTimer()
         self.TIMEOUT_INTERVAL = 100
         self.ser_text = QT.QPlainTextEdit("text")
         self.mcu: MCUInterface = mcu_object
         self.comms: Communications = comms
-        self.exit_program: ExitProgram = exit_program
+        self.app = QT.QApplication(sys.argv)
+        self.exit_program: ExitProgram = ExitProgram(self.comms, self.app)
 
         self.NUM_THRUSTERS = 4
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
@@ -65,6 +64,9 @@ class MainWindow(QT.QWidget):
             ("i", "si"),
             ("k", "sk")
         ]
+
+    def get_app(self):
+        return self.app
 
     def __update_text(self):
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
