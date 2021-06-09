@@ -200,7 +200,7 @@ class MainWindow(QT.QWidget):
 
         if not key_event.isAutoRepeat():
             for (key, trigger) in self.KEYS_PRESSED:
-                print(key, trigger)
+                # print(key, trigger)
                 if key_event.text() == key:
                     self.on_trigger(trigger)
 
