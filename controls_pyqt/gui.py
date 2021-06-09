@@ -26,7 +26,6 @@ class MainWindow(QT.QWidget):
         self.comms: Communications = comms
         self.app = QT.QApplication(sys.argv)
         self.exit_program: ExitProgram = ExitProgram(self.comms)
-
         self.NUM_THRUSTERS = 4
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
         self.servo_speed: int = 0
