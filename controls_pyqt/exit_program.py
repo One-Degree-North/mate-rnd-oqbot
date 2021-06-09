@@ -8,3 +8,4 @@ class ExitProgram:
 
     def exit(self):
         self.comms.kill_elec_ops()
+        exit()
