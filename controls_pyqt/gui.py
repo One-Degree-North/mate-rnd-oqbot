@@ -63,6 +63,26 @@ class MainWindow(QT.QWidget):
             ("i", "si"),
             ("k", "sk")
         ]
+        
+        self.fourk_stylesheet = """
+        QLabel {
+            font-size: 40px;
+            color: Grey
+        }
+        QGroupBox { 
+            font-size: 50px; 
+            font-weight: bold;
+            border-radius: 10px;
+            border: 2px solid gray;
+            margin-top: 1ex;
+            padding: 30px
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            padding-bottom:0 30px;
+            padding-top:0 30px;
+            left: 20px}
+        """
 
     def get_app(self):
         return self.app
@@ -164,9 +184,9 @@ class MainWindow(QT.QWidget):
         self.layout.addWidget(self.general_box, 1, 4, 1, 1)
         self.layout.addWidget(self.imu_box, 2, 4, 1, 1)
         self.layout.addWidget(self.pwmbox, 3, 4, 1, 1)
-        self.layout.addWidget(self.ser_text, 1, 3, 4, 1)
-        self.layout.setColumnMinimumWidth(3, 400)
-        self.layout.setColumnMinimumWidth(4, 300)
+        #self.layout.addWidget(self.ser_text, 1, 3, 4, 1)
+        #self.layout.setColumnMinimumWidth(3, 400)
+        self.layout.setColumnMinimumWidth(4, 600)
         self.setLayout(self.layout)
 
     def setup_ui(self):
@@ -184,7 +204,8 @@ class MainWindow(QT.QWidget):
         self.ser_text.setReadOnly(True)
 
         self.__initialize_layout()
-
+        self.setStyleSheet(self.fourk_stylesheet)
+        
         self.timer.timeout.connect(self.__update_text)
         self.timer.start(self.TIMEOUT_INTERVAL)
 
