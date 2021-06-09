@@ -41,34 +41,34 @@ class Communications:
 
     def forward(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, -percent)
 
     def backwards(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, -percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, -percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, percent)
 
     def turn_right(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, -percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, percent)
 
     def turn_left(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, -percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, -percent)
 
     def up(self, percent: int):
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, -percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, percent)
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, -percent)
 
     def down(self, percent: int):
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, percent)
-        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, percent)
-
-    def tilt_up(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, -percent)
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, percent)
 
-    def tilt_down(self, percent: int):
+    def tilt_up(self, percent: int):
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, percent)
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, percent)
+
+    def tilt_down(self, percent: int):
+        self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, -percent)
         self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, -percent)
 
     def add_to_queue(self, data):
@@ -113,7 +113,7 @@ class Communications:
                     self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MAX)
                 elif self.spacebar_count == 1:
                     self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MIN)
-            time.sleep(0.004)
+            # time.sleep(0.004)
 
     def start_elec_ops(self):
         self.mcuVAR.open_serial()
