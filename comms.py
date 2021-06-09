@@ -98,6 +98,8 @@ class Communications:
                 self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, CLAW_MIN)
 
     def start_elec_ops(self):
+        self.mcuVAR.open_serial()
+
         # calibrate
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_LEFT, CALIBRATION_VALUES[0])
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_RIGHT, CALIBRATION_VALUES[1])
