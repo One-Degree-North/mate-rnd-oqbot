@@ -13,7 +13,7 @@ MOTOR_RIGHT = 2
 MOTOR_LEFT = 3
 MOTOR_BACK = 4
 
-CALIBRATION_VALUE = 1000
+CALIBRATION_VALUE = 300
 
 # I can literally use random values here. It makes no difference!
 SAME = 0x932f28
