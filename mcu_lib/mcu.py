@@ -76,9 +76,12 @@ class MCUInterface:
         self.__queue = Queue()
         self.__fetch_thread = threading.Thread(target=self.__read_serial)
         self.__parse_thread = threading.Thread(target=self.__parse_serial)
+        self.__write_thread = threading.Thread(target=self.__write_packets)
         self.__refresh_time = 1 / refresh_rate
         self.__thread_enable = False
         self.__init_queues()
+        self.__write_queue = Queue()
+        self.__wait_half_byte_time = 4 / baud
         self.latest_accel = [0, 0, 0]
         self.latest_gyro = [0, 0, 0]
         self.latest_voltage = 0
@@ -122,6 +125,7 @@ class MCUInterface:
         self.__thread_enable = True
         self.__fetch_thread.start()
         self.__parse_thread.start()
+        self.__write_thread.start()
 
     def __read_serial(self):
         while self.__thread_enable:
@@ -148,9 +152,10 @@ class MCUInterface:
         self.__thread_enable = False
         self.__fetch_thread.join()
         self.__parse_thread.join()
+        self.__write_thread.join()
         self.__serial.close()
 
-    def __read_packet(self) -> ReturnPacket:  # returns a generic ReturnPacket
+    def __read_packet(self):  # returns a generic ReturnPacket
         next_byte = self.__queue.get()
         while next_byte != bs(RETURN_HEADER) and self.__queue.qsize() >= RETURN_PACKET_SIZE:
             next_byte = self.__queue.get()
@@ -164,6 +169,15 @@ class MCUInterface:
             return
         packet = ReturnPacket(packet_data)
         return packet
+
+    def __write_packets(self):
+        while self.__thread_enable:
+            try:
+                pkt = self.__write_queue.get()
+                self.__serial.write(pkt)
+                time.sleep(self.__wait_half_byte_time)
+            except serial.SerialTimeoutException:
+                pass
 
     def __parse_packet(self, packet: ReturnPacket):
         data_bs = packet.data[0] + packet.data[1] + packet.data[2] + packet.data[3]
@@ -218,7 +232,7 @@ class MCUInterface:
         assert len(data) == 4, "data is not 4 bytes long!"
         packet = bs(FORWARD_HEADER) + bs(cmd) + bs(param) + data + bs(FORWARD_FOOTER)
         assert len(packet) == 8, "packet is not 8 bytes long!"
-        self.__serial.write(packet)
+        self.__write_queue.put(packet)
 
     def cmd_test(self):
         self.__send_packet(COMMAND_TEST, PARAM_TEST_SYSTEM, BYTESTRING_ZERO * 4)
