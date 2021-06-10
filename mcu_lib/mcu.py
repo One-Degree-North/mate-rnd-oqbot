@@ -219,7 +219,7 @@ class MCUInterface:
         elif packet.cmd == bs(RETURN_MOTOR):
             # motor status
             servo = struct.unpack('b', packet.param)[0]
-            motors = struct.unpack('cccc', data_bs)
+            motors = struct.unpack('bbbb', data_bs)
             motor_data = (int.from_bytes(motors[0], 'big'), int.from_bytes(motors[1], 'big'),
                           int.from_bytes(motors[2], 'big'), int.from_bytes(motors[3], 'big'))
             packet = MotorStatusPacket(motor_data, servo, packet.timestamp)

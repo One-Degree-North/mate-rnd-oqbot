@@ -19,7 +19,6 @@
 // #define DEBUG_BAUDRATE 230400
 
 // enable debug
-// #define DEBUG
 // #define Debug(a) (Serial.print(a))
 // #define Debugln(a) (Serial.println(a))
 // #define VERBOSE
