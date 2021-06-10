@@ -47,7 +47,7 @@ class Movement:
 visual = Movement(initial_angle=vector(0,0,0), initial_position=vector(0,0,0), initial_velocity=vector(0,0,0), vehicle=vehicle) 
 
 #Change to exit condition
-while True:
+while running:
     rate(60)
     change = 0
     velocity_measurements = []
