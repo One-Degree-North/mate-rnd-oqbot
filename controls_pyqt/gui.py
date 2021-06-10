@@ -2,7 +2,9 @@
 # Uses PyQt to collect camera footage and display information from Microcontroller
 # Uses PyQt to collect keyboard input too
 
+import os
 import sys
+from datetime import datetime
 from typing import List
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
@@ -24,6 +26,8 @@ class MainWindow(QT.QWidget):
         self.timer = QTimer()
         self.TIMEOUT_INTERVAL = 100
         self.ser_text = QT.QPlainTextEdit("text")
+        self.workingdir = os.path.dirname(os.path.realpath(__file__))
+        self.timenow = datetime.now()
         self.mcu: MCUInterface = mcu_object
         self.comms: Communications = comms
         self.app = app
@@ -181,12 +185,12 @@ class MainWindow(QT.QWidget):
     
     def __capture_camera(self):
         self.camera.searchAndLock()
-        self.camera_capture.capture()  # <-file location goes as argument, saves to photos for now
+        self.camera_capture.capture(self.workingdir + "/Camera 1 " + self.timenow.strftime("%S:%M:%H %d-%m-%y"))  # <-file location goes as argument, saves to photos for now
         self.camera.unlock()
         
     def __capture_camera2(self):
         self.camera2.searchAndLock()
-        self.camera2_capture.capture()  # <-file location goes as argument, saves to photos for now
+        self.camera2_capture.capture(self.workingdir + "/Camera 2" + self.timenow.strftime("%S:%M:%H %d-%m-%y"))  # <-file location goes as argument, saves to photos for now
         self.camera2.unlock()
         
     def __initialize_layout(self):
