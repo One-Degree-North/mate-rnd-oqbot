@@ -10,13 +10,13 @@ Y_INDEX = 1
 Z_INDEX = 2
 
 class Movement:
-    def __init__(self, initial_angle, initial_position, mcu, initial_velocity, vehicle, exit_program):
+    def __init__(self, initial_angle, initial_position, mcu, initial_velocity, vehicle, gui):
         self.initial_angle = initial_angle
         self.initial_position = initial_position
         self.mcu = mcu
         self.initial_velocity = initial_velocity
         self.vehicle = vehicle
-        self.exit_program = exit_program
+        self.gui = gui
     def change_angle(self):
         self.initial_angle.x += self.mcu.latest_gyro[X_INDEX]*dt
         self.initial_angle.y += self.mcu.latest_gyro[Y_INDEX]*dt
