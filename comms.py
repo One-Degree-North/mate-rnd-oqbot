@@ -1,8 +1,8 @@
 from threading import Thread
-from queue import Queue, Empty, Full
 
-from mcu_lib.command_constants import *
 from mcu_lib.mcu import *
+from mcu_lib.command_constants import *
+from controls_pyqt.key_signal import KeySignal
 
 PWM_MIN = 1000
 PWM_MID = 1500
@@ -16,10 +16,11 @@ CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
 
 UPDATE_MS = 25
 
-# I can literally use random values here. It makes no difference!
-SAME = 0x932f28
-NEG_SAME = 0x12fa38
-OPPOSITE = 0x783e2c
+
+class MotorState:
+    def __init__(self):
+        self.motors = [0, 0, 0, 0]
+        self.claw = CLAW_MID
 
 
 class MotorState:
@@ -29,7 +30,7 @@ class MotorState:
 
 
 class Communications:
-    def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int, initial_percent = 100):
+    def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int, initial_percent=100):
         self.mcuVAR = mcuVAR
         self.MULTIPLIER_PERCENT = MULTIPLIER_PERCENT
         self.initial_percent = initial_percent
@@ -84,39 +85,40 @@ class Communications:
         while self.thread_running:
             for i in range(4):
                 self.mcuVAR.cmd_setMotorCalibrated(i, self.state.motors[i])
+                time.sleep(1 / 80)
             self.mcuVAR.cmd_setMotorMicroseconds(4, self.state.claw)
-            time.sleep(1/16)
+            time.sleep(1 / 40)
 
     def read_send(self, key_pressed):
-        # get multiplier
-        multiplier_percent = self.initial_percent if len(key_pressed) == 1 else \
-                                          (0 if key_pressed[0] == "s" else self.MULTIPLIER_PERCENT)
+        key_is_released = not key_pressed.pressed
+        multiplier_percent = self.initial_percent if (key_pressed.pressed and not key_pressed.shift) else \
+            (0 if key_is_released else self.MULTIPLIER_PERCENT)
         # debug
         print("sending", key_pressed, "with percent", multiplier_percent)
         # parse last letter of key_pressed by command, sending in multiplier
-        if key_pressed[-1] == "w":
+        key = key_pressed.key
+        if key == "w":
             self.forward(multiplier_percent)
-        elif key_pressed[-1] == "s":
+        elif key == "s":
             self.backwards(multiplier_percent)
-        elif key_pressed[-1] == "a":
+        elif key == "a":
             self.turn_left(multiplier_percent)
-        elif key_pressed[-1] == "d":
+        elif key == "d":
             self.turn_right(multiplier_percent)
-        elif key_pressed[-1] == "e":
+        elif key == "e":
             self.up(multiplier_percent)
-        elif key_pressed[-1] == "q":
+        elif key == "q":
             self.down(multiplier_percent)
-        elif key_pressed[-1] == "z":
+        elif key == "z":
             self.tilt_up(multiplier_percent)
-        elif key_pressed[-1] == "x":
+        elif key == "x":
             self.tilt_down(multiplier_percent)
-        elif key_pressed[-1] == "f":
+        elif key == "f":
             self.set_servo_state(CLAW_MIN)
-        elif key_pressed[-1] == "g":
+        elif key == "g":
             self.set_servo_state(CLAW_MID)
-        elif key_pressed[-1] == "h":
+        elif key == "h":
             self.set_servo_state(CLAW_MAX)
-        # time.sleep(0.004)
 
     def start_elec_ops(self):
         self.mcuVAR.open_serial()
@@ -148,5 +150,3 @@ class Communications:
         self.mcuVAR.cmd_setAutoReport(PARAM_GYRO, False, 0)
         self.mcuVAR.cmd_setAutoReport(PARAM_VOLT_TEMP, False, 0)
         self.mcuVAR.close_serial()
-
-

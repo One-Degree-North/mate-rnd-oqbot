@@ -15,6 +15,7 @@ from mcu_lib.mcu import MCUInterface
 from mcu_lib.command_constants import *
 from comms import Communications
 from controls_pyqt.exit_program import ExitProgram
+from controls_pyqt.key_signal import KeySignal
 
 
 class MainWindow(QT.QWidget):
@@ -34,39 +35,36 @@ class MainWindow(QT.QWidget):
 
         # (key, message sent to comms)
         self.KEYS_PRESSED = [
-            ("W", "lw"),  # forward
-            ("w", "w"),
-            ("A", "la"),  # turn_left
-            ("a", "a"),
-            ("S", "ls"),  # backwards
-            ("s", "s"),
-            ("D", "ld"),  # turn_right
-            ("d", "d"),
-            ("E", "le"),  # down
-            ("e", "e"),
-            ("Q", "lq"),  # up
-            ("q", "q"),
-            ("Z", "lz"),  # tilt_up
-            ("z", "z"),
-            ("X", "lx"),  # tilt_down
-            ("x", "x"),
-            ("f", "f"),   # servo min
-            ("F", "f"),
-            ("g", "g"),   # servo mid
-            ("G", "g"),
-            ("h", "h"),   # servo max
-            ("H", "h")
+            "W",  # forward
+            "w",
+            "A",  # turn_left
+            "a",
+            "S",  # backwards
+            "s",
+            "D",  # turn_right
+            "d",
+            "E",  # down
+            "e",
+            "Q",  # up
+            "q",
+            "I",  # tilt_up
+            "i",
+            "K",  # tilt_down
+            "k",
+            "f",  # servo stop
+            "F",
+            " "   # servo toggle
         ]
 
         self.KEYS_RELEASED = [
-            ("w", "sw"),
-            ("a", "sa"),
-            ("s", "ss"),
-            ("d", "sd"),
-            ("e", "se"),
-            ("q", "sq"),
-            ("z", "sz"),
-            ("x", "sx")
+            "w",
+            "a",
+            "s",
+            "d",
+            "e",
+            "q",
+            "i",
+            "k"
         ]
         
         self.fourk_stylesheet = """
@@ -229,21 +227,21 @@ class MainWindow(QT.QWidget):
     def on_trigger(self, trigger: str):
         self.comms.read_send(trigger)
 
+
     def keyPressEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Escape:
             self.exit_program.exit()
 
         if not key_event.isAutoRepeat():
-            for (key, trigger) in self.KEYS_PRESSED:
-                # print(key, trigger)
+            for key in self.KEYS_PRESSED:
                 if key_event.text() == key:
-                    self.on_trigger(trigger)
+                    self.on_trigger(key, True)
 
     def keyReleaseEvent(self, keyevent):
-        if not keyevent.isAutoRepeat():
-            for (key, trigger) in self.KEYS_RELEASED:
-                if keyevent.text().lower() == key:
-                    self.on_trigger(trigger)
+        if not key_event.isAutoRepeat():
+            for key in self.KEYS_RELEASED:
+                if key_event.text().lower() == key:
+                    self.on_trigger(key, False)
 
     def closeEvent(self, QCloseEvent):
         self.exit_program.exit()
