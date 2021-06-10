@@ -94,9 +94,10 @@ class MainWindow(QT.QWidget):
         self.LENGTH: int = 1600
         self.WIDTH: int = 800
 
-        self.setWindowTitle(self.TITLE)
-        self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
-        self.show()
+        #self.setWindowTitle(self.TITLE)
+        #self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
+        #self.show()
+        self.showFullScreen()
 
     def __initialize_as_labels(self):
         self.voltage_info = QT.QLabel()
