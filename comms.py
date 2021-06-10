@@ -84,7 +84,7 @@ class Communications:
 
             # get multiplier
             key_is_released = not key_pressed.pressed
-            multiplier_percent = self.initial_percent if(key_pressed.pressed and not shift) else \
+            multiplier_percent = self.initial_percent if(key_pressed.pressed and not key_pressed.shift) else \
                                               (0 if key_is_released else self.MULTIPLIER_PERCENT)
             # debug
             print("sending", key_pressed, "with percent", multiplier_percent)
