@@ -201,13 +201,13 @@ class MCUInterface:
             axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
             value = struct.unpack('f', data_bs)[0]
             self.accel_queue.put(AccelPacket(axis, value, packet.timestamp))
-            self.latest_accel[axis] = value[0]
+            self.latest_accel[axis] = value
         elif packet.cmd == bs(RETURN_GYROSCOPE):
             # gyro
             axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
             value = struct.unpack('f', data_bs)[0]
             self.gyro_queue.put(GyroPacket(axis, value, packet.timestamp))
-            self.latest_gyro[axis] = value[0]
+            self.latest_gyro[axis] = value
         elif packet.cmd == bs(RETURN_VOLT_TEMP):
             # temp/volt
             temp, volts = struct.unpack('HH', data_bs)
