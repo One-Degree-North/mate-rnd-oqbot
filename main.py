@@ -43,7 +43,8 @@ def start():
                      initial_position=vector(0,0,0), 
                      mcu=feather, 
                      initial_velocity=vector(0,0,0), 
-                     vehicle=vehicle_moving)
+                     vehicle=vehicle_moving,
+                     gui=window2)
     visualization = Visualizer(mover)
 
 
