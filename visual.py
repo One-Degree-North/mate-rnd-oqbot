@@ -17,7 +17,7 @@ class Visualizer:
         self.visual = visual
     def visualize():
         #Change to exit condition
-        while visual.running:
+        while visual.exit_program.running:
             rate(60)
             change = 0
             velocity_measurements = []
