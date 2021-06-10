@@ -181,12 +181,12 @@ class MainWindow(QT.QWidget):
     
     def __capture_camera(self):
         self.camera.searchAndLock()
-        self.camera_capture.capture() #<-file location goes as argument, saves to photos for now
+        self.camera_capture.capture("./captures") #<-file location goes as argument, saves to photos for now
         self.camera.unlock()
         
     def __capture_camera2(self):
         self.camera2.searchAndLock()
-        self.camera2_capture.capture() #<-file location goes as argument, saves to photos for now
+        self.camera2_capture.capture("./captures") #<-file location goes as argument, saves to photos for now
         self.camera2.unlock()
         
     def __initialize_layout(self):
@@ -230,6 +230,10 @@ class MainWindow(QT.QWidget):
     def keyPressEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Escape:
             self.exit_program.exit()
+        if key_event.key() == Qt.Key_Period:
+            self.__capture_camera2()
+        if key_event.key() == Qt.Key_Comma:
+            self.__capture_camera()
 
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
