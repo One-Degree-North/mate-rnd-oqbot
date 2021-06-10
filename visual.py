@@ -4,7 +4,6 @@ import numpy as np
 from mcu import MCUInterface
 from movement import Movement
 
-running = True
 t = 0
 dt = 0.005
 dt_real = dt*5
@@ -18,7 +17,7 @@ class Visualizer:
         self.visual = visual
     def visualize():
         #Change to exit condition
-        while running:
+        while visual.running:
             rate(60)
             change = 0
             velocity_measurements = []
