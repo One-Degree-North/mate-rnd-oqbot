@@ -13,14 +13,9 @@ CLAW_MID = 1335
 CLAW_MAX = 1660
 
 CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
+SPEED_MODES = [12, 20, 28, 36]
 
 UPDATE_MS = 25
-
-
-class MotorState:
-    def __init__(self):
-        self.motors = [0, 0, 0, 0]
-        self.claw = CLAW_MID
 
 
 class MotorState:
@@ -38,6 +33,8 @@ class Communications:
         self.mcu_thread: Thread = Thread(target=self.update_state)
         self.state: MotorState = MotorState()
         self.thread_running = False
+        self.speed_mode = 0
+        self.keys_pressed = []
 
     def start_thread(self):
         self.thread_running = True
@@ -48,6 +45,12 @@ class Communications:
 
     def set_servo_state(self, value):
         self.state.claw = value
+
+    def halt(self):
+        self.set_motor_state(0, 0)
+        self.set_motor_state(1, 0)
+        self.set_motor_state(2, 0)
+        self.set_motor_state(3, 0)
 
     def forward(self, percent: int):
         self.set_motor_state(MOTOR_LEFT, percent)
@@ -85,40 +88,79 @@ class Communications:
         while self.thread_running:
             for i in range(4):
                 self.mcuVAR.cmd_setMotorCalibrated(i, self.state.motors[i])
-                time.sleep(1 / 80)
+                time.sleep(1 / 120)
             self.mcuVAR.cmd_setMotorMicroseconds(4, self.state.claw)
-            time.sleep(1 / 40)
+            time.sleep(1 / 120)
 
-    def read_send(self, key_pressed):
+    def read_send(self, key_pressed: KeySignal):
         key_is_released = not key_pressed.pressed
-        multiplier_percent = self.initial_percent if (key_pressed.pressed and not key_pressed.shift) else \
-            (0 if key_is_released else self.MULTIPLIER_PERCENT)
         # debug
-        print("sending", key_pressed, "with percent", multiplier_percent)
+        multiplier_percent = SPEED_MODES[self.speed_mode] if key_pressed.pressed else 0
+        multiplier_percent *= 2 if key_pressed.shift else 1
+        print("comms received", key_pressed, "with percent", multiplier_percent)
+        print("current key list:", self.keys_pressed)
         # parse last letter of key_pressed by command, sending in multiplier
         key = key_pressed.key
-        if key == "w":
+
+        # handle if it's just a speed change
+        if key != "0" and key.isnumeric():
+            self.speed_mode = int(key) - 1
+            self.speed_mode %= 4  # safety
+            return
+
+        # handle other cases (instructions)
+        if key_pressed.pressed:  # if pressed
+            self.keys_pressed.append(key)
+            self.__parse_key(key)
+        else:  # if released
+            if self.keys_pressed and self.keys_pressed[-1] == key:
+                self.keys_pressed.remove(key)
+                if not self.keys_pressed:
+                    self.halt()
+                    return
+                self.__parse_key(self.keys_pressed[-1])
+            else:
+                self.keys_pressed.remove(key)
+
+    def __parse_key(self, key: str):
+        multiplier_percent = SPEED_MODES[self.speed_mode]
+        if key.isupper():
+            multiplier_percent *= 2
+
+        key_lower = key.lower()
+        if key_lower == "w":
             self.forward(multiplier_percent)
-        elif key == "s":
+        elif key_lower == "s":
             self.backwards(multiplier_percent)
-        elif key == "a":
+        elif key_lower == "a":
             self.turn_left(multiplier_percent)
-        elif key == "d":
+        elif key_lower == "d":
             self.turn_right(multiplier_percent)
-        elif key == "e":
+        elif key_lower == "e":
             self.up(multiplier_percent)
-        elif key == "q":
+        elif key_lower == "q":
             self.down(multiplier_percent)
-        elif key == "z":
+        elif key_lower == "z":
             self.tilt_up(multiplier_percent)
-        elif key == "x":
+        elif key_lower == "x":
             self.tilt_down(multiplier_percent)
-        elif key == "f":
+        elif key_lower == "f":
             self.set_servo_state(CLAW_MIN)
-        elif key == "g":
+        elif key_lower == "g":
             self.set_servo_state(CLAW_MID)
-        elif key == "h":
+        elif key_lower == "h":
             self.set_servo_state(CLAW_MAX)
+        elif key_lower == "0":
+            self.halt()
+            # self.mcuVAR.cmd_halt()
+        elif key_lower == "i":
+            self.set_motor_state(MOTOR_FRONT, multiplier_percent if key.islower() else -multiplier_percent)
+        elif key_lower == "j":
+            self.set_motor_state(MOTOR_LEFT, multiplier_percent if key.islower() else -multiplier_percent)
+        elif key_lower == "k":
+            self.set_motor_state(MOTOR_BACK, -multiplier_percent if key.islower() else multiplier_percent)
+        elif key_lower == "l":
+            self.set_motor_state(MOTOR_RIGHT, -multiplier_percent if key.islower() else multiplier_percent)
 
     def start_elec_ops(self):
         self.mcuVAR.open_serial()

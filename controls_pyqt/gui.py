@@ -5,7 +5,7 @@
 import sys
 from typing import List
 
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, pyqtSlot
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
@@ -34,37 +34,8 @@ class MainWindow(QT.QWidget):
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
 
         # (key, message sent to comms)
-        self.KEYS_PRESSED = [
-            "W",  # forward
-            "w",
-            "A",  # turn_left
-            "a",
-            "S",  # backwards
-            "s",
-            "D",  # turn_right
-            "d",
-            "E",  # down
-            "e",
-            "Q",  # up
-            "q",
-            "I",  # tilt_up
-            "i",
-            "K",  # tilt_down
-            "k",
-            "f",  # servo stop
-            "F",
-            " "   # servo toggle
-        ]
-
-        self.KEYS_RELEASED = [
-            "w",
-            "a",
-            "s",
-            "d",
-            "e",
-            "q",
-            "i",
-            "k"
+        self.KEYS = [
+            "q", "w", "e", "a", "s", "d", "f", "g", "h", "z", "x", "c", "i", "j", "k", "l", "1", "2", "3", "4", "0"
         ]
         
         self.fourk_stylesheet = """
@@ -90,6 +61,7 @@ class MainWindow(QT.QWidget):
     def get_app(self):
         return self.app
 
+    @pyqtSlot()
     def __update_text(self):
         self.voltage_info.setText(str(self.mcu.latest_voltage))
 
@@ -227,19 +199,18 @@ class MainWindow(QT.QWidget):
     def on_trigger(self, trigger: str, pressed: bool):
         self.comms.read_send(KeySignal(trigger, pressed))
 
-
     def keyPressEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Escape:
             self.exit_program.exit()
 
         if not key_event.isAutoRepeat():
-            for key in self.KEYS_PRESSED:
-                if key_event.text() == key:
+            for key in self.KEYS:
+                if key_event.text().lower() == key:
                     self.on_trigger(key, True)
 
     def keyReleaseEvent(self, key_event: QKeyEvent):
         if not key_event.isAutoRepeat():
-            for key in self.KEYS_RELEASED:
+            for key in self.KEYS:
                 if key_event.text().lower() == key:
                     self.on_trigger(key, False)
 
