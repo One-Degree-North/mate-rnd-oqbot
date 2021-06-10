@@ -224,8 +224,8 @@ class MainWindow(QT.QWidget):
     def start_ui(self):
         sys.exit(self.app.exec_())
 
-    def on_trigger(self, trigger: str):
-        self.comms.read_send(trigger)
+    def on_trigger(self, trigger: str, pressed: bool):
+        self.comms.read_send(KeySignal(trigger, pressed))
 
 
     def keyPressEvent(self, key_event: QKeyEvent):
@@ -237,7 +237,7 @@ class MainWindow(QT.QWidget):
                 if key_event.text() == key:
                     self.on_trigger(key, True)
 
-    def keyReleaseEvent(self, keyevent):
+    def keyReleaseEvent(self, key_event: QKeyEvent):
         if not key_event.isAutoRepeat():
             for key in self.KEYS_RELEASED:
                 if key_event.text().lower() == key:
