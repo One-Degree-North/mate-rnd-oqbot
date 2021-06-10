@@ -2,6 +2,13 @@ from __future__ import division, print_function
 from vpython import *
 from mcu import MCUInterface
 
+t = 0
+dt = 0.05
+dt_real = dt*5
+X_INDEX = 0
+Y_INDEX = 1
+Z_INDEX = 2
+
 class Movement:
     def __init__(self, initial_angle, initial_position, mcu, initial_velocity, vehicle):
         self.initial_angle = initial_angle
