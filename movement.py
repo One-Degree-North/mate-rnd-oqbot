@@ -1,6 +1,5 @@
 from __future__ import division, print_function
 from vpython import *
-import numpy as np
 from mcu import MCUInterface
 
 class Movement:
@@ -10,11 +9,6 @@ class Movement:
         self.mcu = mcu
         self.initial_velocity = initial_velocity
         self.vehicle = vehicle
-        
-    def get_gyro(self):
-        return [random()*3.0, random()*3.0, random()*3.0]
-    def get_accel(self):
-        return [random()*3.0, random()*3.0, random()*3.0]
     def change_angle(self):
         self.initial_angle.x += self.mcu.latest_gyro[X_INDEX]*dt
         self.initial_angle.y += self.mcu.latest_gyro[Y_INDEX]*dt
