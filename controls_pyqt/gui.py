@@ -35,7 +35,7 @@ class MainWindow(QT.QWidget):
 
         # (key, message sent to comms)
         self.KEYS = [
-            "q", "w", "e", "a", "s", "d", "f", "g", "h", "z", "x", "c", "i", "j", "k", "l", "1", "2", "3", "4", "0"
+            "q", "w", "e", "a", "s", "d", "f", "g", "h", "z", "x", "c", "i", "j", "k", "l", "1", "2", "3", "4", "0", "7"
         ]
         
         self.fourk_stylesheet = """
@@ -181,12 +181,12 @@ class MainWindow(QT.QWidget):
     
     def __capture_camera(self):
         self.camera.searchAndLock()
-        self.camera_capture.capture("./captures") #<-file location goes as argument, saves to photos for now
+        self.camera_capture.capture()  # <-file location goes as argument, saves to photos for now
         self.camera.unlock()
         
     def __capture_camera2(self):
         self.camera2.searchAndLock()
-        self.camera2_capture.capture("./captures") #<-file location goes as argument, saves to photos for now
+        self.camera2_capture.capture()  # <-file location goes as argument, saves to photos for now
         self.camera2.unlock()
         
     def __initialize_layout(self):
@@ -195,8 +195,8 @@ class MainWindow(QT.QWidget):
         self.layout.addWidget(self.general_box, 1, 4, 1, 1)
         self.layout.addWidget(self.imu_box, 2, 4, 1, 1)
         self.layout.addWidget(self.pwmbox, 3, 4, 1, 1)
-        #self.layout.addWidget(self.ser_text, 1, 3, 4, 1)
-        #self.layout.setColumnMinimumWidth(3, 400)
+        # self.layout.addWidget(self.ser_text, 1, 3, 4, 1)
+        # self.layout.setColumnMinimumWidth(3, 400)
         self.layout.setColumnMinimumWidth(4, 600)
         self.setLayout(self.layout)
 

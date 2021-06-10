@@ -17,6 +17,8 @@ SPEED_MODES = [20, 34, 48, 70]
 
 UPDATE_MS = 25
 
+BASE_DOWNWARDS_SPEED = 12
+
 
 class MotorState:
     def __init__(self):
@@ -36,6 +38,7 @@ class Communications:
         self.mcu_thread: Thread = Thread(target=self.update_state)
         self.state: MotorState = MotorState()
         self.thread_running = False
+        self.auto_downwards = False
         self.speed_mode = 0
         self.keys_pressed = []
 
@@ -89,11 +92,17 @@ class Communications:
 
     def update_state(self):
         while self.thread_running:
-            for i in range(4):
-                self.mcuVAR.cmd_setMotorCalibrated(i, self.state.motors[i])
-                time.sleep(1 / 120)
+            downwards = BASE_DOWNWARDS_SPEED if self.auto_downwards else 0
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.state.motors[MOTOR_LEFT])
+            # time.sleep(1 / 120)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.state.motors[MOTOR_RIGHT])
+            # time.sleep(1 / 120)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.state.motors[MOTOR_FRONT] - downwards)
+            # time.sleep(1 / 120)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.state.motors[MOTOR_BACK] + downwards)
+            # time.sleep(1 / 120)
             self.mcuVAR.cmd_setMotorMicroseconds(4, self.state.claw)
-            time.sleep(1 / 120)
+            # time.sleep(1 / 120)
 
     def read_send(self, key_pressed: KeySignal):
         # debug
@@ -104,10 +113,14 @@ class Communications:
         key = key_pressed.key
 
         # handle if it's just a speed change
-        if key != "0" and key.isnumeric():
+        if key != "0" and key != "7" and key.isnumeric():
             self.speed_mode = int(key) - 1
             self.speed_mode %= 4  # safety
             return
+        # handle toggle downwards base motion
+        if key == "7" and key_pressed.pressed:
+            self.auto_downwards = not self.auto_downwards
+            print(f"Toggling automatic downwards motion: {self.auto_downwards}")
 
         # handle other cases (instructions)
         if key_pressed.pressed:  # if pressed
@@ -171,10 +184,10 @@ class Communications:
         self.mcuVAR.open_serial()
 
         # calibrate
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_LEFT, CALIBRATION_VALUES[0])
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_RIGHT, CALIBRATION_VALUES[1])
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_FRONT, CALIBRATION_VALUES[2])
-        self.mcuVAR.cmd_setMotorCalibration(MOTOR_BACK, CALIBRATION_VALUES[3])
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_LEFT, CALIBRATION_VALUES[MOTOR_LEFT])
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_RIGHT, CALIBRATION_VALUES[MOTOR_RIGHT])
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_FRONT, CALIBRATION_VALUES[MOTOR_FRONT])
+        self.mcuVAR.cmd_setMotorCalibration(MOTOR_BACK, CALIBRATION_VALUES[MOTOR_BACK])
 
         # write mid
         self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, PWM_MID)
