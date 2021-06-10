@@ -234,6 +234,8 @@ class MainWindow(QT.QWidget):
             self.__capture_camera2()
         if key_event.key() == Qt.Key_Comma:
             self.__capture_camera()
+        if key_event.key() == Qt.Key_Space:
+            self.on_trigger("e", True)
 
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
@@ -241,6 +243,8 @@ class MainWindow(QT.QWidget):
                     self.on_trigger(key, True)
 
     def keyReleaseEvent(self, key_event: QKeyEvent):
+        if key_event.key() == Qt.Key_Space:
+            self.on_trigger("e", False)
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
                 if key_event.text().lower() == key:
