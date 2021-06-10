@@ -1,10 +1,13 @@
+from __future__ import division, print_function
 import sys
-
 import comms
 from controls_pyqt import gui, exit_program
 from mcu_lib import mcu
 from serial.tools import list_ports
 from PyQt5.QtWidgets import QApplication
+from vpython import *
+from visual import Visualizer
+from movement import Movement
 
 
 BAUD_RATE: int = 230400
@@ -35,6 +38,13 @@ def start():
     window2 = gui.MainWindow(feather, communications, QApplication(sys.argv))
     window2.setup_ui()
     window2.start_ui()
+    vehicle_moving = box(pos=vector(0,0,0),length=5,height=10,width=5)
+    mover = Movement(initial_angle=vector(0,0,0), 
+                     initial_position=vector(0,0,0), 
+                     mcu=feather, 
+                     initial_velocity=vector(0,0,0), 
+                     vehicle=vehicle_moving)
+    visualization = Visualizer(mover)
 
 
 if __name__ == "__main__":
