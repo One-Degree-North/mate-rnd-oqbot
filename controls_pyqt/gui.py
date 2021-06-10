@@ -146,6 +146,8 @@ class MainWindow(QT.QWidget):
         self.pwmbox.setLayout(self.pwm_list)
 
     def __setup_camera(self):
+        self.camera_layout = QT.QVBoxLayout()
+
         self.camera = QTM.QCamera(str.encode("/dev/video0"))
         self.camera_view = QTMW.QCameraViewfinder()
         self.camera.setViewfinder(self.camera_view)
@@ -161,6 +163,7 @@ class MainWindow(QT.QWidget):
         self.camera_layout.addWidget(self.camera_view)
         self.camera_layout.addWidget(self.camera2_view)
         self.camera_box = QT.QWidget()
+        self.camera_box.setLayout(self.camera_layout)
     def __initialize_layout(self):
         self.layout = QT.QGridLayout()
         self.layout.addWidget(self.camera_box, 1, 1, 3, 1)
