@@ -72,7 +72,7 @@ class MCUInterface:
         :param max_read: Maximum number of bytes for the serial object to read at once.
                          Used to mitigate strange pySerial behavior.
         """
-        self.__serial = serial.Serial(port, baud, timeout=0, write_timeout=None)
+        self.__serial = serial.Serial(port, baud, timeout=0, write_timeout=1/450)
         self.__queue = Queue()
         self.__fetch_thread = threading.Thread(target=self.__read_serial)
         self.__parse_thread = threading.Thread(target=self.__parse_serial)
@@ -217,8 +217,8 @@ class MCUInterface:
     def __send_packet(self, cmd: int, param: int, data: bytes):
         assert len(data) == 4, "data is not 4 bytes long!"
         packet = bs(FORWARD_HEADER) + bs(cmd) + bs(param) + data + bs(FORWARD_FOOTER)
+        assert len(packet) == 8, "packet is not 8 bytes long!"
         self.__serial.write(packet)
-        time.sleep(1 / 450)
 
     def cmd_test(self):
         self.__send_packet(COMMAND_TEST, PARAM_TEST_SYSTEM, BYTESTRING_ZERO * 4)
