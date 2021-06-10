@@ -206,7 +206,9 @@ class MCUInterface:
             # motor status
             servo = struct.unpack('b', packet.param)[0]
             motors = struct.unpack('cccc', data_bs)
-            packet = MotorStatusPacket(motors, servo, packet.timestamp)
+            motor_data = (int.from_bytes(motors[0], 'big'), int.from_bytes(motors[1], 'big'),
+                          int.from_bytes(motors[2], 'big'), int.from_bytes(motors[3], 'big'))
+            packet = MotorStatusPacket(motor_data, servo, packet.timestamp)
             self.motor_queue.put(packet)
             self.latest_motor_status = packet
         else:
@@ -216,6 +218,7 @@ class MCUInterface:
         assert len(data) == 4, "data is not 4 bytes long!"
         packet = bs(FORWARD_HEADER) + bs(cmd) + bs(param) + data + bs(FORWARD_FOOTER)
         self.__serial.write(packet)
+        time.sleep(1 / 450)
 
     def cmd_test(self):
         self.__send_packet(COMMAND_TEST, PARAM_TEST_SYSTEM, BYTESTRING_ZERO * 4)
