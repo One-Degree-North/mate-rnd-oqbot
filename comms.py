@@ -23,6 +23,9 @@ class MotorState:
         self.motors = [0, 0, 0, 0]
         self.claw = CLAW_MID
 
+    def __str__(self):
+        return f"Motors: {self.motors}, Servo: {self.claw}"
+
 
 class Communications:
     def __init__(self, mcuVAR: MCUInterface, MULTIPLIER_PERCENT: int, initial_percent=100):
@@ -93,13 +96,11 @@ class Communications:
             time.sleep(1 / 120)
 
     def read_send(self, key_pressed: KeySignal):
-        key_is_released = not key_pressed.pressed
         # debug
         multiplier_percent = SPEED_MODES[self.speed_mode] if key_pressed.pressed else 0
         multiplier_percent *= 2 if key_pressed.shift else 1
         print("comms received", key_pressed, "with percent", multiplier_percent)
-        print("current key list:", self.keys_pressed)
-        # parse last letter of key_pressed by command, sending in multiplier
+
         key = key_pressed.key
 
         # handle if it's just a speed change
@@ -122,7 +123,11 @@ class Communications:
             else:
                 self.keys_pressed.remove(key)
 
+        print("new key list:", self.keys_pressed)
+        print("new state: ", self.state)
+
     def __parse_key(self, key: str):
+        print("parsing key", key)
         multiplier_percent = SPEED_MODES[self.speed_mode]
         if key.isupper():
             multiplier_percent *= 2
