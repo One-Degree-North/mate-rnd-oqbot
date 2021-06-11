@@ -179,25 +179,29 @@ class MCUInterface:
             except serial.SerialTimeoutException:
                 pass
 
+    def __empty_queue(self, queue):
+        while not queue.empty():
+            queue.get()
+
     def __check_for_full_queues(self):
-        if self.gyro_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
-            print(f"Gyro queue is nearly full! Emptying!")
-            self.gyro_queue.empty()
-        if self.accel_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
-            print(f"Accel queue is nearly full! Emptying!")
-            self.accel_queue.empty()
-        if self.motor_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
-            print(f"Motor queue is nearly full! Emptying!")
-            self.motor_queue.empty()
-        if self.ok_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
-            print(f"OK queue is nearly full! Emptying!")
-            self.ok_queue.empty()
-        if self.volt_temp_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
-            print(f"Volt/Temp queue is nearly full! Emptying!")
-            self.volt_temp_queue.empty()
-        if self.test_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
-            print(f"Test queue is nearly full! Emptying!")
-            self.test_queue.empty()
+        if self.gyro_queue.full():
+            print(f"Gyro queue is full! Emptying!")
+            self.__empty_queue(self.gyro_queue)
+        if self.accel_queue.full():
+            print(f"Accel queue is full! Emptying!")
+            self.__empty_queue(self.accel_queue)
+        if self.motor_queue.full():
+            print(f"Motor queue is full! Emptying!")
+            self.__empty_queue(self.motor_queue)
+        if self.ok_queue.full():
+            print(f"OK queue is full! Emptying!")
+            self.__empty_queue(self.ok_queue)
+        if self.volt_temp_queue.full():
+            print(f"Volt/Temp queue is full! Emptying!")
+            self.__empty_queue(self.volt_temp_queue)
+        if self.test_queue.full():
+            print(f"Test queue is full! Emptying!")
+            self.__empty_queue(self.test_queue)
 
     def __parse_packet(self, packet: ReturnPacket):
         data_bs = packet.data[0] + packet.data[1] + packet.data[2] + packet.data[3]
