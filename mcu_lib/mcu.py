@@ -7,7 +7,7 @@ import serial
 import struct
 import time
 import threading
-from queue import Queue
+from queue import Queue, Full
 
 from mcu_lib.packets import *
 from mcu_lib.command_constants import *
@@ -180,60 +180,76 @@ class MCUInterface:
                 pass
 
     def __check_for_full_queues(self):
-        queues = (self.gyro_queue, self.motor_queue, self.accel_queue,
-                  self.volt_temp_queue, self.test_queue, self.ok_queue)
-        for queue in queues:
-            if queue.qsize() > 0.8 * MAX_QUEUE_SIZE:
-                print(f"Queue is nearly full! Emptying!")
-                queue.empty()
+        if self.gyro_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
+            print(f"Gyro queue is nearly full! Emptying!")
+            self.gyro_queue.empty()
+        if self.accel_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
+            print(f"Accel queue is nearly full! Emptying!")
+            self.accel_queue.empty()
+        if self.motor_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
+            print(f"Motor queue is nearly full! Emptying!")
+            self.motor_queue.empty()
+        if self.ok_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
+            print(f"OK queue is nearly full! Emptying!")
+            self.ok_queue.empty()
+        if self.volt_temp_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
+            print(f"Volt/Temp queue is nearly full! Emptying!")
+            self.volt_temp_queue.empty()
+        if self.test_queue.qsize() > 0.9 * MAX_QUEUE_SIZE:
+            print(f"Test queue is nearly full! Emptying!")
+            self.test_queue.empty()
 
     def __parse_packet(self, packet: ReturnPacket):
         data_bs = packet.data[0] + packet.data[1] + packet.data[2] + packet.data[3]
         if not packet:
             return
         self.__check_for_full_queues()
-        # let's all pretend this was a Python 3.10+ match/case statement
-        if packet.cmd == bs(RETURN_TEST):
-            # test
-            version = int.from_bytes(packet.data[0], 'big')
-            contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
-            valid = contents == "pog"
-            self.test_queue.put_nowait(TestPacket(valid, version, contents, packet.timestamp))
-        elif packet.cmd == bs(RETURN_OK):
-            # OK
-            og_cmd = int.from_bytes(packet.og_cmd, 'big')
-            og_param = int.from_bytes(packet.og_param, 'big')
-            success = int.from_bytes(packet.param, 'big') > 0
-            self.ok_queue.put_nowait(OKPacket(og_cmd, og_param, success, packet.timestamp))
-        elif packet.cmd == bs(RETURN_ACCELEROMETER):
-            # accel
-            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-            value = struct.unpack('f', data_bs)[0]
-            self.accel_queue.put_nowait(AccelPacket(axis, value, packet.timestamp))
-            self.latest_accel[axis] = value
-        elif packet.cmd == bs(RETURN_GYROSCOPE):
-            # gyro
-            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-            value = struct.unpack('f', data_bs)[0]
-            self.gyro_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
-            self.latest_gyro[axis] = value
-        elif packet.cmd == bs(RETURN_VOLT_TEMP):
-            # temp/volt
-            temp, volts = struct.unpack('HH', data_bs)
-            temp /= 100
-            volts /= 100
-            self.latest_temp = temp
-            self.latest_voltage = volts
-            self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
-        elif packet.cmd == bs(RETURN_MOTOR):
-            # motor status
-            servo = struct.unpack('b', packet.param)[0]
-            motors = struct.unpack('bbbb', data_bs)
-            packet = MotorStatusPacket(motors, servo, packet.timestamp)
-            self.motor_queue.put_nowait(packet)
-            self.latest_motor_status = packet
-        else:
-            print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
+        try:
+            # let's all pretend this was a Python 3.10+ match/case statement
+            if packet.cmd == bs(RETURN_TEST):
+                # test
+                version = int.from_bytes(packet.data[0], 'big')
+                contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
+                valid = contents == "pog"
+                self.test_queue.put_nowait(TestPacket(valid, version, contents, packet.timestamp))
+            elif packet.cmd == bs(RETURN_OK):
+                # OK
+                og_cmd = int.from_bytes(packet.og_cmd, 'big')
+                og_param = int.from_bytes(packet.og_param, 'big')
+                success = int.from_bytes(packet.param, 'big') > 0
+                self.ok_queue.put_nowait(OKPacket(og_cmd, og_param, success, packet.timestamp))
+            elif packet.cmd == bs(RETURN_ACCELEROMETER):
+                # accel
+                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+                value = struct.unpack('f', data_bs)[0]
+                self.accel_queue.put_nowait(AccelPacket(axis, value, packet.timestamp))
+                self.latest_accel[axis] = value
+            elif packet.cmd == bs(RETURN_GYROSCOPE):
+                # gyro
+                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+                value = struct.unpack('f', data_bs)[0]
+                self.gyro_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+                self.latest_gyro[axis] = value
+            elif packet.cmd == bs(RETURN_VOLT_TEMP):
+                # temp/volt
+                temp, volts = struct.unpack('HH', data_bs)
+                temp /= 100
+                volts /= 100
+                self.latest_temp = temp
+                self.latest_voltage = volts
+                self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
+            elif packet.cmd == bs(RETURN_MOTOR):
+                # motor status
+                servo = struct.unpack('b', packet.param)[0]
+                motors = struct.unpack('bbbb', data_bs)
+                packet = MotorStatusPacket(motors, servo, packet.timestamp)
+                self.motor_queue.put_nowait(packet)
+                self.latest_motor_status = packet
+            else:
+                print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
+        except Full:
+            self.__check_for_full_queues()
+
 
     def __send_packet(self, cmd: int, param: int, data: bytes):
         assert len(data) == 4, "data is not 4 bytes long!"
