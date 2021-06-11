@@ -179,10 +179,19 @@ class MCUInterface:
             except serial.SerialTimeoutException:
                 pass
 
+    def __check_for_full_queues(self):
+        queues = (self.gyro_queue, self.motor_queue, self.accel_queue,
+                  self.volt_temp_queue, self.test_queue, self.ok_queue)
+        for queue in queues:
+            if queue.full():
+                print(f"Queue is full! Emptying!")
+                queue.empty()
+
     def __parse_packet(self, packet: ReturnPacket):
         data_bs = packet.data[0] + packet.data[1] + packet.data[2] + packet.data[3]
         if not packet:
             return
+        self.__check_for_full_queues()
         # let's all pretend this was a Python 3.10+ match/case statement
         if packet.cmd == bs(RETURN_TEST):
             # test
