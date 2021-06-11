@@ -189,7 +189,7 @@ class Communications:
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_FRONT, CALIBRATION_VALUES[MOTOR_FRONT])
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_BACK, CALIBRATION_VALUES[MOTOR_BACK])
 
-        self.mcuVAR.cmd_setVoltageCalibration(6.5)
+        # self.mcuVAR.cmd_setVoltageCalibration(6.5)
 
         # write mid
         self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, PWM_MID)
