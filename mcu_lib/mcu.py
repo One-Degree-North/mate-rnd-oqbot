@@ -183,8 +183,8 @@ class MCUInterface:
         queues = (self.gyro_queue, self.motor_queue, self.accel_queue,
                   self.volt_temp_queue, self.test_queue, self.ok_queue)
         for queue in queues:
-            if queue.full():
-                print(f"Queue is full! Emptying!")
+            if queue.qsize() > 0.8 * MAX_QUEUE_SIZE:
+                print(f"Queue is nearly full! Emptying!")
                 queue.empty()
 
     def __parse_packet(self, packet: ReturnPacket):
