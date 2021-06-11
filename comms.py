@@ -106,9 +106,9 @@ class Communications:
 
     def read_send(self, key_pressed: KeySignal):
         # debug
-        multiplier_percent = SPEED_MODES[self.speed_mode] if key_pressed.pressed else 0
-        multiplier_percent *= 2 if key_pressed.shift else 1
-        print("comms received", key_pressed, "with percent", multiplier_percent)
+        # multiplier_percent = SPEED_MODES[self.speed_mode] if key_pressed.pressed else 0
+        # multiplier_percent *= 2 if key_pressed.shift else 1
+        # print("comms received", key_pressed, "with percent", multiplier_percent)
 
         key = key_pressed.key
 
@@ -136,11 +136,11 @@ class Communications:
             else:
                 self.keys_pressed.remove(key)
 
-        print("new key list:", self.keys_pressed)
-        print("new state: ", self.state)
+        # print("new key list:", self.keys_pressed)
+        # print("new state: ", self.state)
 
     def __parse_key(self, key: str):
-        print("parsing key", key)
+        # print("parsing key", key)
         multiplier_percent = SPEED_MODES[self.speed_mode]
         if key.isupper():
             multiplier_percent *= 2

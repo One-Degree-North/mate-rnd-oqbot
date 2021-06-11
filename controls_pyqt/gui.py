@@ -69,13 +69,13 @@ class MainWindow(QT.QWidget):
     def __update_text(self):
         self.voltage_info.setText(str(self.mcu.latest_voltage))
 
-        self.x_gyro.setText(str(self.mcu.latest_gyro[self.X_INDEX]))
-        self.y_gyro.setText(str(self.mcu.latest_gyro[self.Y_INDEX]))
-        self.z_gyro.setText(str(self.mcu.latest_gyro[self.Z_INDEX]))
+        self.x_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.X_INDEX]))
+        self.y_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Y_INDEX]))
+        self.z_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Z_INDEX]))
 
-        self.x_accel.setText(str(self.mcu.latest_accel[self.X_INDEX]))
-        self.y_accel.setText(str(self.mcu.latest_accel[self.Y_INDEX]))
-        self.z_accel.setText(str(self.mcu.latest_accel[self.Z_INDEX]))
+        self.x_accel.setText("{:.4f}".format(self.mcu.latest_accel[self.X_INDEX]))
+        self.y_accel.setText("{:.4f}".format(self.mcu.latest_accel[self.Y_INDEX]))
+        self.z_accel.setText("{:.4f}".format(self.mcu.latest_accel[self.Z_INDEX]))
 
         self.temperature.setText(str(self.mcu.latest_temp))
 

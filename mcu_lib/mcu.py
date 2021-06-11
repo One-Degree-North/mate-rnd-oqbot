@@ -82,8 +82,8 @@ class MCUInterface:
         self.__init_queues()
         self.__write_queue = Queue()
         self.__wait_half_byte_time = 4 / baud
-        self.latest_accel = [0, 0, 0]
-        self.latest_gyro = [0, 0, 0]
+        self.latest_accel = [0.0, 0.0, 0.0]
+        self.latest_gyro = [0.0, 0.0, 0.0]
         self.latest_voltage = 0
         self.latest_temp = 0
         self.latest_motor_status: MotorStatusPacket = MotorStatusPacket((0, 0, 0, 0), 0, 0)
