@@ -159,7 +159,7 @@ class MCUInterface:
         next_byte = self.__queue.get()
         while next_byte != bs(RETURN_HEADER) and self.__queue.qsize() >= RETURN_PACKET_SIZE:
             next_byte = self.__queue.get()
-        if self.__queue.qsize() < RETURN_PACKET_SIZE - 1:
+        if self.__queue.qsize() < RETURN_PACKET_SIZE:
             return
         packet_data = []
         for i in range(RETURN_PACKET_SIZE - 1):  # 0x1 to 0x9
