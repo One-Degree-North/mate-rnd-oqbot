@@ -159,7 +159,7 @@ class MCUInterface:
         next_byte = self.__queue.get()
         while next_byte != bs(RETURN_HEADER) and self.__queue.qsize() >= RETURN_PACKET_SIZE:
             next_byte = self.__queue.get()
-        if self.__queue.qsize() < RETURN_PACKET_SIZE:
+        if self.__queue.qsize() < RETURN_PACKET_SIZE - 1:
             return
         packet_data = []
         for i in range(RETURN_PACKET_SIZE - 1):  # 0x1 to 0x9
@@ -189,24 +189,24 @@ class MCUInterface:
             version = int.from_bytes(packet.data[0], 'big')
             contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
             valid = contents == "pog"
-            self.test_queue.put(TestPacket(valid, version, contents, packet.timestamp))
+            self.test_queue.put_nowait(TestPacket(valid, version, contents, packet.timestamp))
         elif packet.cmd == bs(RETURN_OK):
             # OK
             og_cmd = int.from_bytes(packet.og_cmd, 'big')
             og_param = int.from_bytes(packet.og_param, 'big')
             success = int.from_bytes(packet.param, 'big') > 0
-            self.ok_queue.put(OKPacket(og_cmd, og_param, success, packet.timestamp))
+            self.ok_queue.put_nowait(OKPacket(og_cmd, og_param, success, packet.timestamp))
         elif packet.cmd == bs(RETURN_ACCELEROMETER):
             # accel
             axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
             value = struct.unpack('f', data_bs)[0]
-            self.accel_queue.put(AccelPacket(axis, value, packet.timestamp))
+            self.accel_queue.put_nowait(AccelPacket(axis, value, packet.timestamp))
             self.latest_accel[axis] = value
         elif packet.cmd == bs(RETURN_GYROSCOPE):
             # gyro
             axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
             value = struct.unpack('f', data_bs)[0]
-            self.gyro_queue.put(GyroPacket(axis, value, packet.timestamp))
+            self.gyro_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
             self.latest_gyro[axis] = value
         elif packet.cmd == bs(RETURN_VOLT_TEMP):
             # temp/volt
@@ -215,13 +215,13 @@ class MCUInterface:
             volts /= 100
             self.latest_temp = temp
             self.latest_voltage = volts
-            self.volt_temp_queue.put(VoltageTemperaturePacket(volts, temp, packet.timestamp))
+            self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
         elif packet.cmd == bs(RETURN_MOTOR):
             # motor status
             servo = struct.unpack('b', packet.param)[0]
             motors = struct.unpack('bbbb', data_bs)
             packet = MotorStatusPacket(motors, servo, packet.timestamp)
-            self.motor_queue.put(packet)
+            self.motor_queue.put_nowait(packet)
             self.latest_motor_status = packet
         else:
             print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
