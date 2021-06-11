@@ -17,7 +17,8 @@ SPEED_MODES = [20, 34, 48, 70]
 
 UPDATE_MS = 25
 
-BASE_DOWNWARDS_SPEED = 12
+FRONT_DOWNWARDS_CALIBRATION = 18
+BACK_DOWNWARDS_CALIBRATION = 22
 
 
 class MotorState:
@@ -92,14 +93,15 @@ class Communications:
 
     def update_state(self):
         while self.thread_running:
-            downwards = BASE_DOWNWARDS_SPEED if self.auto_downwards else 0
+            front_downwards = FRONT_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
+            back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.state.motors[MOTOR_LEFT])
             time.sleep(1 / 120)
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.state.motors[MOTOR_RIGHT])
             time.sleep(1 / 120)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.state.motors[MOTOR_FRONT] - downwards)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.state.motors[MOTOR_FRONT] - front_downwards)
             time.sleep(1 / 120)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.state.motors[MOTOR_BACK] + downwards)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.state.motors[MOTOR_BACK] + back_downwards)
             time.sleep(1 / 120)
             self.mcuVAR.cmd_setMotorMicroseconds(4, self.state.claw)
             time.sleep(1 / 120)
