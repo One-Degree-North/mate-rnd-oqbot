@@ -4,3 +4,5 @@
 *.iml
 *.pycache
 *.pyc
+*.jpg
+*.png

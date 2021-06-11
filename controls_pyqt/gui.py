@@ -45,13 +45,13 @@ class MainWindow(QT.QWidget):
         self.fourk_stylesheet = """
         QLabel {
             font-size: 40px;
-            color: Grey
+            color: white
         }
         QGroupBox { 
             font-size: 50px; 
             font-weight: bold;
             border-radius: 10px;
-            border: 2px solid gray;
+            border: 2px solid lightGrey;
             margin-top: 1ex;
             padding: 30px
         }
@@ -59,7 +59,12 @@ class MainWindow(QT.QWidget):
             subcontrol-origin: margin;
             padding-bottom:0 30px;
             padding-top:0 30px;
-            left: 20px}
+            left: 20px;
+            color: white
+        }
+	QWidget {
+	    background: black
+        }
         """
 
     def get_app(self):
@@ -67,6 +72,7 @@ class MainWindow(QT.QWidget):
 
     @pyqtSlot()
     def __update_text(self):
+        self.timenow = datetime.now()
         self.voltage_info.setText(str(self.mcu.latest_voltage))
 
         self.x_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.X_INDEX]))
@@ -186,12 +192,12 @@ class MainWindow(QT.QWidget):
     
     def __capture_camera(self):
         self.camera.searchAndLock()
-        self.camera_capture.capture(self.workingdir + "/Camera 1 " + self.timenow.strftime("%S:%M:%H %d-%m-%y"))  # <-file location goes as argument, saves to photos for now
+        self.camera_capture.capture(self.workingdir + "/Camera 1 " + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f"))  # <-file location goes as argument, saves to photos for now
         self.camera.unlock()
         
     def __capture_camera2(self):
         self.camera2.searchAndLock()
-        self.camera2_capture.capture(self.workingdir + "/Camera 2" + self.timenow.strftime("%S:%M:%H %d-%m-%y"))  # <-file location goes as argument, saves to photos for now
+        self.camera2_capture.capture(self.workingdir + "/Camera 2 " + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f"))  # <-file location goes as argument, saves to photos for now
         self.camera2.unlock()
         
     def __initialize_layout(self):
