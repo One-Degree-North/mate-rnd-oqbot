@@ -1,4 +1,5 @@
 from threading import Thread
+from typing import Iterable
 
 from mcu_lib.mcu import *
 from mcu_lib.command_constants import *
@@ -13,7 +14,7 @@ CLAW_MID = 1335
 CLAW_MAX = 1660
 
 CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
-SPEED_MODES = [20, 34, 48, 70]
+SPEED_MODES = [20, 34, 48, 90]
 
 UPDATE_MS = 25
 
@@ -127,19 +128,25 @@ class Communications:
         # handle other cases (instructions)
         if key_pressed.pressed:  # if pressed
             self.keys_pressed.append(key)
-            self.__parse_key(key)
+            self.__parse_keys()
         else:  # if released
             if self.keys_pressed and self.keys_pressed[-1] == key:
                 self.keys_pressed.remove(key)
                 if not self.keys_pressed:
                     self.halt()
                     return
-                self.__parse_key(self.keys_pressed[-1])
+                self.__parse_keys()
             else:
                 self.keys_pressed.remove(key)
 
         # print("new key list:", self.keys_pressed)
         # print("new state: ", self.state)
+
+    def __parse_keys(self):
+        print("parsing keys: ", self.keys_pressed)
+        for key in self.keys_pressed:
+            self.__parse_key(key)
+        print("new state: ", self.state)
 
     def __parse_key(self, key: str):
         # print("parsing key", key)
