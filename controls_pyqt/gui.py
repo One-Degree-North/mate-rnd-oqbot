@@ -77,7 +77,7 @@ class MainWindow(QT.QWidget):
         self.timenow = datetime.now
         self.timepassed = time.time() - self.starttime
         self.voltage_info.setText(str(self.mcu.latest_voltage))
-        self.timepassedlabel.setText(str(self.timepassed))
+        self.timepassedlabel.setText("{:.4f}".format(self.timepassed))
         self.x_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.X_INDEX]))
         self.y_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Y_INDEX]))
         self.z_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Z_INDEX]))
@@ -252,7 +252,7 @@ class MainWindow(QT.QWidget):
             self.__capture_camera()
         if key_event.key() == Qt.Key_Space:
             self.on_trigger("e", True)
-        if key_event.key() == Qt.Key_Return
+        if key_event.key() == Qt.Key_Return:
             self.starttime = time.time()
 
         if not key_event.isAutoRepeat():
