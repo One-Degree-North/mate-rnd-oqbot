@@ -5,6 +5,7 @@
 import os
 import sys
 from datetime import datetime
+import time
 from typing import List
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
@@ -28,6 +29,7 @@ class MainWindow(QT.QWidget):
         self.ser_text = QT.QPlainTextEdit("text")
         self.workingdir = os.path.dirname(os.path.realpath(__file__))
         self.timenow = datetime.now()
+        self.starttime = time.time()
         self.mcu: MCUInterface = mcu_object
         self.comms: Communications = comms
         self.app = app
@@ -72,9 +74,10 @@ class MainWindow(QT.QWidget):
 
     @pyqtSlot()
     def __update_text(self):
-        self.timenow = datetime.now()
+        self.timenow = datetime.now
+        self.timepassed = time.time() - self.starttime
         self.voltage_info.setText(str(self.mcu.latest_voltage))
-
+        self.timepassedlabel.setText("{:.4f}".format(self.timepassed))
         self.x_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.X_INDEX]))
         self.y_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Y_INDEX]))
         self.z_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Z_INDEX]))
@@ -107,7 +110,8 @@ class MainWindow(QT.QWidget):
 
     def __initialize_as_labels(self):
         self.voltage_info = QT.QLabel()
-
+        self.timepassedlabel = QT.QLabel()
+        
         self.x_gyro = QT.QLabel()
         self.y_gyro = QT.QLabel()
         self.z_gyro = QT.QLabel()
@@ -127,6 +131,7 @@ class MainWindow(QT.QWidget):
     def __initialize_general_info(self):
         self.general_list = QT.QFormLayout()
         self.general_list.addRow(QT.QLabel("Voltage:"), self.voltage_info)
+        self.general_list.addRow(QT.QLabel("Time Passed:"), self.timepassedlabel)
         self.general_box = QT.QGroupBox("General")
         self.general_box.setLayout(self.general_list)
 
@@ -247,6 +252,8 @@ class MainWindow(QT.QWidget):
             self.__capture_camera()
         if key_event.key() == Qt.Key_Space:
             self.on_trigger("e", True)
+        if key_event.key() == Qt.Key_Return:
+            self.starttime = time.time()
 
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
