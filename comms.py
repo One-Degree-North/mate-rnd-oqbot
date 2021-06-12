@@ -14,7 +14,7 @@ CLAW_MID = 1335
 CLAW_MAX = 1660
 
 CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
-SPEED_MODES = [20, 34, 48, 90]
+SPEED_MODES = [20, 34, 48, 60]
 
 UPDATE_MS = 25
 
@@ -178,7 +178,9 @@ class Communications:
         elif key_lower == "h":
             self.set_servo_state(CLAW_MAX)
         elif key_lower == "0":
+            print("Recalibrating!!")
             self.halt()
+            self.__calibrate()
             # self.mcuVAR.cmd_halt()
         elif key_lower == "i":
             self.set_motor_state(MOTOR_FRONT, multiplier_percent if key.islower() else -multiplier_percent)
@@ -189,9 +191,7 @@ class Communications:
         elif key_lower == "l":
             self.set_motor_state(MOTOR_RIGHT, -multiplier_percent if key.islower() else multiplier_percent)
 
-    def start_elec_ops(self):
-        self.mcuVAR.open_serial()
-
+    def __calibrate(self):
         # calibrate
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_LEFT, CALIBRATION_VALUES[MOTOR_LEFT])
         self.mcuVAR.cmd_setMotorCalibration(MOTOR_RIGHT, CALIBRATION_VALUES[MOTOR_RIGHT])
@@ -211,6 +211,10 @@ class Communications:
         self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, True, UPDATE_MS)
         self.mcuVAR.cmd_setAutoReport(PARAM_GYRO, True, UPDATE_MS)
         self.mcuVAR.cmd_setAutoReport(PARAM_VOLT_TEMP, True, UPDATE_MS)
+
+    def start_elec_ops(self):
+        self.mcuVAR.open_serial()
+        self.__calibrate()
 
     def kill_elec_ops(self):
         self.thread_running = False
