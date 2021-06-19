@@ -11,13 +11,14 @@ Forward Commands:
 - 0x0F - `halt`
 - 0x13 - `smc {motor} {calibration}`
 - 0x30 - `getimu {device}`
-    - devices: accel, gyro
+    - devices: accel, gyro, linaccel, orientation
 - 0x33 - `sas {range} {divisor}`
 - 0x34 - `sgs {range} {divisor}`
+- 0x35 - `gic`
 - 0x40 - `getvt`
 - 0x50 - `sar {device} {on/off} {delay}`
-    - devices: accel, gyro, vt
-- 0x51 -`sfb {on/off}`
+    - devices: accel, gyro, vt, linaccel, orientation
+- 0x51 - `sfb {on/off}`
 
 Getter Commands:
 - `accel` - returns the latest acceleration data.
@@ -25,8 +26,8 @@ Getter Commands:
 - `voltage` - returns the latest voltage.
 - `temp` - returns the latest temperature.
 - `rpkt {queue}` - retrieves one packet from a queue.
-    - queues: test, ok, accel, gyro, vt
+    - queues: test, ok, accel, gyro, vt, linaccel, orientation, motor
 
 Other Commands:
 - `echo {msg}`
-- `exit`
+- `exit` (kinda doesn't work...)
