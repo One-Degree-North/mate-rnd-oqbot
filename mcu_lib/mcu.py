@@ -281,7 +281,8 @@ class MCUInterface:
         self.__send_packet(COMMAND_SET_MOTOR_CALIBRATION, motor, data)
 
     def cmd_getIMU(self, device: int):
-        assert device == PARAM_ACCEL or device == PARAM_GYRO, "invalid device!"
+        assert device == PARAM_ACCEL or device == PARAM_GYRO \
+               or device == PARAM_LINEAR_ACCEL or device == PARAM_ORIENTATION, "invalid device!"
         self.__send_packet(COMMAND_GET_IMU, device, BYTESTRING_ZERO * 4)
 
     def cmd_setAccelSettings(self, range: int, divisor: int, use_deprecated=False):
@@ -309,7 +310,8 @@ class MCUInterface:
         self.__send_packet(COMMAND_SET_VOLTAGE_CALIBRATION, PARAM_VOLT_TEMP, struct.pack('f', calibration))
 
     def cmd_setAutoReport(self, device, enabled: bool, delay: int):
-        assert device == PARAM_ACCEL or device == PARAM_GYRO or device == PARAM_VOLT_TEMP, "invalid device!"
+        assert device == PARAM_ACCEL or device == PARAM_GYRO or device == PARAM_VOLT_TEMP \
+               or device == PARAM_ORIENTATION or device == PARAM_LINEAR_ACCEL, "invalid device!"
         assert 0 <= delay <= 0xFFFF, "invalid delay!"
         on = 0xFF if enabled else 0x00
         data = bs(on) + bs(delay // 0xFF) + bs(delay % 0xFF) + BYTESTRING_ZERO
