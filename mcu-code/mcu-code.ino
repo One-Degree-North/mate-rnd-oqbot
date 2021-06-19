@@ -13,7 +13,7 @@
 #include <Wire.h>
 #include <Servo.h>
 
-#define VERSION 1
+#define VERSION 2
 
 // define debug
 // #define Debug_Serial Serial
@@ -67,6 +67,9 @@ unsigned long autoReportTimers[] = {0, 0, 0, 0, 0};
 // values for status
 int8_t motorPercents[] = {0, 0, 0, 0, 0};
 uint16_t motorMicros[] = {PWM_MID, PWM_MID, PWM_MID, PWM_MID, PWM_MID};
+uint16_t motorTargets[] = {PWM_MID, PWM_MID, PWM_MID, PWM_MID, PWM_MID};
+unsigned long prevTime = millis();
+
 
 // --------------- SECTION: INITIALIZATION --------------- //
 
@@ -133,8 +136,8 @@ uint16_t calibrate(byte motor, uint16_t microseconds){
 void setPWM(byte motor, uint16_t microseconds){
   Debug("setPWM: specified motor now at ");
   Debug(microseconds);
-  motors[motor].writeMicroseconds(microseconds);
-  motorMicros[motor] = microseconds;
+  // motors[motor].writeMicroseconds(microseconds);
+  motorTargets[motor] = microseconds;
 }
 
 void setPercent(byte motor, int8_t percent){
@@ -152,6 +155,10 @@ void updateSensors(){
 
 int8_t mapServo(){
   return (int8_t) map((long) motorMicros, CLAW_MIN, CLAW_MAX, -127, 128); 
+}
+
+uint16_t lerp(uint16_t a, uint16_t b, float x){
+  return (uint16_t) (a + x * (float) (b - a));
 }
 
 // --------------- SECTION: SERIAL COMMUNICATION --------------- //
@@ -534,7 +541,22 @@ void autoReport(){
   } // end for
 }
 
+void lerpMotors(){
+  unsigned long currentTime = millis();
+  unsigned long dt = currentTime - prevTime;
+  prevTime = currentTime;
+  for (int motor = 0; motor < 4; motor ++){
+    if (motorMicros[motor] != motorTargets[motor]){
+      float x = min(1, dt * 50 / abs(motorTargets[motor] - motorMicros[motor]));
+      uint16_t new_value = lerp(motorMicros[motor], motorTargets[motor], x);
+      motorMicros[motor] = new_value;
+      motors[motor].writeMicroseconds(new_value);
+    }
+  }
+}
+
 void loop() {
   readSerial();
   autoReport();
+  lerpMotors();
 }
