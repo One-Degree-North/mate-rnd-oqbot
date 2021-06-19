@@ -5,11 +5,29 @@
 
 from mcu_lib.mcu import *
 from mcu_lib.command_constants import *
+from queue import Queue, Empty
+from threading import Thread
 
 
 print("mcu_cli.py | simple mcu.py interface\nrefer to docs/mcu_cli.md for usage details.")
 mcu = MCUInterface(input("enter port: "), int(input("enter baudrate: ")))
 mcu.open_serial()
+
+queues = (mcu.accel_queue, mcu.gyro_queue, mcu.volt_temp_queue, mcu.orientation_queue,
+          mcu.linear_accel_queue, mcu.ok_queue, mcu.test_queue, mcu.motor_queue)
+read_thread_enable = False
+
+
+def read_threads():
+    while read_thread_enable:
+        for queue in queues:
+            try:
+                print(queue.get(timeout=0.001), "\n")
+            except Empty:
+                pass
+
+
+queue_reader = Thread(target=read_threads)
 
 while True:
     user_input = input(f"[{mcu.get_port()}@{mcu.get_baud()}]: ").split(" ")
@@ -100,7 +118,16 @@ while True:
                 print("invalid queue")
         elif cmd == "echo":
             print(" ".join(user_input[1:]))
+        elif cmd == "autoread":
+            read_thread_enable = True
+            queue_reader.start()
+        elif cmd == "stopautoread":
+            read_thread_enable = False
+            queue_reader.join()
         elif cmd == "exit":
+            if read_thread_enable:
+                read_thread_enable = False
+                queue_reader.join()
             mcu.close_serial()
             exit()
         else:
