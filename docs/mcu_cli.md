@@ -30,4 +30,6 @@ Getter Commands:
 
 Other Commands:
 - `echo {msg}`
+- `autoread` - enables automatic reading of packets
+- `stopautoread` - disables automatic reading of packets
 - `exit` (kinda doesn't work...)
