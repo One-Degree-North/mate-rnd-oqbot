@@ -192,67 +192,64 @@ class MCUInterface:
         data_bs = packet.data[0] + packet.data[1] + packet.data[2] + packet.data[3]
         if not packet:
             return
-        try:
-            # let's all pretend this was a Python 3.10+ match/case statement
-            if packet.cmd == bs(RETURN_TEST):
-                # test
-                version = int.from_bytes(packet.data[0], 'big')
-                contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
-                valid = contents == "pog"
-                if self.test_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                    self.test_queue.put_nowait(TestPacket(valid, version, contents, packet.timestamp))
-            elif packet.cmd == bs(RETURN_OK):
-                # OK
-                og_cmd = int.from_bytes(packet.og_cmd, 'big')
-                og_param = int.from_bytes(packet.og_param, 'big')
-                success = int.from_bytes(packet.param, 'big') > 0
-                if self.ok_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                    self.ok_queue.put_nowait(OKPacket(og_cmd, og_param, success, packet.timestamp))
-            elif packet.cmd == bs(RETURN_ACCELEROMETER):
-                # accel
-                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-                value = struct.unpack('f', data_bs)[0]
-                if self.accel_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                    self.accel_queue.put_nowait(AccelPacket(axis, value, packet.timestamp))
-                self.latest_accel[axis] = value
-            elif packet.cmd == bs(RETURN_GYROSCOPE):
-                # gyro
-                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-                value = struct.unpack('f', data_bs)[0]
-                if self.gyro_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                    self.gyro_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
-                self.latest_gyro[axis] = value
-            elif packet.cmd == bs(RETURN_LINEAR_ACCEL):
-                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-                value = struct.unpack('f', data_bs)[0]
-                if self.linear_accel_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                    self.linear_accel_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
-                self.latest_linear_accel[axis] = value
-            elif packet.cmd == bs(RETURN_ORIENTATION):
-                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-                value = struct.unpack('f', data_bs)[0]
-                if self.orientation_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                    self.orientation_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
-                self.latest_orientation[axis] = value
-            elif packet.cmd == bs(RETURN_VOLT_TEMP):
-                # temp/volt
-                temp, volts = struct.unpack('HH', data_bs)
-                temp /= 100
-                volts /= 100
-                self.latest_temp = temp
-                self.latest_voltage = volts
-                self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
-            elif packet.cmd == bs(RETURN_MOTOR):
-                # motor status
-                servo = struct.unpack('b', packet.param)[0]
-                motors = struct.unpack('bbbb', data_bs)
-                packet = MotorStatusPacket(motors, servo, packet.timestamp)
-                self.motor_queue.put_nowait(packet)
-                self.latest_motor_status = packet
-            else:
-                print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
-        except Full:
-            self.__check_for_full_queues()
+        # let's all pretend this was a Python 3.10+ match/case statement
+        if packet.cmd == bs(RETURN_TEST):
+            # test
+            version = int.from_bytes(packet.data[0], 'big')
+            contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
+            valid = contents == "pog"
+            if self.test_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.test_queue.put_nowait(TestPacket(valid, version, contents, packet.timestamp))
+        elif packet.cmd == bs(RETURN_OK):
+            # OK
+            og_cmd = int.from_bytes(packet.og_cmd, 'big')
+            og_param = int.from_bytes(packet.og_param, 'big')
+            success = int.from_bytes(packet.param, 'big') > 0
+            if self.ok_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.ok_queue.put_nowait(OKPacket(og_cmd, og_param, success, packet.timestamp))
+        elif packet.cmd == bs(RETURN_ACCELEROMETER):
+            # accel
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.accel_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.accel_queue.put_nowait(AccelPacket(axis, value, packet.timestamp))
+            self.latest_accel[axis] = value
+        elif packet.cmd == bs(RETURN_GYROSCOPE):
+            # gyro
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.gyro_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.gyro_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+            self.latest_gyro[axis] = value
+        elif packet.cmd == bs(RETURN_LINEAR_ACCEL):
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.linear_accel_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.linear_accel_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+            self.latest_linear_accel[axis] = value
+        elif packet.cmd == bs(RETURN_ORIENTATION):
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.orientation_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.orientation_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+            self.latest_orientation[axis] = value
+        elif packet.cmd == bs(RETURN_VOLT_TEMP):
+            # temp/volt
+            temp, volts = struct.unpack('HH', data_bs)
+            temp /= 100
+            volts /= 100
+            self.latest_temp = temp
+            self.latest_voltage = volts
+            self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
+        elif packet.cmd == bs(RETURN_MOTOR):
+            # motor status
+            servo = struct.unpack('b', packet.param)[0]
+            motors = struct.unpack('bbbb', data_bs)
+            packet = MotorStatusPacket(motors, servo, packet.timestamp)
+            self.motor_queue.put_nowait(packet)
+            self.latest_motor_status = packet
+        else:
+            print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
 
     def __send_packet(self, cmd: int, param: int, data: bytes):
         assert len(data) == 4, "data is not 4 bytes long!"
