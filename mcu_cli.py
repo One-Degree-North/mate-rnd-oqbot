@@ -82,6 +82,8 @@ while True:
         elif cmd == "sfb":
             enabled = True if user_input[1] == "on" else False
             mcu.cmd_setFeedback(enabled)
+        elif cmd == "gic":
+            mcu.cmd_getIMUSettings()
         elif cmd == "accel":
             print(mcu.latest_accel)
         elif cmd == "gyro":
@@ -96,6 +98,8 @@ while True:
             print(mcu.latest_temp)
         elif cmd == "motor":
             print(mcu.latest_motor_status)
+        elif cmd == "calibration":
+            print(mcu.current_calibration)
         elif cmd == "rpkt":
             queue = user_input[1]
             if queue == "test":
