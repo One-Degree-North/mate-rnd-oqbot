@@ -78,9 +78,9 @@ class MainWindow(QT.QWidget):
         self.timepassed = time.time() - self.starttime
         self.voltage_info.setText(str(self.mcu.latest_voltage))
         self.timepassedlabel.setText("{:.4f}".format(self.timepassed))
-        self.x_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.X_INDEX]))
-        self.y_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Y_INDEX]))
-        self.z_gyro.setText("{:.4f}".format(self.mcu.latest_gyro[self.Z_INDEX]))
+        self.x_gyro.setText("{:.4f}".format(self.mcu.latest_orientation[self.X_INDEX]))
+        self.y_gyro.setText("{:.4f}".format(self.mcu.latest_orientation[self.Y_INDEX]))
+        self.z_gyro.setText("{:.4f}".format(self.mcu.latest_orientation[self.Z_INDEX]))
 
         self.x_accel.setText("{:.4f}".format(self.mcu.latest_accel[self.X_INDEX]))
         self.y_accel.setText("{:.4f}".format(self.mcu.latest_accel[self.Y_INDEX]))
@@ -97,7 +97,7 @@ class MainWindow(QT.QWidget):
         # self.update()
 
     def __create_window(self):
-        self.TITLE: str = 'MATE'
+        self.TITLE: str = 'MATE R&D 2021 Control Program - PyQt5 Version'
         self.X_POSITION: int = 0
         self.Y_POSITION: int = 0
         self.LENGTH: int = 1600

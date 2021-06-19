@@ -16,18 +16,18 @@
 #define VERSION 2
 
 // define debug
-// #define Debug_Serial Serial
-// #define DEBUG_BAUDRATE 230400
+ #define Debug_Serial Serial
+ #define DEBUG_BAUDRATE 230400
 
 // enable debug
-// #define DEBUG
-// #define Debug(a) (Serial.print(a))
-// #define Debugln(a) (Serial.println(a))
-// #define VERBOSE
+ #define DEBUG
+ #define Debug(a) (Serial.print(a))
+ #define Debugln(a) (Serial.println(a))
+ #define VERBOSE
 
 // disable debug
-#define Debug(a)
-#define Debugln(a)
+//#define Debug(a)
+//#define Debugln(a)
 
 // define communications
 #define Comms Serial1
@@ -69,6 +69,7 @@ int8_t motorPercents[] = {0, 0, 0, 0, 0};
 uint16_t motorMicros[] = {PWM_MID, PWM_MID, PWM_MID, PWM_MID, PWM_MID};
 uint16_t motorTargets[] = {PWM_MID, PWM_MID, PWM_MID, PWM_MID, PWM_MID};
 unsigned long prevTime = millis();
+#define INTERPOLATION_SPEED 500 // measured in delta-microseconds-motor per millisecond
 
 
 // --------------- SECTION: INITIALIZATION --------------- //
@@ -547,7 +548,7 @@ void lerpMotors(){
   prevTime = currentTime;
   for (int motor = 0; motor < 4; motor ++){
     if (motorMicros[motor] != motorTargets[motor]){
-      float x = min(1, dt * 50 / abs(motorTargets[motor] - motorMicros[motor]));
+      float x = min(1, dt * INTERPOLATION_SPEED / abs(motorTargets[motor] - motorMicros[motor]));
       uint16_t new_value = lerp(motorMicros[motor], motorTargets[motor], x);
       motorMicros[motor] = new_value;
       motors[motor].writeMicroseconds(new_value);

@@ -104,6 +104,45 @@ class GyroPacket:
         return f"[{self.timestamp}] Gyroscope {AXES[self.axis]}: {self.value}"
 
 
+class LinearAccelPacket:
+    """
+    LinearAccelPacket - Class for representing returned packets with cmd 0x3B.
+    Represents a single direction of linear acceleration (ignoring gravity and magnetism)
+
+    Attributes:
+        timestamp: float - unix time representation of when the packet was received.
+        axis: int - axis of the measurement. 0=X, 1=Y, 2=Z
+        value: float - value of the measurement.
+    """
+    def __init__(self, axis: int, value: float, timestamp: float):
+        self.timestamp = timestamp
+        self.axis = axis
+        self.value = value
+
+    def __str__(self):
+        return f"[{self.timestamp}] Linear Acceleration {AXES[self.axis]}: {self.value}"
+
+
+class OrientationPacket:
+    """
+    OrientationPacket - Class for representing returned packets with cmd 0x3D.
+    Represents a single direction of absolute orientation, represented as Euler angles,
+    relative to gravity and the North Pole.
+
+    Attributes:
+        timestamp: float - unix time representation of when the packet was received.
+        axis: int - axis of the measurement. 0=X, 1=Y, 2=Z
+        value: float - value of the measurement.
+    """
+    def __init__(self, axis: int, value: float, timestamp: float):
+        self.timestamp = timestamp
+        self.axis = axis
+        self.value = value
+
+    def __str__(self):
+        return f"[{self.timestamp}] Orientation {AXES[self.axis]}: {self.value}"
+
+
 class VoltageTemperaturePacket:
     """
     GyroPacket - Class for representing returned packets with cmd 0x3C.

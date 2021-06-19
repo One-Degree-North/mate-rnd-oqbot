@@ -225,13 +225,13 @@ class MCUInterface:
             axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
             value = struct.unpack('f', data_bs)[0]
             if self.linear_accel_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                self.linear_accel_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+                self.linear_accel_queue.put_nowait(LinearAccelPacket(axis, value, packet.timestamp))
             self.latest_linear_accel[axis] = value
         elif packet.cmd == bs(RETURN_ORIENTATION):
             axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
             value = struct.unpack('f', data_bs)[0]
             if self.orientation_queue.qsize() <= MAX_QUEUE_SIZE - 1:
-                self.orientation_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+                self.orientation_queue.put_nowait(OrientationPacket(axis, value, packet.timestamp))
             self.latest_orientation[axis] = value
         elif packet.cmd == bs(RETURN_VOLT_TEMP):
             # temp/volt
