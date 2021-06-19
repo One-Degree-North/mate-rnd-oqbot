@@ -247,7 +247,8 @@ class MCUInterface:
             servo = struct.unpack('b', packet.param)[0]
             motors = struct.unpack('bbbb', data_bs)
             packet = MotorStatusPacket(motors, servo, packet.timestamp)
-            self.motor_queue.put_nowait(packet)
+            if self.motor_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.motor_queue.put_nowait(packet)
             self.latest_motor_status = packet
         else:
             print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
