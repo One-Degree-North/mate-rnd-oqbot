@@ -163,13 +163,13 @@ class VoltageTemperaturePacket:
 
 class MotorStatusPacket:
     """
-        GyroPacket - Class for representing returned packets with cmd 0x1C.
+    MotorStatusPacket - Class for representing returned packets with cmd 0x1C.
 
-        Attributes:
-            timestamp: float - unix time representation of when the packet was received.
-            motors: Tuple[int, int, int, int] - current motor positions in microseconds.
-            servo: int - current servo value, between -127 and 127.
-        """
+    Attributes:
+        timestamp: float - unix time representation of when the packet was received.
+        motors: Tuple[int, int, int, int] - current motor positions in microseconds.
+        servo: int - current servo value, between -127 and 127.
+    """
     def __init__(self, motors: Tuple[int, int, int, int], servo: int, timestamp: float):
         self.timestamp = timestamp
         self.motors = motors
@@ -177,3 +177,25 @@ class MotorStatusPacket:
 
     def __str__(self):
         return f"[{self.timestamp}] Motor Status: {self.motors}, Servo Value: {self.servo}"
+
+
+class IMUCalibrationPacket:
+    """
+    IMUCalibrationPacket - Class for representing returned packets with cmd 0x3E.
+
+    Attributes:
+        timestamp: float - unix time representation of when the packet was received.
+        calibrations: Tuple[int, int, int, int] - current calibrations, in sys-gyro-accel-mag order.
+    """
+    def __init__(self, calibrations: Tuple[int, int, int, int], timestamp: float):
+        self.system = calibrations[0]
+        self.gyro = calibrations[1]
+        self.accel = calibrations[2]
+        self.mag = calibrations[3]
+        self.timestamp = timestamp
+
+    def __str__(self):
+        return f"[{self.timestamp}] Calibrations: (System: {self.system}, Gyro: {self.gyro}, " \
+               f"Accel: {self.accel}, Mag: {self.mag})"
+
+

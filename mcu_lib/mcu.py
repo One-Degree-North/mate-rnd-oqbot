@@ -90,6 +90,7 @@ class MCUInterface:
         self.latest_voltage = 0
         self.latest_temp = 0
         self.latest_motor_status: MotorStatusPacket = MotorStatusPacket((0, 0, 0, 0), 0, 0)
+        self.current_calibration = IMUCalibrationPacket((0, 0, 0, 0), 0)
         self.read_size = max_read
         if close_on_startup:
             self.__serial.close()
@@ -250,6 +251,9 @@ class MCUInterface:
             if self.motor_queue.qsize() <= MAX_QUEUE_SIZE - 1:
                 self.motor_queue.put_nowait(packet)
             self.latest_motor_status = packet
+        elif packet.cmd == bs(RETURN_IMU_CALIBRATIONS):
+            calibrations = struct.unpack('bbbb', data_bs)
+            self.current_calibration = IMUCalibrationPacket(calibrations, packet.timestamp)
         else:
             print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
 
@@ -323,6 +327,9 @@ class MCUInterface:
         on = 0xFF if enabled else 0x00
         data = bs(on) + BYTESTRING_ZERO * 3
         self.__send_packet(COMMAND_SET_FEEDBACK, PARAM_SYSTEM, data)
+
+    def cmd_getIMUSettings(self):
+        self.__send_packet(COMMAND_GET_IMU_SETTINGS, PARAM_ZERO, BYTESTRING_ZERO * 4)
 
 
 if __name__ == "__main__":
