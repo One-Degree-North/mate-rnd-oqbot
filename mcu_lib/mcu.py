@@ -240,7 +240,8 @@ class MCUInterface:
             volts /= 100
             self.latest_temp = temp
             self.latest_voltage = volts
-            self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
+            if self.volt_temp_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
         elif packet.cmd == bs(RETURN_MOTOR):
             # motor status
             servo = struct.unpack('b', packet.param)[0]
