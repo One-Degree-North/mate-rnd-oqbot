@@ -60,6 +60,7 @@ class MCUInterface:
         cmd_{PACKET_COMMAND}()
             refer to docs/command_list.md. most should be self-explanatory.
     """
+
     def __init__(self, port: str, baud: int = 230400, close_on_startup: bool = True,
                  refresh_rate: int = 1440, max_read: int = 16):
         """
@@ -84,6 +85,8 @@ class MCUInterface:
         self.__wait_half_byte_time = 4 / baud
         self.latest_accel = [0.0, 0.0, 0.0]
         self.latest_gyro = [0.0, 0.0, 0.0]
+        self.latest_linear_accel = [0.0, 0.0, 0.0]
+        self.latest_orientation = [0.0, 0.0, 0.0]
         self.latest_voltage = 0
         self.latest_temp = 0
         self.latest_motor_status: MotorStatusPacket = MotorStatusPacket((0, 0, 0, 0), 0, 0)
@@ -96,6 +99,8 @@ class MCUInterface:
         self.ok_queue = Queue(MAX_QUEUE_SIZE)
         self.accel_queue = Queue(MAX_QUEUE_SIZE)
         self.gyro_queue = Queue(MAX_QUEUE_SIZE)
+        self.linear_accel_queue = Queue(MAX_QUEUE_SIZE)
+        self.orientation_queue = Queue(MAX_QUEUE_SIZE)
         self.volt_temp_queue = Queue(MAX_QUEUE_SIZE)
         self.motor_queue = Queue(MAX_QUEUE_SIZE)
 
@@ -234,6 +239,16 @@ class MCUInterface:
                 value = struct.unpack('f', data_bs)[0]
                 self.gyro_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
                 self.latest_gyro[axis] = value
+            elif packet.cmd == bs(RETURN_LINEAR_ACCEL):
+                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+                value = struct.unpack('f', data_bs)[0]
+                self.linear_accel_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+                self.latest_linear_accel[axis] = value
+            elif packet.cmd == bs(RETURN_ORIENTATION):
+                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+                value = struct.unpack('f', data_bs)[0]
+                self.orientation_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
+                self.latest_orientation[axis] = value
             elif packet.cmd == bs(RETURN_VOLT_TEMP):
                 # temp/volt
                 temp, volts = struct.unpack('HH', data_bs)
@@ -253,7 +268,6 @@ class MCUInterface:
                 print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
         except Full:
             self.__check_for_full_queues()
-
 
     def __send_packet(self, cmd: int, param: int, data: bytes):
         assert len(data) == 4, "data is not 4 bytes long!"
@@ -288,13 +302,19 @@ class MCUInterface:
         assert device == PARAM_ACCEL or device == PARAM_GYRO, "invalid device!"
         self.__send_packet(COMMAND_GET_IMU, device, BYTESTRING_ZERO * 4)
 
-    def cmd_setAccelSettings(self, range: int, divisor: int):
+    def cmd_setAccelSettings(self, range: int, divisor: int, use_deprecated=False):
+        if not use_deprecated:
+            print("cmd_setAccelSettings is deprecated as of $VERSION=2!")
+            return
         assert 0 <= range <= 3, "invalid range!"
         assert 1 <= divisor <= 0xFF, "invalid divisor!"
         data = bs(range) + bs(divisor) + BYTESTRING_ZERO * 2
         self.__send_packet(COMMAND_SET_ACCEL_SETTINGS, PARAM_ACCEL, data)
 
-    def cmd_setGyroSettings(self, range: int, divisor: int):
+    def cmd_setGyroSettings(self, range: int, divisor: int, use_deprecated=False):
+        if not use_deprecated:
+            print("cmd_setGyroSettings is deprecated as of $VERSION=2!")
+            return
         assert 0 <= range <= 3, "invalid range!"
         assert 1 <= divisor <= 0xFF, "invalid divisor!"
         data = bs(range) + bs(divisor) + BYTESTRING_ZERO * 2
