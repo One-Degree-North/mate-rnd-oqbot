@@ -7,18 +7,20 @@
 
 // --------------- SECTION: DEFINITIONS --------------- //
 
-#include <Adafruit_ICM20649.h>
+#include <Adafruit_BNO055.h>
 #include <Adafruit_Sensor.h>
+#include <utility/imumaths.h>
 #include <Wire.h>
 #include <Servo.h>
 
-#define VERSION 0
+#define VERSION 1
 
 // define debug
 // #define Debug_Serial Serial
 // #define DEBUG_BAUDRATE 230400
 
 // enable debug
+// #define DEBUG
 // #define Debug(a) (Serial.print(a))
 // #define Debugln(a) (Serial.println(a))
 // #define VERBOSE
@@ -46,19 +48,21 @@ Servo motors[NUM_MOTORS];
 #define VOLTAGE_PIN A2
 #define R1 2000
 #define R2 390
-float voltage_calibration = 7.55;
+float voltage_calibration = 6.5;
 
 // create sensor objects
-Adafruit_ICM20649 icm;
-sensors_event_t icmAccel;
-sensors_event_t icmGyro;
-sensors_event_t icmTemp;
+Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28);
+sensors_event_t bnoLinAccel;
+sensors_event_t bnoOrientation;
+sensors_event_t bnoAccel;
+sensors_event_t bnoGyro;
+float temperature;
 
 // values for settings
 boolean enableFeedback = true;
-boolean enableAutoReport[] = {false, false, false};
-uint16_t autoReportDelay[] = {100, 100, 100};
-unsigned long autoReportTimers[] = {0, 0, 0};
+boolean enableAutoReport[] = {false, false, false, false, false};
+uint16_t autoReportDelay[] = {100, 100, 100, 100, 100};
+unsigned long autoReportTimers[] = {0, 0, 0, 0, 0};
 
 // values for status
 int8_t motorPercents[] = {0, 0, 0, 0, 0};
@@ -75,23 +79,14 @@ void initSerial() {
   Debugln("initSerial: Serial Init complete");
 }
 
-void setDefaultRanges(){
-  icm.setAccelRange(ICM20649_ACCEL_RANGE_16_G);
-  icm.setGyroRange(ICM20649_GYRO_RANGE_500_DPS);
-  icm.setAccelRateDivisor(15); 
-  icm.setGyroRateDivisor(15);
-  Debugln("setDefaultRanges: ICM20649 default ranges set.");
-}
-
 void initSensors() {
-  if (!icm.begin_I2C()){
-    Debugln("initSensors: ICM20649 Init over I2C failed.");
+  if (!bno.begin()){
+    Debugln("initSensors: BNO055 Init over I2C failed.");
     while(true){
       delay(10);
     }
   }
-  Debugln("initSensors: ICM20649 Init complete");
-  setDefaultRanges();
+  Debugln("initSensors: BNO055 Init complete");
 }
 
 void initMotors() {
@@ -147,73 +142,12 @@ void setPercent(byte motor, int8_t percent){
   motorPercents[motor] = percent;
 }
 
-void setAccelerometerRange(byte mode){
-  Debug("setAccelerometerRange: ");
-  if (mode < 0x00 || mode > 0x03){ return; }
-  Debugln(mode);
-  switch (mode)
-  {
-    case 0x00:
-      icm.setAccelRange(ICM20649_ACCEL_RANGE_4_G);
-      break;
-    case 0x01:
-      icm.setAccelRange(ICM20649_ACCEL_RANGE_8_G);
-      break;
-    case 0x02:
-      icm.setAccelRange(ICM20649_ACCEL_RANGE_16_G);
-      break;
-    case 0x03:
-      icm.setAccelRange(ICM20649_ACCEL_RANGE_30_G);
-      break;
-    default:
-      Debugln("setAccelerometerRange: invalid accelerometer range!");
-      break;
-  }
-}
-
-void setGyroscopeRange(byte mode){
-  Debug("setGyroscopeRange: ");
-  if (mode < 0x00 || mode > 0x03){ return; }
-  Debugln(mode);
-  switch (mode)
-  {
-    case 0x00:
-    case '0':
-      icm.setGyroRange(ICM20649_GYRO_RANGE_500_DPS);
-      break;
-    case 0x01:
-    case '1':
-      icm.setGyroRange(ICM20649_GYRO_RANGE_1000_DPS);
-      break;
-    case 0x02:
-    case '2':
-      icm.setGyroRange(ICM20649_GYRO_RANGE_2000_DPS);
-      break;
-    case 0x03:
-    case '3':
-      icm.setGyroRange(ICM20649_GYRO_RANGE_4000_DPS);
-      break;
-    default:
-      Debugln("setGyroscopeRange: invalid gyroscope range!");
-      break;
-  }
-}
-
-void setAccelerometerDivisor(byte divisor){
-  Debug("setAccelerometerDivisor: ");
-  Debugln(divisor);
-  icm.setAccelRateDivisor(divisor);
-}
-
-void setGyroscopeDivisor(byte divisor){
-  Debug("setGyroscopeDivisor: ");
-  Debugln(divisor);
-  icm.setGyroRateDivisor(divisor);
-}
-
 void updateSensors(){
   Debugln("updateSensors: updating sensors");
-  icm.getEvent(&icmAccel, &icmGyro, &icmTemp);
+  bno.getEvent(&bnoOrientation, Adafruit_BNO055::VECTOR_EULER);
+  bno.getEvent(&bnoGyro, Adafruit_BNO055::VECTOR_GYROSCOPE);
+  bno.getEvent(&bnoLinAccel, Adafruit_BNO055::VECTOR_LINEARACCEL);
+  bno.getEvent(&bnoAccel, Adafruit_BNO055::VECTOR_ACCELEROMETER);
 }
 
 int8_t mapServo(){
@@ -308,6 +242,8 @@ void parseSerial(byte cmd, byte param, byte *data){
     case 0x34:
       setGyroSettings(param, data);
       break;
+    case 0x35:
+      getIMUSettings(param);
     case 0x40:
       getVoltageAndTemperature(param);
       break;
@@ -432,9 +368,9 @@ void getIMU(byte param){
     {
       // accel
       Debugln("accelerometer data");
-      byte *x = (byte *) &icmAccel.acceleration.x;
-      byte *y = (byte *) &icmAccel.acceleration.y;
-      byte *z = (byte *) &icmAccel.acceleration.z;
+      byte *x = (byte *) &bnoAccel.acceleration.x;
+      byte *y = (byte *) &bnoAccel.acceleration.y;
+      byte *z = (byte *) &bnoAccel.acceleration.z;
       sendPacket(0x30, 0x15, 0x3A, 0x00, x);
       sendPacket(0x30, 0x15, 0x3A, 0x30, y);
       sendPacket(0x30, 0x15, 0x3A, 0x60, z);
@@ -444,12 +380,36 @@ void getIMU(byte param){
     {
       // gyro
       Debugln("gyroscope data");
-      byte *x = (byte *) &icmGyro.gyro.x;
-      byte *y = (byte *) &icmGyro.gyro.y;
-      byte *z = (byte *) &icmGyro.gyro.z;
+      byte *x = (byte *) &bnoGyro.gyro.x;
+      byte *y = (byte *) &bnoGyro.gyro.y;
+      byte *z = (byte *) &bnoGyro.gyro.z;
       sendPacket(0x30, 0x15, 0x3C, 0x00, x);
       sendPacket(0x30, 0x15, 0x3C, 0x30, y);
       sendPacket(0x30, 0x15, 0x3C, 0x60, z);
+      break;
+    }
+    case 0x18:
+    {
+      // linear acceleration
+      Debugln("linear acceleration data");
+      byte *x = (byte *) &bnoLinAccel.acceleration.x;
+      byte *y = (byte *) &bnoLinAccel.acceleration.y;
+      byte *z = (byte *) &bnoLinAccel.acceleration.z;
+      sendPacket(0x30, 0x15, 0x3B, 0x00, x);
+      sendPacket(0x30, 0x15, 0x3B, 0x30, y);
+      sendPacket(0x30, 0x15, 0x3B, 0x60, z);
+      break;
+    }
+    case 0x19:
+    {
+      // orientation
+      Debugln("orientation data");
+      byte *x = (byte *) &bnoOrientation.orientation.x;
+      byte *y = (byte *) &bnoOrientation.orientation.y;
+      byte *z = (byte *) &bnoOrientation.orientation.z;
+      sendPacket(0x30, 0x15, 0x3D, 0x00, x);
+      sendPacket(0x30, 0x15, 0x3D, 0x30, y);
+      sendPacket(0x30, 0x15, 0x3D, 0x60, z);
       break;
     }
     default:
@@ -463,19 +423,28 @@ void getIMU(byte param){
 // setAccelSettings command: 0x33
 void setAccelSettings (byte param, byte *data){
   if (param != 0x15) { return; }
-  Debugln("setAccelSettings: Accelerometer Settings Modified.");
-  setAccelerometerRange(data[0]);
-  setAccelerometerDivisor(data[1]);
+  Debugln("setAccelSettings: Deprecated Command.");
   ok(0x33, param);
 }
 
 // setGyroSettings command: 0x34
 void setGyroSettings (byte param, byte *data){
   if (param != 0x16) { return; }
-  Debugln("setGyroSettings: Gyroscope Settings Modified.");
-  setGyroscopeRange(data[0]);
-  setGyroscopeDivisor(data[1]);
+  Debugln("setGyroSettings: Deprecated Command.");
   ok(0x34, param);
+}
+
+// getIMUSettings command: 0x35
+void getIMUSettings (byte param){
+  Debugln("getIMUSettings: Sending IMU calibration!");
+  byte system, gyro, accel, mag = 0;
+  bno.getCalibration(&system, &gyro, &accel, &mag);
+  byte toSend[4];
+  toSend[0] = system;
+  toSend[1] = gyro;
+  toSend[2] = accel;
+  toSend[3] = mag;
+  sendPacket(0x35, param, 0x3E, 0x00, toSend);
 }
 
 // getVoltageAndTemperature command: 0x40
@@ -484,7 +453,7 @@ void getVoltageAndTemperature(byte param){
   updateSensors();
   Debugln("getVoltageAndTemperature: getting voltage and temperature data");
   byte toSend[4];
-  uint16_t temp = (uint16_t) (icmTemp.temperature * 100.0);
+  uint16_t temp = bno.getTemp() * 100;
   uint16_t voltage = (uint16_t) (getVoltage(analogRead(VOLTAGE_PIN)) * 100.0);
   toSend[0] = temp % 0xFF;
   toSend[1] = temp / 0xFF;
@@ -504,7 +473,7 @@ void setVoltageCalibration(byte param, byte *data){
 
 // setAutoReport command: 0x50
 void setAutoReport(byte param, byte *data){
-  if (param < 0x15 || param > 0x17) { return; }
+  if (param < 0x15 || param > 0x19) { return; }
   byte device = param - 0x15;
   enableAutoReport[device] = data[0] > 0;
   autoReportDelay[device] = data[1] * 0xFF + data[2];
@@ -528,7 +497,7 @@ void setFeedback(byte param, byte *data){
 
 void autoReport(){
   // iterate through devices
-  for (int dev = 0; dev < 3; dev ++){
+  for (int dev = 0; dev < 5; dev ++){
     if (enableAutoReport[dev]){
       if (millis() > autoReportTimers[dev]){
         if (millis() - autoReportTimers[dev] > 2 * autoReportDelay[dev]){
@@ -536,7 +505,7 @@ void autoReport(){
           Debug(dev);
           Debug(" is running ");
           Debug(millis() - autoReportTimers[dev]);
-          Debugln("ms behind.");
+          Debugln("ms behind. note: ignore this if this is on startup");
         }
         autoReportTimers[dev] = millis() + autoReportDelay[dev];
         switch (dev)
@@ -549,6 +518,12 @@ void autoReport(){
             break;
           case 2: // volt/temp
             getVoltageAndTemperature(0x17);
+            break;
+          case 3:
+            getIMU(0x18);
+            break;
+          case 4:
+            getIMU(0x19);
             break;
           default:
             Debugln("autoReport: What? This shouldn't be possible!");
