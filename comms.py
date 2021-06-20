@@ -210,6 +210,8 @@ class Communications:
         # enable autoreport
         self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, True, UPDATE_MS)
         self.mcuVAR.cmd_setAutoReport(PARAM_GYRO, True, UPDATE_MS)
+        self.mcuVAR.cmd_setAutoReport(PARAM_LINEAR_ACCEL, True, UPDATE_MS)
+        self.mcuVAR.cmd_setAutoReport(PARAM_ORIENTATION, True, UPDATE_MS)
         self.mcuVAR.cmd_setAutoReport(PARAM_VOLT_TEMP, True, UPDATE_MS)
 
     def start_elec_ops(self):
@@ -224,4 +226,6 @@ class Communications:
         self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, False, 0)
         self.mcuVAR.cmd_setAutoReport(PARAM_GYRO, False, 0)
         self.mcuVAR.cmd_setAutoReport(PARAM_VOLT_TEMP, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_LINEAR_ACCEL, False, 0)
+        self.mcuVAR.cmd_setAutoReport(PARAM_ORIENTATION, False, 0)
         self.mcuVAR.close_serial()

@@ -30,18 +30,22 @@ All values are in this format:
 	- data field: first two bytes are a `uint16_t`, range 0-4000
 	- sets the motor's calibration value, where 1000 is normal, 500 is half speed, and 2000 is double speed.
 - 0x30 - getIMU
-	- param: must be 0x15 (accelerometer) or 0x16 (gyroscope)
+	- param: must be 0x15 (accelerometer), 0x16 (gyroscope), 0x18 (linear acceleration), 0x19 (orientation)
 	- data field: None
 	- **returns** with three packets representing the X, Y, Z of the specified device. (0x3A or 0x3C)
 	- fetches the current IMU 
-- 0x33 - setAccelSettings
+- 0x33 - setAccelSettings (Deprecated)
 	- param: must be 0x15
 	- data field: first byte is range (0-3 or '0'-'3'), second byte is divisor (0-255)
 	- sets the accelerometer divisor and range for current operation.
-- 0x34 - setGyroSettings
+- 0x34 - setGyroSettings (Deprecated)
 	- param: must be 0x16
 	- data field: first byte is range (0-3 or '0'-'3'), second byte is divisor (0-255)
 	- sets the gyroscope divisor and range for current operation.
+- 0x35 - getIMUSettings
+    - param: Any
+    - data field: None
+    - returns wtih the 0x3E packet.
 - 0x40 - getVoltageAndTemperature
 	- param: must be 0x17
 	- data field: None
@@ -51,7 +55,7 @@ All values are in this format:
 	- data field: four bytes are a single-precision `float`, representing the calibration value (default 7.55)
 	- sets the voltage calibration value.
 - 0x50 - setAutoReport
-	- param: must be 0x15 (accel), 0x16 (gyro), 0x17 (voltage/temp)
+	- param: must be 0x15 (accel), 0x16 (gyro), 0x17 (voltage/temp), 0x18 (linear acceleration), 0x19 (orientation)
 	- data field: first byte is 0 or any other value, second and third bytes are a `uint16_t` specifying how often (in milliseconds) to send packets. 
 	- if first byte is not 0x00, autoReport is turned on for the specified device, and the system will attempt to report once every specified number of milliseconds.
 - 0x51 - setFeedback
@@ -73,9 +77,18 @@ All values are in this format:
 - 0x3A - accelerometer
 	- param: 0x00 (X), 0x30 (Y), 0x60 (Z)
 	- data field: four bytes are a single-precision `float`, representing the current value of that axis of the accelerometer.
+- 0x3B - linear acceleration
+	- param: 0x00 (X), 0x30 (Y), 0x60 (Z)
+	- data field: four bytes are a single-precision `float`, representing the current value of that axis of linear acceleration.
 - 0x3C - gyroscope
 	- param: 0x00 (X), 0x30 (Y), 0x60 (Z)
 	- data field: four bytes are a single-precision `float`, representing the current value of that axis of the gyroscope.
+- 0x3D - orientation
+	- param: 0x00 (X), 0x30 (Y), 0x60 (Z)
+	- data field: four bytes are a single-precision `float`, representing the current value of that axis of absolute orientation.
+- 0x3E - imu calibration
+    - param: Any
+    - data field: each byte represents one calibration value reported by the BNO055, in the order system-gyro-accel-mag.
 - 0x44 - voltage/temperature
 	- param: 0x17
 	- data field: first two bytes are a `uint16_t` representing 100 times the current temperature in Celsius, the final two bytes are a `uint16_t` representing 100 times the current voltage. This is used since there is no such thing (or need) for a 16-bit floating point value.

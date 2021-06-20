@@ -60,6 +60,7 @@ class MCUInterface:
         cmd_{PACKET_COMMAND}()
             refer to docs/command_list.md. most should be self-explanatory.
     """
+
     def __init__(self, port: str, baud: int = 230400, close_on_startup: bool = True,
                  refresh_rate: int = 1440, max_read: int = 16):
         """
@@ -84,9 +85,12 @@ class MCUInterface:
         self.__wait_half_byte_time = 4 / baud
         self.latest_accel = [0.0, 0.0, 0.0]
         self.latest_gyro = [0.0, 0.0, 0.0]
+        self.latest_linear_accel = [0.0, 0.0, 0.0]
+        self.latest_orientation = [0.0, 0.0, 0.0]
         self.latest_voltage = 0
         self.latest_temp = 0
         self.latest_motor_status: MotorStatusPacket = MotorStatusPacket((0, 0, 0, 0), 0, 0)
+        self.current_calibration = IMUCalibrationPacket((0, 0, 0, 0), 0)
         self.read_size = max_read
         if close_on_startup:
             self.__serial.close()
@@ -96,6 +100,8 @@ class MCUInterface:
         self.ok_queue = Queue(MAX_QUEUE_SIZE)
         self.accel_queue = Queue(MAX_QUEUE_SIZE)
         self.gyro_queue = Queue(MAX_QUEUE_SIZE)
+        self.linear_accel_queue = Queue(MAX_QUEUE_SIZE)
+        self.orientation_queue = Queue(MAX_QUEUE_SIZE)
         self.volt_temp_queue = Queue(MAX_QUEUE_SIZE)
         self.motor_queue = Queue(MAX_QUEUE_SIZE)
 
@@ -183,77 +189,73 @@ class MCUInterface:
         while not queue.empty():
             queue.get()
 
-    def __check_for_full_queues(self):
-        if self.gyro_queue.full():
-            print(f"Gyro queue is full! Emptying!")
-            self.__empty_queue(self.gyro_queue)
-        if self.accel_queue.full():
-            print(f"Accel queue is full! Emptying!")
-            self.__empty_queue(self.accel_queue)
-        if self.motor_queue.full():
-            print(f"Motor queue is full! Emptying!")
-            self.__empty_queue(self.motor_queue)
-        if self.ok_queue.full():
-            print(f"OK queue is full! Emptying!")
-            self.__empty_queue(self.ok_queue)
-        if self.volt_temp_queue.full():
-            print(f"Volt/Temp queue is full! Emptying!")
-            self.__empty_queue(self.volt_temp_queue)
-        if self.test_queue.full():
-            print(f"Test queue is full! Emptying!")
-            self.__empty_queue(self.test_queue)
-
     def __parse_packet(self, packet: ReturnPacket):
         data_bs = packet.data[0] + packet.data[1] + packet.data[2] + packet.data[3]
         if not packet:
             return
-        self.__check_for_full_queues()
-        try:
-            # let's all pretend this was a Python 3.10+ match/case statement
-            if packet.cmd == bs(RETURN_TEST):
-                # test
-                version = int.from_bytes(packet.data[0], 'big')
-                contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
-                valid = contents == "pog"
+        # let's all pretend this was a Python 3.10+ match/case statement
+        if packet.cmd == bs(RETURN_TEST):
+            # test
+            version = int.from_bytes(packet.data[0], 'big')
+            contents = (packet.data[1] + packet.data[2] + packet.data[3]).decode('latin')
+            valid = contents == "pog"
+            if self.test_queue.qsize() <= MAX_QUEUE_SIZE - 1:
                 self.test_queue.put_nowait(TestPacket(valid, version, contents, packet.timestamp))
-            elif packet.cmd == bs(RETURN_OK):
-                # OK
-                og_cmd = int.from_bytes(packet.og_cmd, 'big')
-                og_param = int.from_bytes(packet.og_param, 'big')
-                success = int.from_bytes(packet.param, 'big') > 0
+        elif packet.cmd == bs(RETURN_OK):
+            # OK
+            og_cmd = int.from_bytes(packet.og_cmd, 'big')
+            og_param = int.from_bytes(packet.og_param, 'big')
+            success = int.from_bytes(packet.param, 'big') > 0
+            if self.ok_queue.qsize() <= MAX_QUEUE_SIZE - 1:
                 self.ok_queue.put_nowait(OKPacket(og_cmd, og_param, success, packet.timestamp))
-            elif packet.cmd == bs(RETURN_ACCELEROMETER):
-                # accel
-                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-                value = struct.unpack('f', data_bs)[0]
+        elif packet.cmd == bs(RETURN_ACCELEROMETER):
+            # accel
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.accel_queue.qsize() <= MAX_QUEUE_SIZE - 1:
                 self.accel_queue.put_nowait(AccelPacket(axis, value, packet.timestamp))
-                self.latest_accel[axis] = value
-            elif packet.cmd == bs(RETURN_GYROSCOPE):
-                # gyro
-                axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
-                value = struct.unpack('f', data_bs)[0]
+            self.latest_accel[axis] = value
+        elif packet.cmd == bs(RETURN_GYROSCOPE):
+            # gyro
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.gyro_queue.qsize() <= MAX_QUEUE_SIZE - 1:
                 self.gyro_queue.put_nowait(GyroPacket(axis, value, packet.timestamp))
-                self.latest_gyro[axis] = value
-            elif packet.cmd == bs(RETURN_VOLT_TEMP):
-                # temp/volt
-                temp, volts = struct.unpack('HH', data_bs)
-                temp /= 100
-                volts /= 100
-                self.latest_temp = temp
-                self.latest_voltage = volts
+            self.latest_gyro[axis] = value
+        elif packet.cmd == bs(RETURN_LINEAR_ACCEL):
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.linear_accel_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.linear_accel_queue.put_nowait(LinearAccelPacket(axis, value, packet.timestamp))
+            self.latest_linear_accel[axis] = value
+        elif packet.cmd == bs(RETURN_ORIENTATION):
+            axis = int.from_bytes(packet.param, 'big') // AXIS_DIVISOR
+            value = struct.unpack('f', data_bs)[0]
+            if self.orientation_queue.qsize() <= MAX_QUEUE_SIZE - 1:
+                self.orientation_queue.put_nowait(OrientationPacket(axis, value, packet.timestamp))
+            self.latest_orientation[axis] = value
+        elif packet.cmd == bs(RETURN_VOLT_TEMP):
+            # temp/volt
+            temp, volts = struct.unpack('HH', data_bs)
+            temp /= 100
+            volts /= 100
+            self.latest_temp = temp
+            self.latest_voltage = volts
+            if self.volt_temp_queue.qsize() <= MAX_QUEUE_SIZE - 1:
                 self.volt_temp_queue.put_nowait(VoltageTemperaturePacket(volts, temp, packet.timestamp))
-            elif packet.cmd == bs(RETURN_MOTOR):
-                # motor status
-                servo = struct.unpack('b', packet.param)[0]
-                motors = struct.unpack('bbbb', data_bs)
-                packet = MotorStatusPacket(motors, servo, packet.timestamp)
+        elif packet.cmd == bs(RETURN_MOTOR):
+            # motor status
+            servo = struct.unpack('b', packet.param)[0]
+            motors = struct.unpack('bbbb', data_bs)
+            packet = MotorStatusPacket(motors, servo, packet.timestamp)
+            if self.motor_queue.qsize() <= MAX_QUEUE_SIZE - 1:
                 self.motor_queue.put_nowait(packet)
-                self.latest_motor_status = packet
-            else:
-                print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
-        except Full:
-            self.__check_for_full_queues()
-
+            self.latest_motor_status = packet
+        elif packet.cmd == bs(RETURN_IMU_CALIBRATIONS):
+            calibrations = struct.unpack('bbbb', data_bs)
+            self.current_calibration = IMUCalibrationPacket(calibrations, packet.timestamp)
+        else:
+            print(f"Invalid packet received! Command: {packet.cmd}, Param: {packet.param}, Data: {packet.data}")
 
     def __send_packet(self, cmd: int, param: int, data: bytes):
         assert len(data) == 4, "data is not 4 bytes long!"
@@ -285,16 +287,23 @@ class MCUInterface:
         self.__send_packet(COMMAND_SET_MOTOR_CALIBRATION, motor, data)
 
     def cmd_getIMU(self, device: int):
-        assert device == PARAM_ACCEL or device == PARAM_GYRO, "invalid device!"
+        assert device == PARAM_ACCEL or device == PARAM_GYRO \
+               or device == PARAM_LINEAR_ACCEL or device == PARAM_ORIENTATION, "invalid device!"
         self.__send_packet(COMMAND_GET_IMU, device, BYTESTRING_ZERO * 4)
 
-    def cmd_setAccelSettings(self, range: int, divisor: int):
+    def cmd_setAccelSettings(self, range: int, divisor: int, use_deprecated=False):
+        if not use_deprecated:
+            print("cmd_setAccelSettings is deprecated as of $VERSION=2!")
+            return
         assert 0 <= range <= 3, "invalid range!"
         assert 1 <= divisor <= 0xFF, "invalid divisor!"
         data = bs(range) + bs(divisor) + BYTESTRING_ZERO * 2
         self.__send_packet(COMMAND_SET_ACCEL_SETTINGS, PARAM_ACCEL, data)
 
-    def cmd_setGyroSettings(self, range: int, divisor: int):
+    def cmd_setGyroSettings(self, range: int, divisor: int, use_deprecated=False):
+        if not use_deprecated:
+            print("cmd_setGyroSettings is deprecated as of $VERSION=2!")
+            return
         assert 0 <= range <= 3, "invalid range!"
         assert 1 <= divisor <= 0xFF, "invalid divisor!"
         data = bs(range) + bs(divisor) + BYTESTRING_ZERO * 2
@@ -307,7 +316,8 @@ class MCUInterface:
         self.__send_packet(COMMAND_SET_VOLTAGE_CALIBRATION, PARAM_VOLT_TEMP, struct.pack('f', calibration))
 
     def cmd_setAutoReport(self, device, enabled: bool, delay: int):
-        assert device == PARAM_ACCEL or device == PARAM_GYRO or device == PARAM_VOLT_TEMP, "invalid device!"
+        assert device == PARAM_ACCEL or device == PARAM_GYRO or device == PARAM_VOLT_TEMP \
+               or device == PARAM_ORIENTATION or device == PARAM_LINEAR_ACCEL, "invalid device!"
         assert 0 <= delay <= 0xFFFF, "invalid delay!"
         on = 0xFF if enabled else 0x00
         data = bs(on) + bs(delay // 0xFF) + bs(delay % 0xFF) + BYTESTRING_ZERO
@@ -317,6 +327,9 @@ class MCUInterface:
         on = 0xFF if enabled else 0x00
         data = bs(on) + BYTESTRING_ZERO * 3
         self.__send_packet(COMMAND_SET_FEEDBACK, PARAM_SYSTEM, data)
+
+    def cmd_getIMUSettings(self):
+        self.__send_packet(COMMAND_GET_IMU_SETTINGS, PARAM_ZERO, BYTESTRING_ZERO * 4)
 
 
 if __name__ == "__main__":
