@@ -38,7 +38,7 @@ class MainWindow(QT.QWidget):
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
         self.servo_speed: int = 0
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
-	self.current_camera_layout = 0
+        self.current_camera_layout = 0
 
         # (key, message sent to comms)
         self.KEYS = [
@@ -218,7 +218,7 @@ class MainWindow(QT.QWidget):
         self.setLayout(self.layout)
     
      def __switch_camera_layout(self):
-        if self.current_camera_layoutt == 0:
+        if self.current_camera_layout == 0:
             self.camera_view2.hide()
             self.current_camera_layout = 1
             return 
