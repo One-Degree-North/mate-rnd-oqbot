@@ -38,6 +38,7 @@ class MainWindow(QT.QWidget):
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
         self.servo_speed: int = 0
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
+	self.currentcameralayout = 0
 
         # (key, message sent to comms)
         self.KEYS = [
@@ -215,6 +216,21 @@ class MainWindow(QT.QWidget):
         # self.layout.setColumnMinimumWidth(3, 400)
         self.layout.setColumnMinimumWidth(4, 600)
         self.setLayout(self.layout)
+    
+     def __switchcameralayout(self):
+        if self.currentcameralayout == 0:
+            self.camera_view2.hide()
+            self.currentcameralayout = 1
+            return 
+        if self.currentcameralayout == 1:
+            self.camera_view.hide()
+            self.camera_view2.show()
+            self.currentcameralayout = 2
+            return
+        if self.currentcameralayout == 2:
+            self.camera_view.show()
+            self.currentcameralayout = 0
+            return
 
     def setup_ui(self):
         self.__create_window()
@@ -254,6 +270,8 @@ class MainWindow(QT.QWidget):
             self.on_trigger("e", True)
         if key_event.key() == Qt.Key_Return:
             self.starttime = time.time()
+	if key_event.key() == Qt.Key_Slash
+	    self.__switchcameralayout()
 
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
