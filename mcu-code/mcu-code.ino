@@ -139,6 +139,10 @@ void setPWM(byte motor, uint16_t microseconds){
   Debug(microseconds);
   // motors[motor].writeMicroseconds(microseconds);
   motorTargets[motor] = microseconds;
+  if (motor == 4) { // handle servo case
+    motorMicros[motor] = microseconds;
+    motors[motor].writeMicroseconds(microseconds);
+  }
 }
 
 void setPercent(byte motor, int8_t percent){
