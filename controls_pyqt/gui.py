@@ -38,6 +38,7 @@ class MainWindow(QT.QWidget):
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
         self.servo_speed: int = 0
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
+        self.cameranumber = 1
 
         # (key, message sent to comms)
         self.KEYS = [
@@ -164,46 +165,56 @@ class MainWindow(QT.QWidget):
     def __setup_camera(self):
         self.camera_layout = QT.QVBoxLayout()
         
-        self.camera = QTM.QCamera(str.encode("/dev/video0"))
-        self.camera_view = QTMW.QCameraViewfinder()
-        self.camera.setViewfinder(self.camera_view)
-        self.camera_capture = QTM.QCameraImageCapture(self.camera)
-        self.camera.setCaptureMode(QTM.QCamera.CaptureStillImage)
-        self.camera_capture.setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
-        self.camera.start()
         
-        self.capture_button = QT.QPushButton("Capture")
+        
+        self.camera = [QTM.QCamera(str.encode("/dev/video" + str(x))) for x in range(self.cameranumber)]
+        self.camera_view = [QTMW.QCameraViewfinder() for x in range(self.cameranumber)]
+        self.camera_capture = [QTM.QCameraImageCapture(self.camera[x]) for x in range(self.cameranumber)]
+        
+        for x in range(self.cameranumber):
+            self.camera[x].setViewfinder(self.camera_view[x])
+            self.camera[x].setCaptureMode(QTM.QCamera.CaptureStillImage)
+            self.camera_capture[x].setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
+            self.camera[x].start()
+            self.camera_layout.addWidget(self.camera_view[x])
+        
+        
+        #self.camera = QTM.QCamera(str.encode("/dev/video0"))
+        #self.camera_view = QTMW.QCameraViewfinder()
+        #self.camera.setViewfinder(self.camera_view)
+        #self.camera_capture = QTM.QCameraImageCapture(self.camera)
+        #self.camera.setCaptureMode(QTM.QCamera.CaptureStillImage)
+        #self.camera_capture.setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
+        #self.camera.start()
+        
+        #self.capture_button = QT.QPushButton("Capture")
 
-        self.camera2 = QTM.QCamera(str.encode("/dev/video1"))
-        self.camera_view2 = QTMW.QCameraViewfinder()
-        self.camera2.setViewfinder(self.camera_view2)
-        self.camera2_capture = QTM.QCameraImageCapture(self.camera2)
-        self.camera2.setCaptureMode(QTM.QCamera.CaptureStillImage)
-        self.camera2_capture.setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
-        self.camera2.start()
+        #self.camera2 = QTM.QCamera(str.encode("/dev/video1"))
+        #self.camera_view2 = QTMW.QCameraViewfinder()
+        #self.camera2.setViewfinder(self.camera_view2)
+        #self.camera2_capture = QTM.QCameraImageCapture(self.camera2)
+        #self.camera2.setCaptureMode(QTM.QCamera.CaptureStillImage)
+        #self.camera2_capture.setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
+        #self.camera2.start()
         
-        self.capture_button2 = QT.QPushButton("Capture")
+        #self.capture_button2 = QT.QPushButton("Capture")
        
-        self.camera_layout.addWidget(self.camera_view)
-        self.camera_layout.addWidget(self.capture_button)
-        self.camera_layout.addWidget(self.camera_view2)
-        self.camera_layout.addWidget(self.capture_button2)
+        #self.camera_layout.addWidget(self.camera_view)
+        #self.camera_layout.addWidget(self.capture_button)
+        #self.camera_layout.addWidget(self.camera_view2)
+        #self.camera_layout.addWidget(self.capture_button2)
         
         self.camera_box = QT.QWidget()
         self.camera_box.setLayout(self.camera_layout)
         
-        self.capture_button.clicked.connect(self.__capture_camera)
-        self.capture_button2.clicked.connect(self.__capture_camera2)
+        #self.capture_button.clicked.connect(self.__capture_camera)
+        #self.capture_button2.clicked.connect(self.__capture_camera2)
     
-    def __capture_camera(self):
-        self.camera.searchAndLock()
-        self.camera_capture.capture(self.workingdir + "/Camera 1 " + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f"))  # <-file location goes as argument, saves to photos for now
-        self.camera.unlock()
+    def __capture_camera(self, camera: int):
+        self.camera[camera].searchAndLock()
+        self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera)) + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f")  # <-file location goes as argument, saves to photos for now
+        self.camera[camera].unlock()
         
-    def __capture_camera2(self):
-        self.camera2.searchAndLock()
-        self.camera2_capture.capture(self.workingdir + "/Camera 2 " + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f"))  # <-file location goes as argument, saves to photos for now
-        self.camera2.unlock()
         
     def __initialize_layout(self):
         self.layout = QT.QGridLayout()
@@ -246,10 +257,8 @@ class MainWindow(QT.QWidget):
     def keyPressEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Escape:
             self.exit_program.exit()
-        if key_event.key() == Qt.Key_Period:
-            self.__capture_camera2()
         if key_event.key() == Qt.Key_Comma:
-            self.__capture_camera()
+            self.__capture_camera(0)
         if key_event.key() == Qt.Key_Space:
             self.on_trigger("e", True)
         if key_event.key() == Qt.Key_Return:
