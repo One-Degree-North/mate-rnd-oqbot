@@ -26,10 +26,10 @@ This is the repository containing all the code for One Degree North Robotics's R
 - `mcu_cli.py` - command line tool for manually sending commands to `mcu.py`. see `docs/mcu_cli.md`.
 
 ## Dependencies
-#### Python 3.9+ (`pip`)
+#### Python 3.9+ (`pip`) (For running the program)
 - PyQt5 (should also work with PySide2/PySide6/PyQt6)
-- PySerial v3.0+
-#### Arduino 1.8.10+
+- PySerial v3.0+ (recommend v3.5b0 honestly)
+#### Arduino 1.8.10+ (For compiling & uploading to MCU)
 - Arduino SAMD
 - Adafruit's Board Manager URL (`https://adafruit.github.io/arduino-board-index/package_adafruit_index.json`)
 	- Adafruit SAMD
