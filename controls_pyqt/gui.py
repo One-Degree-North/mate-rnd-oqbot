@@ -272,7 +272,7 @@ class MainWindow(QT.QWidget):
         if key_event.key() == Qt.Key_Escape:
             self.exit_program.exit()
         if key_event.key() == Qt.Key_Comma:
-            self.__capture_camera(0)
+            self.__capture_camera(self.current_camera[0])
         if key_event.key() == Qt.Key_Space:
             self.on_trigger("e", True)
         if key_event.key() == Qt.Key_Return:
