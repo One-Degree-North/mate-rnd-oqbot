@@ -165,9 +165,6 @@ class MainWindow(QT.QWidget):
 
     def __setup_camera(self):
         self.camera_layout = QT.QVBoxLayout()
-        
-        
-        
         self.camera = [QTM.QCamera(str.encode("/dev/video" + str(x))) for x in range(self.camera_number)]
         self.camera_view = [QTMW.QCameraViewfinder() for x in range(self.camera_number)]
         self.camera_capture = [QTM.QCameraImageCapture(self.camera[x]) for x in range(self.camera_number)]
@@ -178,39 +175,10 @@ class MainWindow(QT.QWidget):
             self.camera_capture[x].setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
             self.camera[x].start()
             self.camera_layout.addWidget(self.camera_view[x])
-        
-        
-        #self.camera = QTM.QCamera(str.encode("/dev/video0"))
-        #self.camera_view = QTMW.QCameraViewfinder()
-        #self.camera.setViewfinder(self.camera_view)
-        #self.camera_capture = QTM.QCameraImageCapture(self.camera)
-        #self.camera.setCaptureMode(QTM.QCamera.CaptureStillImage)
-        #self.camera_capture.setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
-        #self.camera.start()
-        
-        #self.capture_button = QT.QPushButton("Capture")
-
-        #self.camera2 = QTM.QCamera(str.encode("/dev/video1"))
-        #self.camera_view2 = QTMW.QCameraViewfinder()
-        #self.camera2.setViewfinder(self.camera_view2)
-        #self.camera2_capture = QTM.QCameraImageCapture(self.camera2)
-        #self.camera2.setCaptureMode(QTM.QCamera.CaptureStillImage)
-        #self.camera2_capture.setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
-        #self.camera2.start()
-        
-        #self.capture_button2 = QT.QPushButton("Capture")
        
-        #self.camera_layout.addWidget(self.camera_view)
-        #self.camera_layout.addWidget(self.capture_button)
-        #self.camera_layout.addWidget(self.camera_view2)
-        #self.camera_layout.addWidget(self.capture_button2)
-        
         self.camera_box = QT.QWidget()
         self.camera_box.setLayout(self.camera_layout)
         
-        #self.capture_button.clicked.connect(self.__capture_camera)
-        #self.capture_button2.clicked.connect(self.__capture_camera2)
-    
     def __capture_camera(self, camera: int):
         self.camera[camera].searchAndLock()
         self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera)) + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f")  # <-file location goes as argument, saves to photos for now
