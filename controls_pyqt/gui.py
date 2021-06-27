@@ -38,7 +38,8 @@ class MainWindow(QT.QWidget):
         self.thruster_speed: List[int] = [0] * self.NUM_THRUSTERS
         self.servo_speed: int = 0
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
-        self.cameranumber = 1
+        self.camera_number = 2
+        self.current_camera = list(range(self.camera_number))
 
         # (key, message sent to comms)
         self.KEYS = [
@@ -167,11 +168,11 @@ class MainWindow(QT.QWidget):
         
         
         
-        self.camera = [QTM.QCamera(str.encode("/dev/video" + str(x))) for x in range(self.cameranumber)]
-        self.camera_view = [QTMW.QCameraViewfinder() for x in range(self.cameranumber)]
-        self.camera_capture = [QTM.QCameraImageCapture(self.camera[x]) for x in range(self.cameranumber)]
+        self.camera = [QTM.QCamera(str.encode("/dev/video" + str(x))) for x in range(self.camera_number)]
+        self.camera_view = [QTMW.QCameraViewfinder() for x in range(self.camera_number)]
+        self.camera_capture = [QTM.QCameraImageCapture(self.camera[x]) for x in range(self.camera_number)]
         
-        for x in range(self.cameranumber):
+        for x in range(self.camera_number):
             self.camera[x].setViewfinder(self.camera_view[x])
             self.camera[x].setCaptureMode(QTM.QCamera.CaptureStillImage)
             self.camera_capture[x].setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
@@ -215,7 +216,6 @@ class MainWindow(QT.QWidget):
         self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera)) + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f")  # <-file location goes as argument, saves to photos for now
         self.camera[camera].unlock()
         
-        
     def __initialize_layout(self):
         self.layout = QT.QGridLayout()
         self.layout.addWidget(self.camera_box, 1, 1, 3, 1)
@@ -251,6 +251,20 @@ class MainWindow(QT.QWidget):
     def start_ui(self):
         sys.exit(self.app.exec_())
 
+    def switchcamera(self):
+        if self.current_camera[0] == (self.camera_number - 1): #If the first camera in the list is the last camera reset it to show all cameras
+            self.current_camera = list(range(self.camera_number))
+        elif len(self.current_camera) > 1: #If 2 or more cameras are shown, only show the first caera in that list
+            self.current_camera = [self.current_camera[0]]
+        else: #Else take the frist camera in the list and add one
+            self.current_camera = [self.current_camera[0] + 1]
+            
+        for x in range(self.camera_number): #Hides all cameras
+            self.camera_view[x].hide()
+        for x in self.current_camera: #Shows all cameras in the current_camera list
+           self.camera_view[x].show()
+        
+    
     def on_trigger(self, trigger: str, pressed: bool):
         self.comms.read_send(KeySignal(trigger, pressed))
 
@@ -263,6 +277,8 @@ class MainWindow(QT.QWidget):
             self.on_trigger("e", True)
         if key_event.key() == Qt.Key_Return:
             self.starttime = time.time()
+        if key_event.key() == Qt.Key_Backslash:
+            self.switchcamera()
 
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
