@@ -40,6 +40,7 @@ class MainWindow(QT.QWidget):
         (self.X_INDEX, self.Y_INDEX, self.Z_INDEX) = (0, 1, 2)
         self.camera_number = 2
         self.current_camera = list(range(self.camera_number))
+        self.sidebar_shown = True
 
         # (key, message sent to comms)
         self.KEYS = [
@@ -219,7 +220,7 @@ class MainWindow(QT.QWidget):
     def start_ui(self):
         sys.exit(self.app.exec_())
 
-    def switchcamera(self):
+    def switch_camera(self):
         if self.current_camera[0] == (self.camera_number - 1): #If the first camera in the list is the last camera reset it to show all cameras
             self.current_camera = list(range(self.camera_number))
         elif len(self.current_camera) > 1: #If 2 or more cameras are shown, only show the first caera in that list
@@ -231,8 +232,20 @@ class MainWindow(QT.QWidget):
             self.camera_view[x].hide()
         for x in self.current_camera: #Shows all cameras in the current_camera list
            self.camera_view[x].show()
-        
-    
+     
+    def hide_sidebar(self):
+        if self.sidebar_shown == True:
+            self.general_box.hide()
+            self.imu_box.hide()
+            self.pwmbox.hide()
+            self.layout.setColumnMinimumWidth(4, 0)
+            self.sidebar_shown = False
+        else:
+            self.general_box.show()
+            self.imu_box.show()
+            self.pwmbox.show()
+            self.layout.setColumnMinimumWidth(4, 500)
+            self.sidebar_shown = True
     def on_trigger(self, trigger: str, pressed: bool):
         self.comms.read_send(KeySignal(trigger, pressed))
 
@@ -246,7 +259,9 @@ class MainWindow(QT.QWidget):
         if key_event.key() == Qt.Key_Return:
             self.starttime = time.time()
         if key_event.key() == Qt.Key_Backslash:
-            self.switchcamera()
+            self.switch_camera()
+        if key_event.key() == Qt.Key_O:
+            self.hide_sidebar()
 
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
