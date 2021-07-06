@@ -44,7 +44,7 @@ class MainWindow(QT.QWidget):
 
         # (key, message sent to comms)
         self.KEYS = [
-            "q", "w", "e", "a", "s", "d", "f", "g", "h", "z", "x", "c", "i", "j", "k", "l", "1", "2", "3", "4", "0", "7"
+            "q", "w", "e", "a", "s", "d", "f", "g", "h", "z", "x", "c", "i", "j", "k", "l", "1", "2", "3", "4", "0", "7", "y"
         ]
         
         self.fourk_stylesheet = """
@@ -68,7 +68,7 @@ class MainWindow(QT.QWidget):
             color: white
         }
 	QWidget {
-	    background: black
+	    background: rgb(42, 46, 50)
         }
         """
 
@@ -77,9 +77,9 @@ class MainWindow(QT.QWidget):
 
     @pyqtSlot()
     def __update_text(self):
-        self.timenow = datetime.now
+        self.timenow = datetime.now()
         self.timepassed = time.time() - self.starttime
-        self.voltage_info.setText(str(self.mcu.latest_voltage))
+        self.voltage_info.setText(str(0.5 * self.mcu.latest_voltage))
         self.timepassedlabel.setText("{:.4f}".format(self.timepassed))
         self.x_gyro.setText("{:.4f}".format(self.mcu.latest_orientation[self.X_INDEX]))
         self.y_gyro.setText("{:.4f}".format(self.mcu.latest_orientation[self.Y_INDEX]))
@@ -91,10 +91,10 @@ class MainWindow(QT.QWidget):
 
         self.temperature.setText(str(self.mcu.latest_temp))
 
-        self.thruster1.setText(str(self.mcu.latest_motor_status.motors[MOTOR_LEFT]))
-        self.thruster2.setText(str(self.mcu.latest_motor_status.motors[MOTOR_RIGHT]))
-        self.thruster3.setText(str(self.mcu.latest_motor_status.motors[MOTOR_FRONT]))
-        self.thruster4.setText(str(self.mcu.latest_motor_status.motors[MOTOR_BACK]))
+        self.thruster1.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_LEFT]} -> {self.comms.state.motors[MOTOR_LEFT]}")
+        self.thruster2.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_RIGHT]} -> {self.comms.state.motors[MOTOR_RIGHT]}")
+        self.thruster3.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_FRONT]} -> {self.comms.state.motors[MOTOR_FRONT]}")
+        self.thruster4.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_BACK]} -> {self.comms.state.motors[MOTOR_BACK]}")
         self.servo.setText(str(self.mcu.latest_motor_status.servo))
 
         # self.update()
@@ -165,14 +165,17 @@ class MainWindow(QT.QWidget):
         self.pwmbox.setLayout(self.pwm_list)
 
     def __setup_camera(self):
-        self.camera_layout = QT.QVBoxLayout()
+        self.camera_layout = QT.QHBoxLayout()
         self.camera = [QTM.QCamera(str.encode("/dev/video" + str(x))) for x in range(self.camera_number)]
         self.camera_view = [QTMW.QCameraViewfinder() for x in range(self.camera_number)]
         self.camera_capture = [QTM.QCameraImageCapture(self.camera[x]) for x in range(self.camera_number)]
-        
+        self.camera_view_settings = [QTM.QCameraViewfinderSettings() for x in range(self.camera_number)]
+        # self.camera_view_settings[1].setResolution(800, 600)
+
         for x in range(self.camera_number):
             self.camera[x].setViewfinder(self.camera_view[x])
             self.camera[x].setCaptureMode(QTM.QCamera.CaptureStillImage)
+            self.camera[x].setViewfinderSettings(self.camera_view_settings[x])
             self.camera_capture[x].setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
             self.camera[x].start()
             self.camera_layout.addWidget(self.camera_view[x])
@@ -182,7 +185,7 @@ class MainWindow(QT.QWidget):
         
     def __capture_camera(self, camera: int):
         self.camera[camera].searchAndLock()
-        self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera)) + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f")  # <-file location goes as argument, saves to photos for now
+        self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera) + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f"))  # <-file location goes as argument, saves to photos for now
         self.camera[camera].unlock()
         
     def __initialize_layout(self):
@@ -258,7 +261,7 @@ class MainWindow(QT.QWidget):
             self.on_trigger("e", True)
         if key_event.key() == Qt.Key_Return:
             self.starttime = time.time()
-        if key_event.key() == Qt.Key_Backslash:
+        if key_event.key() == Qt.Key_P:
             self.switch_camera()
         if key_event.key() == Qt.Key_O:
             self.hide_sidebar()

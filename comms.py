@@ -14,12 +14,12 @@ CLAW_MID = 1335
 CLAW_MAX = 1660
 
 CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
-SPEED_MODES = [20, 34, 48, 60]
+SPEED_MODES = [10, 20, 35, 60]
 
 UPDATE_MS = 25
 
-FRONT_DOWNWARDS_CALIBRATION = 22
-BACK_DOWNWARDS_CALIBRATION = 18
+FRONT_DOWNWARDS_CALIBRATION = -25
+BACK_DOWNWARDS_CALIBRATION = 30
 
 
 class MotorState:
@@ -60,6 +60,17 @@ class Communications:
         self.set_motor_state(2, 0)
         self.set_motor_state(3, 0)
 
+    def force_esc_enable(self):
+        self.halt()
+        time.sleep(0.2)
+        self.set_motor_state(0, 20)
+        self.set_motor_state(1, 20)
+        self.set_motor_state(2, 20)
+        self.set_motor_state(3, 20)
+        time.sleep(0.2)
+        self.halt()
+        time.sleep(0.4)
+    
     def forward(self, percent: int):
         self.set_motor_state(MOTOR_LEFT, percent)
         self.set_motor_state(MOTOR_RIGHT, -percent)
@@ -78,18 +89,18 @@ class Communications:
 
     def up(self, percent: int):
         self.set_motor_state(MOTOR_FRONT, percent)
-        self.set_motor_state(MOTOR_BACK, -percent)
+        self.set_motor_state(MOTOR_BACK, percent)
 
     def down(self, percent: int):
         self.set_motor_state(MOTOR_FRONT, -percent)
-        self.set_motor_state(MOTOR_BACK, percent)
+        self.set_motor_state(MOTOR_BACK, -percent)
 
     def tilt_up(self, percent: int):
-        self.set_motor_state(MOTOR_FRONT, percent)
+        self.set_motor_state(MOTOR_FRONT, -percent)
         self.set_motor_state(MOTOR_BACK, percent)
 
     def tilt_down(self, percent: int):
-        self.set_motor_state(MOTOR_FRONT, -percent)
+        self.set_motor_state(MOTOR_FRONT, percent)
         self.set_motor_state(MOTOR_BACK, -percent)
 
     def update_state(self):
@@ -130,7 +141,7 @@ class Communications:
             self.keys_pressed.append(key)
             self.__parse_keys()
         else:  # if released
-            if self.keys_pressed and self.keys_pressed[-1] == key:
+            if self.keys_pressed:
                 self.keys_pressed.remove(key)
                 if not self.keys_pressed:
                     self.halt()
@@ -144,6 +155,7 @@ class Communications:
 
     def __parse_keys(self):
         print("parsing keys: ", self.keys_pressed)
+        self.state = MotorState()
         for key in self.keys_pressed:
             self.__parse_key(key)
         print("new state: ", self.state)
@@ -177,13 +189,15 @@ class Communications:
             self.set_servo_state(CLAW_MID)
         elif key_lower == "h":
             self.set_servo_state(CLAW_MAX)
+        elif key_lower == "y":
+            self.force_esc_enable()
         elif key_lower == "0":
             print("Recalibrating!!")
             self.halt()
             self.__calibrate()
             # self.mcuVAR.cmd_halt()
         elif key_lower == "i":
-            self.set_motor_state(MOTOR_FRONT, multiplier_percent if key.islower() else -multiplier_percent)
+            self.set_motor_state(MOTOR_FRONT, -multiplier_percent if key.islower() else multiplier_percent)
         elif key_lower == "j":
             self.set_motor_state(MOTOR_LEFT, multiplier_percent if key.islower() else -multiplier_percent)
         elif key_lower == "k":

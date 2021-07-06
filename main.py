@@ -22,6 +22,8 @@ if len(port_list) == 1:
 else:
     print(f"List of available tty/COM ports: {port_list}")
     PORT = input("Port to use: ")
+    if len(PORT) == 0:
+        PORT = "/dev/ttyUSB0"
 
 REFRESH_RATE: int = 1440
 
