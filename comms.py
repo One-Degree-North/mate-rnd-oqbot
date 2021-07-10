@@ -6,6 +6,7 @@ from typing import Iterable
 from mcu_lib.mcu import *
 from mcu_lib.command_constants import *
 from controls_pyqt.key_signal import KeySignal
+from imu_compensator import IMUCompensator
 
 PWM_MIN = 1000
 PWM_MID = 1500
@@ -46,10 +47,13 @@ class Communications:
         self.auto_downwards = False
         self.speed_mode = 0
         self.keys_pressed = []
+        self.imu = IMUCompensator(self.mcuVAR.orientation_queue)
 
     def start_thread(self):
         self.thread_running = True
         self.mcu_thread.start()
+        self.imu.init()
+        self.imu.start()
 
     def set_motor_state(self, motor, percent):
         self.state.motors[motor] = percent
@@ -161,6 +165,7 @@ class Communications:
         for key in self.keys_pressed:
             self.__parse_key(key)
         print("new state: ", self.state)
+        print("current IMU: ", self.imu.get_offset())
 
     def __parse_key(self, key: int):
         # print("parsing key", key)

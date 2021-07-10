@@ -60,6 +60,7 @@ class IMUCompensator:
         for axis in range(3):
             output.set_axis(axis, pow(orientation.get_axis(axis) - self.zero.get_axis(axis), 1.5) / -2)
         self.offset = output
+        self.__reset_seen()
 
     def get_offset(self):
         return self.offset
