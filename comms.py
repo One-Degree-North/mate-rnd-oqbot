@@ -121,11 +121,6 @@ class Communications:
             time.sleep(1 / 120)
 
     def read_send(self, key_pressed: KeySignal):
-        # debug
-        # multiplier_percent = SPEED_MODES[self.speed_mode] if key_pressed.pressed else 0
-        # multiplier_percent *= 2 if key_pressed.shift else 1
-        # print("comms received", key_pressed, "with percent", multiplier_percent)
-
         key = key_pressed.key
 
         # handle '1'-'4'
@@ -151,9 +146,6 @@ class Communications:
                 self.__parse_keys()
             else:
                 self.keys_pressed.remove(key)
-
-        # print("new key list:", self.keys_pressed)
-        # print("new state: ", self.state)
 
     def __parse_keys(self):
         print("parsing keys: ", self.keys_pressed)
@@ -190,6 +182,10 @@ class Communications:
             self.set_servo_state(CLAW_MID)
         elif key == Qt.Key_H:
             self.set_servo_state(CLAW_MAX)
+        elif key == Qt.Key_C:
+            self.set_servo_state(max(CLAW_MIN, self.state.claw - multiplier_percent))
+        elif key == Qt.Key_V:
+            self.set_servo_state(min(CLAW_MAX, self.state.claw + multiplier_percent))
         elif key == Qt.Key_Y:
             self.force_esc_enable()
         elif key == Qt.Key_0:
