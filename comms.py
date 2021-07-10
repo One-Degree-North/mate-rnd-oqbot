@@ -48,6 +48,10 @@ class Communications:
         self.speed_mode = 0
         self.keys_pressed = []
         self.imu = IMUCompensator(self.mcuVAR.orientation_queue)
+        self.value_left = 0
+        self.value_right = 0
+        self.value_front = 0
+        self.value_back = 0
 
     def start_thread(self):
         self.thread_running = True
@@ -126,18 +130,18 @@ class Communications:
             back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
 
             offset = self.imu.get_offset()
-            value_left = self.state.motors[MOTOR_LEFT] + offset.x / 2
-            value_right = self.state.motors[MOTOR_RIGHT] + offset.x / 2
-            value_front = self.state.motors[MOTOR_FRONT] - offset.y / 2 + front_downwards
-            value_back = self.state.motors[MOTOR_BACK] + offset.y / 2 + back_downwards
+            self.value_left = self.state.motors[MOTOR_LEFT] + offset.x / 2
+            self.value_right = self.state.motors[MOTOR_RIGHT] + offset.x / 2
+            self.value_front = self.state.motors[MOTOR_FRONT] - offset.y / 2 + front_downwards
+            self.value_back = self.state.motors[MOTOR_BACK] + offset.y / 2 + back_downwards
 
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, value_left)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.value_left)
             self.__wait_for_next_send()
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, value_right)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.value_right)
             self.__wait_for_next_send()
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, value_front)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.value_front)
             self.__wait_for_next_send()
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, value_back)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.value_back)
             self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, self.state.claw)
             self.__wait_for_next_send()
