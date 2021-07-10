@@ -150,8 +150,9 @@ class Communications:
                     return
                 self.__parse_keys()
             else:
-                self.keys_pressed.remove(key)
-Ob
+                if key in self.keys_pressed:
+                    self.keys_pressed.remove(key)
+
     def __parse_keys(self):
         print("parsing keys: ", self.keys_pressed)
         new_state = MotorState()
