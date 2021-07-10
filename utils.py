@@ -31,7 +31,7 @@ class Vector3:
         return self.x != INVALID and self.y != INVALID and self.z != INVALID
 
     def __str__(self):
-        return f"({self.x}, {self.y}, {self.z})"
+        return f"({self.x:.4f}, {self.y:.4f}, {self.z:.4f})"
 
 
 class Vector2:

@@ -166,6 +166,7 @@ class Communications:
             self.__parse_key(key)
         print("new state: ", self.state)
         print("current IMU: ", self.imu.get_offset())
+        print("IMU zero: ", self.imu.zero)
 
     def __parse_key(self, key: int):
         # print("parsing key", key)
@@ -235,6 +236,7 @@ class Communications:
     def kill_elec_ops(self):
         self.thread_running = False
         self.mcu_thread.join()
+        self.imu.stop()
 
         self.mcuVAR.cmd_halt()
         self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, False, 0)
