@@ -19,6 +19,7 @@ CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
 SPEED_MODES = [10, 20, 40, 68]
 
 UPDATE_MS = 25
+SLEEP_TIME = 1 / 120
 
 FRONT_DOWNWARDS_CALIBRATION = -27
 BACK_DOWNWARDS_CALIBRATION = 32
@@ -105,20 +106,23 @@ class Communications:
         self.set_motor_state(MOTOR_FRONT, percent)
         self.set_motor_state(MOTOR_BACK, -percent)
 
+    def __wait_for_next_send(self):
+        time.sleep(SLEEP_TIME)
+
     def update_state(self):
         while self.thread_running:
             front_downwards = FRONT_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
             back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.state.motors[MOTOR_LEFT])
-            time.sleep(1 / 120)
+            self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.state.motors[MOTOR_RIGHT])
-            time.sleep(1 / 120)
+            self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.state.motors[MOTOR_FRONT] - front_downwards)
-            time.sleep(1 / 120)
+            self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.state.motors[MOTOR_BACK] + back_downwards)
-            time.sleep(1 / 120)
+            self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorMicroseconds(4, self.state.claw)
-            time.sleep(1 / 120)
+            self.__wait_for_next_send()
 
     def read_send(self, key_pressed: KeySignal):
         key = key_pressed.key
