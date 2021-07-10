@@ -110,6 +110,13 @@ class Communications:
         self.set_motor_state(MOTOR_FRONT, percent)
         self.set_motor_state(MOTOR_BACK, -percent)
 
+    def enable_imu_compensation(self):
+        self.imu.zero_current()
+        self.imu.enable()
+
+    def disable_imu_compensation(self):
+        self.imu.disable()
+
     def __wait_for_next_send(self):
         time.sleep(SLEEP_TIME)
 
@@ -147,6 +154,12 @@ class Communications:
         if key == Qt.Key_7 and key_pressed.pressed:
             self.auto_downwards = not self.auto_downwards
             print(f"Toggling automatic downwards motion: {self.auto_downwards}")
+
+        # handle toggle IMU compensation
+        if key == Qt.Key_9 and key_pressed.pressed:
+            self.disable_imu_compensation()
+        if key == Qt.Key_8 and key_pressed.pressed:
+            self.enable_imu_compensation()
 
         # handle other cases (instructions)
         if key_pressed.pressed:  # if pressed
