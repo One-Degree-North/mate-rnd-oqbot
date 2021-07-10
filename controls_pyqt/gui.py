@@ -86,6 +86,8 @@ class MainWindow(QT.QWidget):
 
         self.temperature.setText(str(self.mcu.latest_temp))
 
+        self.imu_compensation.setText(str(self.comms.imu.thread_enable))
+
         self.thruster1.setText(
             f"{self.mcu.latest_motor_status.motors[MOTOR_LEFT]} -> {self.comms.state.motors[MOTOR_LEFT]}")
         self.thruster2.setText(
@@ -122,6 +124,8 @@ class MainWindow(QT.QWidget):
         self.y_accel = QT.QLabel()
         self.z_accel = QT.QLabel()
 
+        self.imu_compensation = QT.QLabel()
+
         self.temperature = QT.QLabel()
 
         self.thruster1 = QT.QLabel()
@@ -147,6 +151,7 @@ class MainWindow(QT.QWidget):
         self.imu_list.addRow(QT.QLabel("Y Acceleration:"), self.y_accel)
         self.imu_list.addRow(QT.QLabel("Z Acceleration:"), self.z_accel)
         self.imu_list.addRow(QT.QLabel("Temperature:"), self.temperature)
+        self.imu_list.addRow(QT.QLabel("IMU Compensation: "), self.imu_compensation)
 
         self.imu_box = QT.QGroupBox("IMU")
         self.imu_box.setLayout(self.imu_list)
