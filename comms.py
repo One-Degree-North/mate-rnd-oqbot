@@ -14,12 +14,12 @@ CLAW_MID = 1335
 CLAW_MAX = 1660
 
 CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
-SPEED_MODES = [10, 20, 35, 60]
+SPEED_MODES = [10, 20, 40, 68]
 
 UPDATE_MS = 25
 
-FRONT_DOWNWARDS_CALIBRATION = -25
-BACK_DOWNWARDS_CALIBRATION = 30
+FRONT_DOWNWARDS_CALIBRATION = -27
+BACK_DOWNWARDS_CALIBRATION = 32
 
 
 class MotorState:
@@ -155,7 +155,9 @@ class Communications:
 
     def __parse_keys(self):
         print("parsing keys: ", self.keys_pressed)
-        self.state = MotorState()
+        new_state = MotorState()
+        new_state.claw = self.state.claw
+        self.state = new_state
         for key in self.keys_pressed:
             self.__parse_key(key)
         print("new state: ", self.state)

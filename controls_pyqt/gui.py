@@ -259,6 +259,14 @@ class MainWindow(QT.QWidget):
             self.__capture_camera(self.current_camera[0])
         if key_event.key() == Qt.Key_Space:
             self.on_trigger("e", True)
+        if key_event.key() == Qt.Key_Left:
+            self.on_trigger("a", True)
+        if key_event.key() == Qt.Key_Right:
+            self.on_trigger("d", True)
+        if key_event.key() == Qt.Key_Up:
+            self.on_trigger("z", True)
+        if key_event.key() == Qt.Key_Down:
+            self.on_trigger("x", True)
         if key_event.key() == Qt.Key_Return:
             self.starttime = time.time()
         if key_event.key() == Qt.Key_P:
@@ -274,6 +282,14 @@ class MainWindow(QT.QWidget):
     def keyReleaseEvent(self, key_event: QKeyEvent):
         if key_event.key() == Qt.Key_Space:
             self.on_trigger("e", False)
+        if key_event.key() == Qt.Key_Left:
+            self.on_trigger("a", False)
+        if key_event.key() == Qt.Key_Right:
+            self.on_trigger("d", False)
+        if key_event.key() == Qt.Key_Up:
+            self.on_trigger("z", False)
+        if key_event.key() == Qt.Key_Down:
+            self.on_trigger("x", False)
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
                 if key_event.text().lower() == key:
