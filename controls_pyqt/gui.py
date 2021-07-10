@@ -42,11 +42,6 @@ class MainWindow(QT.QWidget):
         self.current_camera = list(range(self.camera_number))
         self.sidebar_shown = True
 
-        # (key, message sent to comms)
-        self.KEYS = [
-            "q", "w", "e", "a", "s", "d", "f", "g", "h", "z", "x", "c", "i", "j", "k", "l", "1", "2", "3", "4", "0", "7", "y"
-        ]
-        
         self.fourk_stylesheet = """
         QLabel {
             font-size: 40px;
@@ -91,10 +86,14 @@ class MainWindow(QT.QWidget):
 
         self.temperature.setText(str(self.mcu.latest_temp))
 
-        self.thruster1.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_LEFT]} -> {self.comms.state.motors[MOTOR_LEFT]}")
-        self.thruster2.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_RIGHT]} -> {self.comms.state.motors[MOTOR_RIGHT]}")
-        self.thruster3.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_FRONT]} -> {self.comms.state.motors[MOTOR_FRONT]}")
-        self.thruster4.setText(f"{self.mcu.latest_motor_status.motors[MOTOR_BACK]} -> {self.comms.state.motors[MOTOR_BACK]}")
+        self.thruster1.setText(
+            f"{self.mcu.latest_motor_status.motors[MOTOR_LEFT]} -> {self.comms.state.motors[MOTOR_LEFT]}")
+        self.thruster2.setText(
+            f"{self.mcu.latest_motor_status.motors[MOTOR_RIGHT]} -> {self.comms.state.motors[MOTOR_RIGHT]}")
+        self.thruster3.setText(
+            f"{self.mcu.latest_motor_status.motors[MOTOR_FRONT]} -> {self.comms.state.motors[MOTOR_FRONT]}")
+        self.thruster4.setText(
+            f"{self.mcu.latest_motor_status.motors[MOTOR_BACK]} -> {self.comms.state.motors[MOTOR_BACK]}")
         self.servo.setText(str(self.mcu.latest_motor_status.servo))
 
         # self.update()
@@ -106,15 +105,15 @@ class MainWindow(QT.QWidget):
         self.LENGTH: int = 1600
         self.WIDTH: int = 800
 
-        #self.setWindowTitle(self.TITLE)
-        #self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
-        #self.show()
+        # self.setWindowTitle(self.TITLE)
+        # self.setGeometry(self.X_POSITION, self.Y_POSITION, self.LENGTH, self.WIDTH)
+        # self.show()
         self.showFullScreen()
 
     def __initialize_as_labels(self):
         self.voltage_info = QT.QLabel()
         self.timepassedlabel = QT.QLabel()
-        
+
         self.x_gyro = QT.QLabel()
         self.y_gyro = QT.QLabel()
         self.z_gyro = QT.QLabel()
@@ -179,15 +178,16 @@ class MainWindow(QT.QWidget):
             self.camera_capture[x].setCaptureDestination(QTM.QCameraImageCapture.CaptureToFile)
             self.camera[x].start()
             self.camera_layout.addWidget(self.camera_view[x])
-       
+
         self.camera_box = QT.QWidget()
         self.camera_box.setLayout(self.camera_layout)
-        
+
     def __capture_camera(self, camera: int):
         self.camera[camera].searchAndLock()
-        self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera) + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f"))  # <-file location goes as argument, saves to photos for now
+        self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera) + self.timenow.strftime(
+            "%d-%m-%y %H:%M:%S-%f"))  # <-file location goes as argument, saves to photos for now
         self.camera[camera].unlock()
-        
+
     def __initialize_layout(self):
         self.layout = QT.QGridLayout()
         self.layout.addWidget(self.camera_box, 1, 1, 3, 1)
@@ -216,7 +216,7 @@ class MainWindow(QT.QWidget):
 
         self.__initialize_layout()
         self.setStyleSheet(self.fourk_stylesheet)
-        
+
         self.timer.timeout.connect(self.__update_text)
         self.timer.start(self.TIMEOUT_INTERVAL)
 
@@ -224,20 +224,21 @@ class MainWindow(QT.QWidget):
         sys.exit(self.app.exec_())
 
     def switch_camera(self):
-        if self.current_camera[0] == (self.camera_number - 1): #If the first camera in the list is the last camera reset it to show all cameras
+        if self.current_camera[0] == (
+                self.camera_number - 1):  # If the first camera in the list is the last camera reset it to show all cameras
             self.current_camera = list(range(self.camera_number))
-        elif len(self.current_camera) > 1: #If 2 or more cameras are shown, only show the first caera in that list
+        elif len(self.current_camera) > 1:  # If 2 or more cameras are shown, only show the first caera in that list
             self.current_camera = [self.current_camera[0]]
-        else: #Else take the frist camera in the list and add one
+        else:  # Else take the frist camera in the list and add one
             self.current_camera = [self.current_camera[0] + 1]
-            
-        for x in range(self.camera_number): #Hides all cameras
+
+        for x in range(self.camera_number):  # Hides all cameras
             self.camera_view[x].hide()
-        for x in self.current_camera: #Shows all cameras in the current_camera list
-           self.camera_view[x].show()
-     
+        for x in self.current_camera:  # Shows all cameras in the current_camera list
+            self.camera_view[x].show()
+
     def hide_sidebar(self):
-        if self.sidebar_shown == True:
+        if self.sidebar_shown:
             self.general_box.hide()
             self.imu_box.hide()
             self.pwmbox.hide()
@@ -249,51 +250,31 @@ class MainWindow(QT.QWidget):
             self.pwmbox.show()
             self.layout.setColumnMinimumWidth(4, 500)
             self.sidebar_shown = True
-    def on_trigger(self, trigger: str, pressed: bool):
-        self.comms.read_send(KeySignal(trigger, pressed))
+
+    def on_trigger(self, trigger: QKeyEvent, pressed: bool):
+        self.comms.read_send(KeySignal(trigger.key(), trigger.text(), pressed))
 
     def keyPressEvent(self, key_event: QKeyEvent):
+        if key_event.isAutoRepeat():
+            return
+
         if key_event.key() == Qt.Key_Escape:
             self.exit_program.exit()
-        if key_event.key() == Qt.Key_Comma:
+        elif key_event.key() == Qt.Key_Comma:
             self.__capture_camera(self.current_camera[0])
-        if key_event.key() == Qt.Key_Space:
-            self.on_trigger("e", True)
-        if key_event.key() == Qt.Key_Left:
-            self.on_trigger("a", True)
-        if key_event.key() == Qt.Key_Right:
-            self.on_trigger("d", True)
-        if key_event.key() == Qt.Key_Up:
-            self.on_trigger("z", True)
-        if key_event.key() == Qt.Key_Down:
-            self.on_trigger("x", True)
-        if key_event.key() == Qt.Key_Return:
+        elif key_event.key() == Qt.Key_Return:
             self.starttime = time.time()
-        if key_event.key() == Qt.Key_P:
+        elif key_event.key() == Qt.Key_P:
             self.switch_camera()
-        if key_event.key() == Qt.Key_O:
+        elif key_event.key() == Qt.Key_O:
             self.hide_sidebar()
-
-        if not key_event.isAutoRepeat():
-            for key in self.KEYS:
-                if key_event.text().lower() == key:
-                    self.on_trigger(key, True)
+        else:
+            self.on_trigger(key_event, True)
 
     def keyReleaseEvent(self, key_event: QKeyEvent):
-        if key_event.key() == Qt.Key_Space:
-            self.on_trigger("e", False)
-        if key_event.key() == Qt.Key_Left:
-            self.on_trigger("a", False)
-        if key_event.key() == Qt.Key_Right:
-            self.on_trigger("d", False)
-        if key_event.key() == Qt.Key_Up:
-            self.on_trigger("z", False)
-        if key_event.key() == Qt.Key_Down:
-            self.on_trigger("x", False)
-        if not key_event.isAutoRepeat():
-            for key in self.KEYS:
-                if key_event.text().lower() == key:
-                    self.on_trigger(key, False)
+        if key_event.isAutoRepeat():
+            return
+        self.on_trigger(key_event, False)
 
     def closeEvent(self, QCloseEvent):
         self.exit_program.exit()
