@@ -121,7 +121,7 @@ class Communications:
             self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.state.motors[MOTOR_BACK] + back_downwards)
             self.__wait_for_next_send()
-            self.mcuVAR.cmd_setMotorMicroseconds(4, self.state.claw)
+            self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, self.state.claw)
             self.__wait_for_next_send()
 
     def read_send(self, key_pressed: KeySignal):
