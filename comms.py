@@ -22,7 +22,7 @@ SPEED_MODES = [10, 20, 40, 68]
 UPDATE_MS = 25
 SLEEP_TIME = 1 / 120
 
-FRONT_DOWNWARDS_CALIBRATION = -27
+FRONT_DOWNWARDS_CALIBRATION = 27
 BACK_DOWNWARDS_CALIBRATION = 32
 
 
@@ -117,13 +117,20 @@ class Communications:
         while self.thread_running:
             front_downwards = FRONT_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
             back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.state.motors[MOTOR_LEFT])
+
+            offset = self.imu.get_offset()
+            value_left = self.state.motors[MOTOR_LEFT] + offset.x / 2
+            value_right = self.state.motors[MOTOR_RIGHT] + offset.x / 2
+            value_front = self.state.motors[MOTOR_FRONT] - offset.y / 2 + front_downwards
+            value_back = self.state.motors[MOTOR_BACK] + offset.y / 2 + back_downwards
+
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, value_left)
             self.__wait_for_next_send()
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.state.motors[MOTOR_RIGHT])
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, value_right)
             self.__wait_for_next_send()
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.state.motors[MOTOR_FRONT] - front_downwards)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, value_front)
             self.__wait_for_next_send()
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.state.motors[MOTOR_BACK] + back_downwards)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, value_back)
             self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, self.state.claw)
             self.__wait_for_next_send()
