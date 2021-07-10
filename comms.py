@@ -1,3 +1,5 @@
+from PyQt5.QtCore import Qt
+
 from threading import Thread
 from typing import Iterable
 
@@ -70,7 +72,7 @@ class Communications:
         time.sleep(0.2)
         self.halt()
         time.sleep(0.4)
-    
+
     def forward(self, percent: int):
         self.set_motor_state(MOTOR_LEFT, percent)
         self.set_motor_state(MOTOR_RIGHT, -percent)
@@ -126,13 +128,13 @@ class Communications:
 
         key = key_pressed.key
 
-        # handle if it's just a speed change
-        if key != "0" and key != "7" and key.isnumeric():
-            self.speed_mode = int(key) - 1
-            self.speed_mode %= 4  # safety
+        # handle '1'-'4'
+        if Qt.Key_1 <= key <= Qt.Key_4:
+            self.speed_mode = int(key) - Qt.Key_1
             return
+
         # handle toggle downwards base motion
-        if key == "7" and key_pressed.pressed:
+        if key == Qt.Key_7 and key_pressed.pressed:
             self.auto_downwards = not self.auto_downwards
             print(f"Toggling automatic downwards motion: {self.auto_downwards}")
 
@@ -162,50 +164,39 @@ class Communications:
             self.__parse_key(key)
         print("new state: ", self.state)
 
-    def __parse_key(self, key: str):
+    def __parse_key(self, key: int):
         # print("parsing key", key)
         multiplier_percent = SPEED_MODES[self.speed_mode]
-        if key.isupper():
-            multiplier_percent *= 2
 
-        key_lower = key.lower()
-        if key_lower == "w":
+        if key == Qt.Key_W:
             self.forward(multiplier_percent)
-        elif key_lower == "s":
+        elif key == Qt.Key_S:
             self.backwards(multiplier_percent)
-        elif key_lower == "a":
+        elif key == Qt.Key_A or key == Qt.Key_Left:
             self.turn_left(multiplier_percent)
-        elif key_lower == "d":
+        elif key == Qt.Key_D or key == Qt.Key_Right:
             self.turn_right(multiplier_percent)
-        elif key_lower == "e":
+        elif key == Qt.Key_Q:
             self.up(multiplier_percent)
-        elif key_lower == "q":
+        elif key == Qt.Key_E:
             self.down(multiplier_percent)
-        elif key_lower == "z":
+        elif key == Qt.Key_Z or key == Qt.Key_Up:
             self.tilt_up(multiplier_percent)
-        elif key_lower == "x":
+        elif key == Qt.Key_X or key == Qt.Key_Down:
             self.tilt_down(multiplier_percent)
-        elif key_lower == "f":
+        elif key == Qt.Key_F:
             self.set_servo_state(CLAW_MIN)
-        elif key_lower == "g":
+        elif key == Qt.Key_G:
             self.set_servo_state(CLAW_MID)
-        elif key_lower == "h":
+        elif key == Qt.Key_H:
             self.set_servo_state(CLAW_MAX)
-        elif key_lower == "y":
+        elif key == Qt.Key_Y:
             self.force_esc_enable()
-        elif key_lower == "0":
+        elif key == Qt.Key_0:
             print("Recalibrating!!")
             self.halt()
             self.__calibrate()
             # self.mcuVAR.cmd_halt()
-        elif key_lower == "i":
-            self.set_motor_state(MOTOR_FRONT, -multiplier_percent if key.islower() else multiplier_percent)
-        elif key_lower == "j":
-            self.set_motor_state(MOTOR_LEFT, multiplier_percent if key.islower() else -multiplier_percent)
-        elif key_lower == "k":
-            self.set_motor_state(MOTOR_BACK, -multiplier_percent if key.islower() else multiplier_percent)
-        elif key_lower == "l":
-            self.set_motor_state(MOTOR_RIGHT, -multiplier_percent if key.islower() else multiplier_percent)
 
     def __calibrate(self):
         # calibrate
