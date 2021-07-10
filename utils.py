@@ -30,6 +30,9 @@ class Vector3:
     def is_valid(self):
         return self.x != INVALID and self.y != INVALID and self.z != INVALID
 
+    def __str__(self):
+        return f"({self.x}, {self.y}, {self.z})"
+
 
 class Vector2:
     def __init__(self, x: float, y: float):
