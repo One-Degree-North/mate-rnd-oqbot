@@ -9,12 +9,18 @@ from utils import *
 COMPENSATION_CONSTANT = 0.7
 COMPENSATION_MULTIPLIER = 2.14
 
+QUEUE_WAIT_DELAY = 0.1
+QUEUE_WAIT_SIZE = 6
+
+NORMALIZE_MAX = 50
+
+
 class IMUCompensator:
     def __init__(self, mcu: MCUInterface, orientation_queue: Queue):
         self.mcu = mcu
-        self.zero = Vector3(INVALID, INVALID, INVALID)
-        self.offset = Vector3(0, 0, 0)
-        self.seen_axis = Vector3(INVALID, INVALID, INVALID)
+        self.zero = Vector3.invalid()
+        self.offset = Vector3.new()
+        self.seen_axis = Vector3.invalid()
         self.queue = orientation_queue
         self.thread = Thread(target=self.__compensate)
         self.thread_enable = False
@@ -24,17 +30,15 @@ class IMUCompensator:
         self.zero = pos
 
     def zero_current(self):
-        self.zero = Vector3(self.mcu.latest_orientation[0],
-                            self.mcu.latest_orientation[1],
-                            self.mcu.latest_orientation[2])
+        self.zero = Vector3.from_arr(self.mcu.latest_orientation)
 
     def init(self):
-        time.sleep(0.1)
+        time.sleep(QUEUE_WAIT_DELAY)
         if self.queue.qsize() == 0:
             input("No readings from IMU. MCU is likely not on!\nPress enter to retry: ")
         # wait for initial readings
-        while self.queue.qsize() < 6:
-            time.sleep(0.1)
+        while self.queue.qsize() < QUEUE_WAIT_SIZE:
+            time.sleep(QUEUE_WAIT_DELAY)
         # clear queue
         packets = []
         while self.queue.qsize() > 0:
@@ -58,15 +62,15 @@ class IMUCompensator:
 
     def disable_imu(self):
         self.enable = False
-        self.offset = Vector3(0, 0, 0)
+        self.offset = Vector3.new()
 
     def __reset_seen(self):
-        self.seen_axis = Vector3(INVALID, INVALID, INVALID)
+        self.seen_axis = Vector3.invalid()
 
     def __compensate(self):
         while self.thread_enable:
             try:
-                packet: OrientationPacket = self.queue.get(timeout=0.1)
+                packet: OrientationPacket = self.queue.get(timeout=QUEUE_WAIT_DELAY)
                 self.seen_axis.set_axis(packet.axis, packet.value)
             except Empty:
                 pass
@@ -75,13 +79,15 @@ class IMUCompensator:
                     self.__update_offset(self.seen_axis)
 
     def __update_offset(self, orientation: Vector3):
-        output = Vector3(0, 0, 0)
+        output = Vector3.new()
         for axis in range(3):
             axis_value = orientation.get_axis(axis) - self.zero.get_axis(axis)
+            # work around the -180/180 barrier
             if axis_value <= -180:
                 axis_value += 360
             if axis_value >= 180:
                 axis_value -= 360
+            # safety: check if robot has drifted too far (not safe to continue compensation)
             if axis_value > 90 or axis_value < -90 or not self.enable:
                 # stop imu compensation
                 if self.enable:
@@ -101,13 +107,9 @@ class IMUCompensator:
         self.offset.x = round(self.offset.x)
         self.offset.y = round(self.offset.y)
         self.offset.z = round(self.offset.z)
-        assert -50 <= self.offset.x <= 50
-        assert -50 <= self.offset.y <= 50
-        assert -50 <= self.offset.z <= 50
+        assert -NORMALIZE_MAX <= self.offset.x <= NORMALIZE_MAX
+        assert -NORMALIZE_MAX <= self.offset.y <= NORMALIZE_MAX
+        assert -NORMALIZE_MAX <= self.offset.z <= NORMALIZE_MAX
 
     def get_offset(self):
         return self.offset
-
-
-# left = pos X -> turn right
-# up = neg Y -> turn down

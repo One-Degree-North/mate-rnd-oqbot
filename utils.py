@@ -1,3 +1,5 @@
+from typing import Iterable
+
 INVALID = 0x82D3F2
 
 
@@ -32,6 +34,18 @@ class Vector3:
 
     def __str__(self):
         return f"({self.x:.4f}, {self.y:.4f}, {self.z:.4f})"
+
+    @staticmethod
+    def new():
+        return Vector3(0, 0, 0)
+
+    @staticmethod
+    def invalid():
+        return Vector3(INVALID, INVALID, INVALID)
+
+    @staticmethod
+    def from_arr(i: Iterable):
+        return Vector3(i[0], i[1], i[2])
 
 
 class Vector2:
