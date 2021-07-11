@@ -1,3 +1,7 @@
+# imu_compensator.py
+# IMU automatic compensation for keeping the robot in the correct orientation
+# used for transect line routine
+
 from queue import Queue, Empty
 from threading import Thread
 import time

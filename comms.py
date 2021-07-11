@@ -1,3 +1,7 @@
+# comms.py
+# intermediary communications layer between gui.py and mcu.py.
+# essentially, this script bridges QtCore.Qt::Key codes and MCU instructions
+
 from PyQt5.QtCore import Qt
 
 from threading import Thread

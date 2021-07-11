@@ -1,4 +1,7 @@
 from typing import Iterable
+# utils.py
+# various utilities for the other scripts.
+
 
 INVALID = 0x82D3F2
 
