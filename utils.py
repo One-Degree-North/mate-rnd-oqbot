@@ -1,7 +1,7 @@
-from typing import Iterable
 # utils.py
 # various utilities for the other scripts.
 
+from typing import Union, List, Tuple
 
 INVALID = 0x82D3F2
 
@@ -47,7 +47,7 @@ class Vector3:
         return Vector3(INVALID, INVALID, INVALID)
 
     @staticmethod
-    def from_arr(i: Iterable):
+    def from_arr(i: Union[List, Tuple]):
         return Vector3(i[0], i[1], i[2])
 
 
