@@ -53,10 +53,10 @@ class IMUCompensator:
         self.thread_enable = False
         self.thread.join()
 
-    def enable(self):
+    def enable_imu(self):
         self.enable = True
 
-    def disable(self):
+    def disable_imu(self):
         self.enable = False
         self.offset = Vector3(0, 0, 0)
 
@@ -78,9 +78,15 @@ class IMUCompensator:
         output = Vector3(0, 0, 0)
         for axis in range(3):
             axis_value = orientation.get_axis(axis) - self.zero.get_axis(axis)
+            if axis_value <= -180:
+                axis_value += 360
+            if axis_value >= 180:
+                axis_value -= 360
             if axis_value > 90 or axis_value < -90 or not self.enable:
                 # stop imu compensation
-                self.disable()
+                if self.enable:
+                    print(f"axis value out of bounds! {axis_value} degrees on {axis}")
+                self.disable_imu()
                 return
             pos = axis_value >= 0
             pow_value = pow(abs(axis_value), COMPENSATION_CONSTANT)

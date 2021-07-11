@@ -47,7 +47,7 @@ class Communications:
         self.auto_downwards = False
         self.speed_mode = 0
         self.keys_pressed = []
-        self.imu = IMUCompensator(self.mcuVAR.orientation_queue)
+        self.imu = IMUCompensator(self.mcuVAR, self.mcuVAR.orientation_queue)
         self.value_left = 0
         self.value_right = 0
         self.value_front = 0
@@ -115,11 +115,13 @@ class Communications:
         self.set_motor_state(MOTOR_BACK, -percent)
 
     def enable_imu_compensation(self):
+        print("Enabling IMU Compensation")
         self.imu.zero_current()
-        self.imu.enable()
+        self.imu.enable_imu()
 
     def disable_imu_compensation(self):
-        self.imu.disable()
+        print("Disabling IMU Compensation")
+        self.imu.disable_imu()
 
     def __wait_for_next_send(self):
         time.sleep(SLEEP_TIME)
@@ -130,10 +132,10 @@ class Communications:
             back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
 
             offset = self.imu.get_offset()
-            self.value_left = self.state.motors[MOTOR_LEFT] + offset.x / 2
-            self.value_right = self.state.motors[MOTOR_RIGHT] + offset.x / 2
-            self.value_front = self.state.motors[MOTOR_FRONT] - offset.y / 2 + front_downwards
-            self.value_back = self.state.motors[MOTOR_BACK] + offset.y / 2 + back_downwards
+            self.value_left = int(self.state.motors[MOTOR_LEFT] + offset.x / 2)
+            self.value_right = int(self.state.motors[MOTOR_RIGHT] + offset.x / 2)
+            self.value_front = int(self.state.motors[MOTOR_FRONT] - offset.y / 2 + front_downwards)
+            self.value_back = int(self.state.motors[MOTOR_BACK] + offset.y / 2 + back_downwards)
 
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.value_left)
             self.__wait_for_next_send()

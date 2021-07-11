@@ -86,17 +86,17 @@ class MainWindow(QT.QWidget):
 
         self.temperature.setText(str(self.mcu.latest_temp))
 
-        self.imu_compensation.setText(str(self.comms.imu.thread_enable))
+        self.imu_compensation.setText(str(self.comms.imu.enable))
 
         self.thruster1.setText(
             f"{self.mcu.latest_motor_status.motors[MOTOR_LEFT]} -> {self.comms.value_left}")
         self.thruster2.setText(
-            f"{self.mcu.latest_motor_status.motors[MOTOR_RIGHT]} -> {self.comms.value_left}")
+            f"{self.mcu.latest_motor_status.motors[MOTOR_RIGHT]} -> {self.comms.value_right}")
         self.thruster3.setText(
-            f"{self.mcu.latest_motor_status.motors[MOTOR_FRONT]} -> {self.comms.value_left}")
+            f"{self.mcu.latest_motor_status.motors[MOTOR_FRONT]} -> {self.comms.value_front}")
         self.thruster4.setText(
-            f"{self.mcu.latest_motor_status.motors[MOTOR_BACK]} -> {self.comms.value_left}")
-        self.servo.setText(str(self.mcu.latest_motor_status.servo))
+            f"{self.mcu.latest_motor_status.motors[MOTOR_BACK]} -> {self.comms.value_back}")
+        self.servo.setText(str(self.comms.state.claw))
 
         # self.update()
 
