@@ -12,7 +12,7 @@ from PyQt5.QtCore import Qt, QTimer, pyqtSlot
 import PyQt5.QtMultimedia as QTM
 import PyQt5.QtMultimediaWidgets as QTMW
 import PyQt5.QtWidgets as QT
-from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtGui import QKeyEvent, QPixmap
 
 from mcu_lib.mcu import MCUInterface
 from mcu_lib.command_constants import *
@@ -41,6 +41,7 @@ class MainWindow(QT.QWidget):
         self.camera_number = 2
         self.current_camera = list(range(self.camera_number))
         self.sidebar_shown = True
+        self.on_sediment_layout = False
 
         # (key, message sent to comms)
         self.KEYS = [
@@ -164,6 +165,24 @@ class MainWindow(QT.QWidget):
         self.pwmbox = QT.QGroupBox("PWM")
         self.pwmbox.setLayout(self.pwm_list)
 
+    def __initialize_sediment_photo(self):
+        self.sediment_layout = QT.QVBoxLayout()
+        self.sediment_photo = QPixmap("./controls_pyqt/coral.png")
+        self.sediment_label = QT.QLabel()
+        self.user_photo = QPixmap()
+        self.user_label = QT.QLabel()
+        self.sediment_label.setPixmap(self.sediment_photo)
+        self.change_label = QT.QPushButton("Change Photo")
+        self.sediment_layout.addWidget(self.sediment_label)
+        self.sediment_layout.addWidget(self.user_label)
+        self.sediment_layout.addWidget(self.change_label)
+        self.sediment_box = QT.QWidget()
+        self.sediment_box.setLayout(self.sediment_layout)
+        self.change_label.clicked.connect(self.__select_user_photo)
+        
+    def __select_user_photo(self):
+        self.user_photo.load(QT.QFileDialog.getOpenFileName(self, "Open Image", "./", "Image Files (*.png *.jpg *.bmp)")[0])
+        self.user_label.setPixmap(self.user_photo)
     def __setup_camera(self):
         self.camera_layout = QT.QVBoxLayout()
         self.camera = [QTM.QCamera(str.encode("/dev/video" + str(x))) for x in range(self.camera_number)]
@@ -184,13 +203,35 @@ class MainWindow(QT.QWidget):
         self.camera[camera].searchAndLock()
         self.camera_capture[camera].capture(self.workingdir + "/Camera" + str(camera)) + self.timenow.strftime("%d-%m-%y %H:%M:%S-%f")  # <-file location goes as argument, saves to photos for now
         self.camera[camera].unlock()
-        
+    
+    def __switch_to_sediment(self):
+        if self.on_sediment_layout == False:
+            self.camera_box.hide()
+            if self.sidebar_shown == True:
+                self.general_box.hide()
+                self.imu_box.hide()
+                self.pwmbox.hide()
+                self.layout.setColumnMinimumWidth(4, 0)
+            self.sediment_box.show()
+            self.on_sediment_layout = True
+        else:
+            self.camera_box.show()
+            if self.sidebar_shown == True:
+                self.general_box.show()
+                self.imu_box.show()
+                self.pwmbox.show()
+                self.layout.setColumnMinimumWidth(4, 500)
+            self.sediment_box.hide()
+            self.on_sediment_layout = False
+    
     def __initialize_layout(self):
         self.layout = QT.QGridLayout()
         self.layout.addWidget(self.camera_box, 1, 1, 3, 1)
         self.layout.addWidget(self.general_box, 1, 4, 1, 1)
         self.layout.addWidget(self.imu_box, 2, 4, 1, 1)
         self.layout.addWidget(self.pwmbox, 3, 4, 1, 1)
+        self.layout.addWidget(self.sediment_box,1,5,3,1)
+        self.sediment_box.hide()
         # self.layout.addWidget(self.ser_text, 1, 3, 4, 1)
         # self.layout.setColumnMinimumWidth(3, 400)
         self.layout.setColumnMinimumWidth(4, 600)
@@ -203,6 +244,7 @@ class MainWindow(QT.QWidget):
         self.__initialize_general_info()
         self.__initialize_imu_list()
         self.__initialize_pwm_list()
+        self.__initialize_sediment_photo()
 
         self.comms.start_elec_ops()
         self.comms.start_thread()
@@ -262,6 +304,8 @@ class MainWindow(QT.QWidget):
             self.switch_camera()
         if key_event.key() == Qt.Key_O:
             self.hide_sidebar()
+        if key_event.key() == Qt.Key_P:
+            self.__switch_to_sediment()
 
         if not key_event.isAutoRepeat():
             for key in self.KEYS:
