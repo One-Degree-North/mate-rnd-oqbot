@@ -6,3 +6,6 @@
 *.pyc
 *.jpg
 *.png
+
+venv/*
+.idea/*

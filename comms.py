@@ -1,9 +1,16 @@
+# comms.py
+# intermediary communications layer between gui.py and mcu.py.
+# essentially, this script bridges QtCore.Qt::Key codes and MCU instructions
+
+from PyQt5.QtCore import Qt
+
 from threading import Thread
 from typing import Iterable
 
 from mcu_lib.mcu import *
 from mcu_lib.command_constants import *
 from controls_pyqt.key_signal import KeySignal
+from imu_compensator import IMUCompensator
 
 PWM_MIN = 1000
 PWM_MID = 1500
@@ -14,12 +21,13 @@ CLAW_MID = 1335
 CLAW_MAX = 1660
 
 CALIBRATION_VALUES = [1000, 1000, 1000, 1000]
-SPEED_MODES = [20, 34, 48, 60]
+SPEED_MODES = [10, 20, 68, 90]
 
 UPDATE_MS = 25
+SLEEP_TIME = 1 / 120
 
-FRONT_DOWNWARDS_CALIBRATION = 22
-BACK_DOWNWARDS_CALIBRATION = 18
+FRONT_DOWNWARDS_CALIBRATION = 7
+BACK_DOWNWARDS_CALIBRATION = 7
 
 
 class MotorState:
@@ -43,10 +51,18 @@ class Communications:
         self.auto_downwards = False
         self.speed_mode = 0
         self.keys_pressed = []
+        self.imu = IMUCompensator(self.mcuVAR, self.mcuVAR.orientation_queue)
+        self.value_left = 0
+        self.value_right = 0
+        self.value_front = 0
+        self.value_back = 0
+        self.downwards_multiplier = 1
 
     def start_thread(self):
         self.thread_running = True
         self.mcu_thread.start()
+        self.imu.init()
+        self.imu.start()
 
     def set_motor_state(self, motor, percent):
         self.state.motors[motor] = percent
@@ -59,6 +75,17 @@ class Communications:
         self.set_motor_state(1, 0)
         self.set_motor_state(2, 0)
         self.set_motor_state(3, 0)
+
+    def force_esc_enable(self):
+        self.halt()
+        time.sleep(0.2)
+        self.set_motor_state(0, 20)
+        self.set_motor_state(1, 20)
+        self.set_motor_state(2, 20)
+        self.set_motor_state(3, 20)
+        time.sleep(0.2)
+        self.halt()
+        time.sleep(0.4)
 
     def forward(self, percent: int):
         self.set_motor_state(MOTOR_LEFT, percent)
@@ -78,118 +105,153 @@ class Communications:
 
     def up(self, percent: int):
         self.set_motor_state(MOTOR_FRONT, percent)
-        self.set_motor_state(MOTOR_BACK, -percent)
+        self.set_motor_state(MOTOR_BACK, percent)
 
     def down(self, percent: int):
         self.set_motor_state(MOTOR_FRONT, -percent)
-        self.set_motor_state(MOTOR_BACK, percent)
+        self.set_motor_state(MOTOR_BACK, -percent)
 
     def tilt_up(self, percent: int):
-        self.set_motor_state(MOTOR_FRONT, percent)
+        self.set_motor_state(MOTOR_FRONT, -percent)
         self.set_motor_state(MOTOR_BACK, percent)
 
     def tilt_down(self, percent: int):
-        self.set_motor_state(MOTOR_FRONT, -percent)
+        self.set_motor_state(MOTOR_FRONT, percent)
         self.set_motor_state(MOTOR_BACK, -percent)
+
+    def enable_imu_compensation(self):
+        print("Enabling IMU Compensation")
+        self.imu.zero_current()
+        self.imu.enable_imu()
+
+    def disable_imu_compensation(self):
+        print("Disabling IMU Compensation")
+        self.imu.disable_imu()
+
+    def __wait_for_next_send(self):
+        time.sleep(SLEEP_TIME)
+        self.__get_states()
+
+    def __get_states(self):
+        front_downwards = FRONT_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
+        back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
+
+        offset = self.imu.get_offset()
+        self.value_left = round(self.state.motors[MOTOR_LEFT] + offset.x / 2)
+        self.value_right = round(self.state.motors[MOTOR_RIGHT] + offset.x / 2)
+        self.value_front = round(self.state.motors[MOTOR_FRONT] - offset.y / 2 +
+                                 front_downwards * self.downwards_multiplier)
+        self.value_back = round(self.state.motors[MOTOR_BACK] + offset.y / 2 +
+                                back_downwards * self.downwards_multiplier)
+
+        # max out at 99, regardless of higher value
+        self.value_left = min(99, self.value_left)
+        self.value_right = min(99, self.value_right)
+        self.value_front = min(99, self.value_front)
+        self.value_back = min(99, self.value_back)
 
     def update_state(self):
         while self.thread_running:
-            front_downwards = FRONT_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
-            back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.state.motors[MOTOR_LEFT])
-            time.sleep(1 / 120)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.state.motors[MOTOR_RIGHT])
-            time.sleep(1 / 120)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.state.motors[MOTOR_FRONT] - front_downwards)
-            time.sleep(1 / 120)
-            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.state.motors[MOTOR_BACK] + back_downwards)
-            time.sleep(1 / 120)
-            self.mcuVAR.cmd_setMotorMicroseconds(4, self.state.claw)
-            time.sleep(1 / 120)
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.value_left)
+            self.__wait_for_next_send()
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.value_right)
+            self.__wait_for_next_send()
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_FRONT, self.value_front)
+            self.__wait_for_next_send()
+            self.mcuVAR.cmd_setMotorCalibrated(MOTOR_BACK, self.value_back)
+            self.__wait_for_next_send()
+            self.mcuVAR.cmd_setMotorMicroseconds(MOTOR_CLAW, self.state.claw)
+            self.__wait_for_next_send()
 
     def read_send(self, key_pressed: KeySignal):
-        # debug
-        # multiplier_percent = SPEED_MODES[self.speed_mode] if key_pressed.pressed else 0
-        # multiplier_percent *= 2 if key_pressed.shift else 1
-        # print("comms received", key_pressed, "with percent", multiplier_percent)
-
         key = key_pressed.key
 
-        # handle if it's just a speed change
-        if key != "0" and key != "7" and key.isnumeric():
-            self.speed_mode = int(key) - 1
-            self.speed_mode %= 4  # safety
+        # handle '1'-'4'
+        if Qt.Key_1 <= key <= Qt.Key_4:
+            self.speed_mode = int(key) - Qt.Key_1
             return
+
         # handle toggle downwards base motion
-        if key == "7" and key_pressed.pressed:
+        if key == Qt.Key_7 and key_pressed.pressed:
             self.auto_downwards = not self.auto_downwards
             print(f"Toggling automatic downwards motion: {self.auto_downwards}")
+
+        # handle modify downwards multiplier
+        if key == Qt.Key_5 and key_pressed.pressed:
+            self.downwards_multiplier = max(0.5, self.downwards_multiplier - 0.1)
+        if key == Qt.Key_6 and key_pressed.pressed:
+            self.downwards_multiplier = min(2.0, self.downwards_multiplier + 0.1)
+
+        # handle toggle IMU compensation
+        if key == Qt.Key_9 and key_pressed.pressed:
+            self.disable_imu_compensation()
+        if key == Qt.Key_8 and key_pressed.pressed:
+            self.enable_imu_compensation()
 
         # handle other cases (instructions)
         if key_pressed.pressed:  # if pressed
             self.keys_pressed.append(key)
             self.__parse_keys()
         else:  # if released
-            if self.keys_pressed and self.keys_pressed[-1] == key:
-                self.keys_pressed.remove(key)
+            if self.keys_pressed:
+                if key in self.keys_pressed:
+                    self.keys_pressed.remove(key)
                 if not self.keys_pressed:
                     self.halt()
                     return
                 self.__parse_keys()
             else:
-                self.keys_pressed.remove(key)
-
-        # print("new key list:", self.keys_pressed)
-        # print("new state: ", self.state)
+                if key in self.keys_pressed:
+                    self.keys_pressed.remove(key)
 
     def __parse_keys(self):
         print("parsing keys: ", self.keys_pressed)
+        new_state = MotorState()
+        new_state.claw = self.state.claw
+        self.state = new_state
         for key in self.keys_pressed:
             self.__parse_key(key)
         print("new state: ", self.state)
+        print("current IMU: ", self.imu.get_offset())
+        print("IMU zero: ", self.imu.zero)
 
-    def __parse_key(self, key: str):
+    def __parse_key(self, key: int):
         # print("parsing key", key)
         multiplier_percent = SPEED_MODES[self.speed_mode]
-        if key.isupper():
-            multiplier_percent *= 2
 
-        key_lower = key.lower()
-        if key_lower == "w":
+        if key == Qt.Key_W:
             self.forward(multiplier_percent)
-        elif key_lower == "s":
+        elif key == Qt.Key_S:
             self.backwards(multiplier_percent)
-        elif key_lower == "a":
+        elif key == Qt.Key_A or key == Qt.Key_Left:
             self.turn_left(multiplier_percent)
-        elif key_lower == "d":
+        elif key == Qt.Key_D or key == Qt.Key_Right:
             self.turn_right(multiplier_percent)
-        elif key_lower == "e":
+        elif key == Qt.Key_Q:
             self.up(multiplier_percent)
-        elif key_lower == "q":
+        elif key == Qt.Key_E:
             self.down(multiplier_percent)
-        elif key_lower == "z":
+        elif key == Qt.Key_Z or key == Qt.Key_Up:
             self.tilt_up(multiplier_percent)
-        elif key_lower == "x":
+        elif key == Qt.Key_X or key == Qt.Key_Down:
             self.tilt_down(multiplier_percent)
-        elif key_lower == "f":
+        elif key == Qt.Key_F:
             self.set_servo_state(CLAW_MIN)
-        elif key_lower == "g":
+        elif key == Qt.Key_G:
             self.set_servo_state(CLAW_MID)
-        elif key_lower == "h":
+        elif key == Qt.Key_H:
             self.set_servo_state(CLAW_MAX)
-        elif key_lower == "0":
+        elif key == Qt.Key_C:
+            self.set_servo_state(max(CLAW_MIN, self.state.claw - multiplier_percent))
+        elif key == Qt.Key_V:
+            self.set_servo_state(min(CLAW_MAX, self.state.claw + multiplier_percent))
+        elif key == Qt.Key_Y:
+            self.force_esc_enable()
+        elif key == Qt.Key_0:
             print("Recalibrating!!")
             self.halt()
             self.__calibrate()
             # self.mcuVAR.cmd_halt()
-        elif key_lower == "i":
-            self.set_motor_state(MOTOR_FRONT, multiplier_percent if key.islower() else -multiplier_percent)
-        elif key_lower == "j":
-            self.set_motor_state(MOTOR_LEFT, multiplier_percent if key.islower() else -multiplier_percent)
-        elif key_lower == "k":
-            self.set_motor_state(MOTOR_BACK, -multiplier_percent if key.islower() else multiplier_percent)
-        elif key_lower == "l":
-            self.set_motor_state(MOTOR_RIGHT, -multiplier_percent if key.islower() else multiplier_percent)
 
     def __calibrate(self):
         # calibrate
@@ -221,6 +283,7 @@ class Communications:
     def kill_elec_ops(self):
         self.thread_running = False
         self.mcu_thread.join()
+        self.imu.stop()
 
         self.mcuVAR.cmd_halt()
         self.mcuVAR.cmd_setAutoReport(PARAM_ACCEL, False, 0)
