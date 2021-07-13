@@ -178,7 +178,7 @@ class Communications:
         if key == Qt.Key_5 and key_pressed.pressed:
             self.downwards_multiplier = max(0.5, self.downwards_multiplier - 0.1)
         if key == Qt.Key_6 and key_pressed.pressed:
-            self.downwards_multiplier = min(2.0, self.downwards_multiplier - 0.1)
+            self.downwards_multiplier = min(2.0, self.downwards_multiplier + 0.1)
 
         # handle toggle IMU compensation
         if key == Qt.Key_9 and key_pressed.pressed:
