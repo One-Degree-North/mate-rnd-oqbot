@@ -3,6 +3,7 @@ import sys
 
 RATIO_UPPER_BOUND = 0.8
 RATIO_LOWER_BOUND = 0.6
+TIME_TO_MOVE_UP_AND_DOWN = 1
 
 BAUD_RATE: int = 230400
 CLOSE_ON_STARTUP: bool = True
@@ -28,20 +29,20 @@ INITIAL_PERCENTAGE: int = 25
 SENSITIVE_PERCENTAGE: int = 15
 	
 feather = mcu.MCUInterface(PORT,
-					   baud=BAUD_RATE,
-					   close_on_startup=CLOSE_ON_STARTUP,
-					   refresh_rate=REFRESH_RATE,
-					   max_read=MAX_READ)
+			   baud=BAUD_RATE,
+			   close_on_startup=CLOSE_ON_STARTUP,
+			   refresh_rate=REFRESH_RATE,
+			   max_read=MAX_READ)
 communications = comms.Communications(feather, SENSITIVE_PERCENTAGE, INITIAL_PERCENTAGE)
 
 def move_up():
 	comms.up(SENSITIVE_PERCENTAGE)
-	time.sleep(1)
+	time.sleep(TIME_TO_MOVE_UP_AND_DOWN)
 	comms.up(0)
 
 def move_down():
 	comms.down(SENSITIVE_PERCENTAGE)
-	time.sleep(1)
+	time.sleep(TIME_TO_MOVE_UP_AND_DOWN)
 	comms.down(0)
 	
 def ended(frame):
@@ -80,7 +81,6 @@ def run(camera_id: int, blue_lower: (int, int, int), blue_upper: (int, int, int)
 		print("Error: camera not found!"
 		break
 
-	# start moving
 	running = True
 	while running: 
 		_, frame = camera.read()
@@ -112,8 +112,8 @@ if __name__ == "__main__":
 	communications.start_thread()
 	
 	camera_id: int = 0
-	blue_lower: (int, int, int) = ( , , )
-	blue_upper: (int, int, int) = ( , , )
+	blue_lower: (int, int, int) = (209, 61, 67)
+	blue_upper: (int, int, int) = (241, 100, 100)
 		
 	run(camera_id, blue_lower, blue_upper)
 	
