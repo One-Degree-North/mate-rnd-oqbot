@@ -56,6 +56,7 @@ class Communications:
         self.value_right = 0
         self.value_front = 0
         self.value_back = 0
+        self.downwards_multiplier = 1
 
     def start_thread(self):
         self.thread_running = True
@@ -138,8 +139,16 @@ class Communications:
             offset = self.imu.get_offset()
             self.value_left = int(self.state.motors[MOTOR_LEFT] + offset.x / 2)
             self.value_right = int(self.state.motors[MOTOR_RIGHT] + offset.x / 2)
-            self.value_front = int(self.state.motors[MOTOR_FRONT] - offset.y / 2 + front_downwards)
-            self.value_back = int(self.state.motors[MOTOR_BACK] + offset.y / 2 + back_downwards)
+            self.value_front = int(self.state.motors[MOTOR_FRONT] - offset.y / 2 +
+                                   front_downwards * self.downwards_multiplier)
+            self.value_back = int(self.state.motors[MOTOR_BACK] + offset.y / 2 +
+                                  back_downwards * self.downwards_multiplier)
+
+            # max out at 99, regardless of higher value
+            self.value_left = min(99, self.value_left)
+            self.value_right = min(99, self.value_right)
+            self.value_front = min(99, self.value_front)
+            self.value_back = min(99, self.value_back)
 
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.value_left)
             self.__wait_for_next_send()
@@ -164,6 +173,12 @@ class Communications:
         if key == Qt.Key_7 and key_pressed.pressed:
             self.auto_downwards = not self.auto_downwards
             print(f"Toggling automatic downwards motion: {self.auto_downwards}")
+
+        # handle modify downwards multiplier
+        if key == Qt.Key_5 and key_pressed.pressed:
+            self.downwards_multiplier = max(0.5, self.downwards_multiplier - 0.1)
+        if key == Qt.Key_6 and key_pressed.pressed:
+            self.downwards_multiplier = min(2.0, self.downwards_multiplier - 0.1)
 
         # handle toggle IMU compensation
         if key == Qt.Key_9 and key_pressed.pressed:
