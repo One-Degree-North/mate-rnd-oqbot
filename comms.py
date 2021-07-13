@@ -11,6 +11,7 @@ from mcu_lib.mcu import *
 from mcu_lib.command_constants import *
 from controls_pyqt.key_signal import KeySignal
 from imu_compensator import IMUCompensator
+from photomosaic.photomosaic import Photomosaic
 
 PWM_MIN = 1000
 PWM_MID = 1500
@@ -29,6 +30,8 @@ SLEEP_TIME = 1 / 120
 FRONT_DOWNWARDS_CALIBRATION = 7
 BACK_DOWNWARDS_CALIBRATION = 7
 
+PHOTOMOSAIC_PATH = "/home/lutet/photomosaic/"
+
 
 class MotorState:
     def __init__(self):
@@ -46,6 +49,7 @@ class Communications:
         self.initial_percent = initial_percent
         self.spacebar_count = 0
         self.mcu_thread: Thread = Thread(target=self.update_state)
+        self.photomosaic = Photomosaic(PHOTOMOSAIC_PATH)
         self.state: MotorState = MotorState()
         self.thread_running = False
         self.auto_downwards = False
@@ -181,6 +185,11 @@ class Communications:
             self.downwards_multiplier = max(0.5, self.downwards_multiplier - 0.1)
         if key == Qt.Key_6 and key_pressed.pressed:
             self.downwards_multiplier = min(2.0, self.downwards_multiplier + 0.1)
+
+        # handle photomosaic
+        if key == Qt.Key_Slash and key_pressed.pressed:
+            self.photomosaic.run()
+            time.sleep(0.1)  # allow tk to die before continuing
 
         # handle toggle IMU compensation
         if key == Qt.Key_9 and key_pressed.pressed:
