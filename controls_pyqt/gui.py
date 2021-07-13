@@ -86,7 +86,9 @@ class MainWindow(QT.QWidget):
 
         self.temperature.setText(str(self.mcu.latest_temp))
 
-        self.imu_compensation.setText(str(self.comms.imu.enable))
+        self.imu_compensation.setText("On" if self.comms.imu.enable else "Off")
+        self.nbm.setText("On" if self.comms.auto_downwards else "Off")
+        self.nbm_multiplier.setText(str(self.comms.downwards_multiplier))
 
         self.thruster1.setText(
             f"{self.mcu.latest_motor_status.motors[MOTOR_LEFT]} -> {self.comms.value_left}")
@@ -125,6 +127,8 @@ class MainWindow(QT.QWidget):
         self.z_accel = QT.QLabel()
 
         self.imu_compensation = QT.QLabel()
+        self.nbm = QT.QLabel()
+        self.nbm_multiplier = QT.QLabel()
 
         self.temperature = QT.QLabel()
 
@@ -138,6 +142,9 @@ class MainWindow(QT.QWidget):
         self.general_list = QT.QFormLayout()
         self.general_list.addRow(QT.QLabel("Voltage:"), self.voltage_info)
         self.general_list.addRow(QT.QLabel("Time Passed:"), self.timepassedlabel)
+        self.general_list.addRow(QT.QLabel("IMU Compensation: "), self.imu_compensation)
+        self.general_list.addRow(QT.QLabel("Neutral Buoyancy: "), self.nbm)
+        self.general_list.addRow(QT.QLabel("NBM Multiplier: "), self.nbm_multiplier)
         self.general_box = QT.QGroupBox("General")
         self.general_box.setLayout(self.general_list)
 
@@ -151,7 +158,6 @@ class MainWindow(QT.QWidget):
         self.imu_list.addRow(QT.QLabel("Y Acceleration:"), self.y_accel)
         self.imu_list.addRow(QT.QLabel("Z Acceleration:"), self.z_accel)
         self.imu_list.addRow(QT.QLabel("Temperature:"), self.temperature)
-        self.imu_list.addRow(QT.QLabel("IMU Compensation: "), self.imu_compensation)
 
         self.imu_box = QT.QGroupBox("IMU")
         self.imu_box.setLayout(self.imu_list)
