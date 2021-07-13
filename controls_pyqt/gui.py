@@ -183,6 +183,7 @@ class MainWindow(QT.QWidget):
     def __select_user_photo(self):
         self.user_photo.load(QT.QFileDialog.getOpenFileName(self, "Open Image", "./", "Image Files (*.png *.jpg *.bmp)")[0])
         self.user_label.setPixmap(self.user_photo)
+	
     def __setup_camera(self):
         self.camera_layout = QT.QVBoxLayout()
         self.camera = [QTM.QCamera(str.encode("/dev/video" + str(x))) for x in range(self.camera_number)]
@@ -230,7 +231,7 @@ class MainWindow(QT.QWidget):
         self.layout.addWidget(self.general_box, 1, 4, 1, 1)
         self.layout.addWidget(self.imu_box, 2, 4, 1, 1)
         self.layout.addWidget(self.pwmbox, 3, 4, 1, 1)
-        self.layout.addWidget(self.sediment_box,1,5,3,1)
+        self.layout.addWidget(self.sediment_box, 1, 5, 3, 1)
         self.sediment_box.hide()
         # self.layout.addWidget(self.ser_text, 1, 3, 4, 1)
         # self.layout.setColumnMinimumWidth(3, 400)
