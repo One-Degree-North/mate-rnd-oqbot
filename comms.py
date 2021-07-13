@@ -130,26 +130,28 @@ class Communications:
 
     def __wait_for_next_send(self):
         time.sleep(SLEEP_TIME)
+        self.__get_states()
+
+    def __get_states(self):
+        front_downwards = FRONT_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
+        back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
+
+        offset = self.imu.get_offset()
+        self.value_left = round(self.state.motors[MOTOR_LEFT] + offset.x / 2)
+        self.value_right = round(self.state.motors[MOTOR_RIGHT] + offset.x / 2)
+        self.value_front = round(self.state.motors[MOTOR_FRONT] - offset.y / 2 +
+                                 front_downwards * self.downwards_multiplier)
+        self.value_back = round(self.state.motors[MOTOR_BACK] + offset.y / 2 +
+                                back_downwards * self.downwards_multiplier)
+
+        # max out at 99, regardless of higher value
+        self.value_left = min(99, self.value_left)
+        self.value_right = min(99, self.value_right)
+        self.value_front = min(99, self.value_front)
+        self.value_back = min(99, self.value_back)
 
     def update_state(self):
         while self.thread_running:
-            front_downwards = FRONT_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
-            back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
-
-            offset = self.imu.get_offset()
-            self.value_left = round(self.state.motors[MOTOR_LEFT] + offset.x / 2)
-            self.value_right = round(self.state.motors[MOTOR_RIGHT] + offset.x / 2)
-            self.value_front = round(self.state.motors[MOTOR_FRONT] - offset.y / 2 +
-                                   front_downwards * self.downwards_multiplier)
-            self.value_back = round(self.state.motors[MOTOR_BACK] + offset.y / 2 +
-                                  back_downwards * self.downwards_multiplier)
-
-            # max out at 99, regardless of higher value
-            self.value_left = min(99, self.value_left)
-            self.value_right = min(99, self.value_right)
-            self.value_front = min(99, self.value_front)
-            self.value_back = min(99, self.value_back)
-
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_LEFT, self.value_left)
             self.__wait_for_next_send()
             self.mcuVAR.cmd_setMotorCalibrated(MOTOR_RIGHT, self.value_right)
