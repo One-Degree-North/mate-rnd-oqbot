@@ -137,11 +137,11 @@ class Communications:
             back_downwards = BACK_DOWNWARDS_CALIBRATION if self.auto_downwards else 0
 
             offset = self.imu.get_offset()
-            self.value_left = int(self.state.motors[MOTOR_LEFT] + offset.x / 2)
-            self.value_right = int(self.state.motors[MOTOR_RIGHT] + offset.x / 2)
-            self.value_front = int(self.state.motors[MOTOR_FRONT] - offset.y / 2 +
+            self.value_left = round(self.state.motors[MOTOR_LEFT] + offset.x / 2)
+            self.value_right = round(self.state.motors[MOTOR_RIGHT] + offset.x / 2)
+            self.value_front = round(self.state.motors[MOTOR_FRONT] - offset.y / 2 +
                                    front_downwards * self.downwards_multiplier)
-            self.value_back = int(self.state.motors[MOTOR_BACK] + offset.y / 2 +
+            self.value_back = round(self.state.motors[MOTOR_BACK] + offset.y / 2 +
                                   back_downwards * self.downwards_multiplier)
 
             # max out at 99, regardless of higher value
